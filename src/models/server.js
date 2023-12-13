@@ -35,7 +35,6 @@ class Server {
     constructor(){
         // Crea una instancia de Express para manejar el servidor
         this.app = express();
-
         // Configura el puerto del servidor, utiliza el puerto especificado en las variables de entorno o el puerto 3000 por defecto
         this.port = process.env.PORT || 3000;
 
@@ -45,7 +44,10 @@ class Server {
         };
         this.catalogosPath = {
             catalogoEmpleado: "/api/empleado",
-            catalogoCliente: "/api/cliente"
+            catalogoCliente: "/api/cliente",
+            catalogoPuestoTrabajo: "/api/puestoTrabajo",
+            catalogoVacaciones: "/api/vacaciones",
+            catalogoTolerancia: "/api/tolerancia"
         };
 
         // Conexión a la base de datos de PostgreSQL
@@ -87,7 +89,10 @@ class Server {
         this.app.use(this.autenticacionPath.catalogoAutenticacion,require('../routes/autenticacion/inicio-sesion'));
         this.app.use(this.catalogosPath.catalogoEmpleado,require('../routes/catalogos/empleado'));
         this.app.use(this.catalogosPath.catalogoCliente, require('../routes/catalogos/cliente'));
-    }
+        this.app.use(this.catalogosPath.catalogoPuestoTrabajo, require('../routes/catalogos/puestoTrabajo'));
+        this.app.use(this.catalogosPath.catalogoVacaciones, require('../routes/catalogos/vacaciones'));
+        this.app.use(this.catalogosPath.catalogoTolerancia, require('../routes/catalogos/tolerancia'));
+    }   
 
     // Función para iniciar el servidor y escuchar en el puerto especificado
     listen(){
