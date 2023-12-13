@@ -45,6 +45,7 @@ class Server {
         };
         this.catalogosPath = {
             catalogoEmpleado: "/api/empleado",
+            catalogoCliente: "/api/cliente"
         };
 
         // Conexión a la base de datos de PostgreSQL
@@ -85,6 +86,7 @@ class Server {
     routes(){
         this.app.use(this.autenticacionPath.catalogoAutenticacion,require('../routes/autenticacion/inicio-sesion'));
         this.app.use(this.catalogosPath.catalogoEmpleado,require('../routes/catalogos/empleado'));
+        this.app.use(this.catalogosPath.catalogoCliente, require('../routes/catalogos/cliente'));
     }
 
     // Función para iniciar el servidor y escuchar en el puerto especificado
