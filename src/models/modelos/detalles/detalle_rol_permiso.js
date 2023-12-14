@@ -3,13 +3,15 @@ const pool = require('../../../database/config');
 const SubModulo = require('../catalogos/subModulos');
 const Permiso = require('../catalogos/permiso');
 
+
 const DetalleRolPermiso = pool.define('detalle_rol_permiso', {
     id_detalle_rol_permiso: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
+        as:'id'
     },
-    fk_cat_sub_modulo: {
+    fk_cat_submodulo: {
         type: DataTypes.INTEGER,
         references: {
             model: SubModulo,
@@ -29,11 +31,10 @@ const DetalleRolPermiso = pool.define('detalle_rol_permiso', {
 });
 
 // Establece las relaciones many-to-one
-SubModulo.hasMany(DetalleRolPermiso, { foreignKey: 'fk_cat_sub_modulo' });
-DetalleRolPermiso.belongsTo(SubModulo, { foreignKey: 'fk_cat_sub_modulo' });
+SubModulo.hasMany(DetalleRolPermiso, { foreignKey: 'fk_cat_submodulo', as: 'fr' });
+DetalleRolPermiso.belongsTo(SubModulo, { foreignKey: 'fk_cat_submodulo', as: 'fr' });
 
-Permiso.hasMany(DetalleRolPermiso, { foreignKey: 'fk_cat_permiso' });
-DetalleRolPermiso.belongsTo(Permiso, { foreignKey: 'fk_cat_permiso' });
-
+Permiso.hasMany(DetalleRolPermiso, { foreignKey: 'fk_cat_permiso', as: 'fp' });
+DetalleRolPermiso.belongsTo(Permiso, { foreignKey: 'fk_cat_permiso', as: 'fp' });
 
 module.exports = DetalleRolPermiso;

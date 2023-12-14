@@ -47,7 +47,10 @@ class Server {
             catalogoCliente: "/api/cliente",
             catalogoPuestoTrabajo: "/api/puestoTrabajo",
             catalogoVacaciones: "/api/vacaciones",
-            catalogoTolerancia: "/api/tolerancia"
+            catalogoTolerancia: "/api/tolerancia",
+            catalogoRoles: "/api/roles",
+            catalogoPermiso: "/api/permiso",
+            catalogoModulo: "/api/modulo"
         };
 
         // Conexión a la base de datos de PostgreSQL
@@ -92,6 +95,10 @@ class Server {
         this.app.use(this.catalogosPath.catalogoPuestoTrabajo, require('../routes/catalogos/puestoTrabajo'));
         this.app.use(this.catalogosPath.catalogoVacaciones, require('../routes/catalogos/vacaciones'));
         this.app.use(this.catalogosPath.catalogoTolerancia, require('../routes/catalogos/tolerancia'));
+        this.app.use(this.catalogosPath.catalogoRoles, require('../routes/catalogos/roles'));
+        this.app.use(this.catalogosPath.catalogoPermiso, require('../routes/catalogos/permiso'));
+        this.app.use(this.catalogosPath.catalogoModulo, require('../routes/catalogos/modulo'));
+
     }   
 
     // Función para iniciar el servidor y escuchar en el puerto especificado

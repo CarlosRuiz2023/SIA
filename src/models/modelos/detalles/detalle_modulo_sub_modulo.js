@@ -1,6 +1,8 @@
+// detalle_usuario_rol.js
 const { Sequelize, DataTypes } = require('sequelize');
 const pool = require('../../../database/config');
-const Modulo = require('../catalogos/modulo');
+
+const Modulos = require('../catalogos/modulo');
 const SubModulo = require('../catalogos/subModulos');
 
 const DetalleModuloSubModulo = pool.define('detalle_modulo_sub_modulo', {
@@ -12,7 +14,7 @@ const DetalleModuloSubModulo = pool.define('detalle_modulo_sub_modulo', {
     fk_cat_modulo: {
         type: DataTypes.INTEGER,
         references: {
-            model: Modulo,
+            model: Modulos,
             key: 'id_cat_modulo',
         },
     },
@@ -25,14 +27,14 @@ const DetalleModuloSubModulo = pool.define('detalle_modulo_sub_modulo', {
     },
 }, {
     timestamps: false,
-    tableName: 'detalle_usuario_rol',
+    tableName: 'detalle_modulo_sub_modulo',
 });
 
 // Establece las relaciones many-to-one
-Modulo.hasMany(DetalleModuloSubModulo, { foreignKey: 'fk_cat_modulo' });
-DetalleModuloSubModulo.belongsTo(Modulo, { foreignKey: 'fk_cat_modulo' });
+Modulos.hasMany(DetalleModuloSubModulo, { foreignKey: 'fk_cat_modulo', as: 'f_modulo' });
+DetalleModuloSubModulo.belongsTo(Modulos, { foreignKey: 'fk_cat_modulo', as: 'f_modulo'  });
 
-SubModulo.hasMany(DetalleModuloSubModulo, { foreignKey: 'fk_cat_sub_modulo' });
-DetalleModuloSubModulo.belongsTo(SubModulo, { foreignKey: 'fk_cat_sub_modulo' });
+SubModulo.hasMany(DetalleModuloSubModulo, { foreignKey: 'fk_cat_sub_modulo' , as: 'f_sub_modulo'  });
+DetalleModuloSubModulo.belongsTo(SubModulo, { foreignKey: 'fk_cat_sub_modulo' , as: 'f_sub_modulo' });
 
 module.exports = DetalleModuloSubModulo;
