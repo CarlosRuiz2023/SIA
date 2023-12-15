@@ -3,50 +3,119 @@ const Roles = require('../../models/modelos/catalogos/roles');
 const Modulo = require('../../models/modelos/catalogos/modulo');
 const SubModulo = require('../../models/modelos/catalogos/subModulos')
 const Permiso = require('../../models/modelos/catalogos/permiso');
-const DetalleModuloRol = require('../../models/modelos/detalles/detalle_rol_modulo');
+const DetalleModuloRol = require('../../models/modelos/detalles/detalle_permiso_sub_modulo');
 const DetalleModuloSubModulo = require('../../models/modelos/detalles/detalle_modulo_sub_modulo');
 const DetalleRolPermiso = require('../../models/modelos/detalles/detalle_rol_permiso');
 
+// const rolesGet = async (req = request, res = response) => {
+//     try {
+//         // Obtener roles con detalles de módulos
+//         const roles = await Roles.findAll({
+//             include: [{
+//                 model: DetalleModuloRol,
+//                 include: [{
+//                     model: Modulo,
+//                     include: [{
+//                         model: DetalleModuloSubModulo,
+//                         as: 'f_modulo',
+//                         include: [{
+//                             model: SubModulo,
+//                             as: 'f_sub_modulo',
+//                             include: [{
+//                                 model: DetalleRolPermiso,
+//                                 as:'fr',
+//                                 include: [{
+//                                     model: Permiso,
+//                                     as:'fp',
+//                                 }],
+//                             }],
+//                         }],
+//                     }],
+//                 }],
+//             }],
+//         });
+//         res.status(200).json({
+//             roles,
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             msg: 'Ha ocurrido un error, hable con el Administrador.',
+//         });
+//     }
+// };
 const rolesGet = async (req = request, res = response) => {
     try {
         // Obtener roles con detalles de módulos
         const roles = await Roles.findAll({
             include: [{
-                model: DetalleModuloRol,
+                model: DetalleRolPermiso,
                 include: [{
-                    model: Modulo,
-                    include: [{
-                        model: DetalleModuloSubModulo,
-                        as: 'f_modulo',
-                        include: [{
-                            model: SubModulo,
-                            as: 'f_sub_modulo',
-                            include: [{
-                                model: DetalleRolPermiso,
-                                as:'fr',
-                                include: [{
-                                    model: Permiso,
-                                    as:'fp',
-                                }],
-                            }],
-                        }],
-                    }],
+                    model: Permiso,
+                }],
+            }],
+        });
+        res.status(200).json({
+            roles,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            msg: 'Ha ocurrido un error, hable con el Administrador.',
+        });
+    }
+}
+
+const rolesPermisosPut = async (req, res) => {
+    try {
+        const rolesPermisos = req.body;
+
+        for (const { idRol, permisos } of rolesPermisos) {
+            // Validar si el rol existe en la base de datos
+            const rolExistente = await Roles.findByPk(idRol);
+            if (!rolExistente) {
+                return res.status(404).json({
+                    msg: `No se encontró el rol con ID ${idRol}.`,
+                });
+            }
+
+            // Eliminar permisos antiguos asociados al rol
+            await DetalleRolPermiso.destroy({
+                where: {
+                    fk_cat_rol: idRol,
+                },
+            });
+
+            // Asociar nuevos permisos al rol
+            await DetalleRolPermiso.bulkCreate(
+                permisos.map((permisoId) => ({
+                    fk_cat_rol: idRol,
+                    fk_cat_permiso: permisoId,
+                }))
+            );
+        }
+
+        const roles = await Roles.findAll({
+            include: [{
+                model: DetalleRolPermiso,
+                include: [{
+                    model: Permiso,
                 }],
             }],
         });
 
         res.json({
-            roles,
+            msg: 'Roles y permisos actualizados correctamente',
+            roles
         });
-
     } catch (error) {
-        console.error('Error en rolesGet:', error);
+        console.log(error);
         res.status(500).json({
             msg: 'Ha ocurrido un error, hable con el Administrador.',
-            err: error
         });
     }
 };
+
 
 
 const rolesTodosGet = async (req = request, res = response) => {
@@ -64,16 +133,14 @@ const rolesTodosGet = async (req = request, res = response) => {
         console.log(error);
         res.status(500).json({
             msg: 'Ha ocurrido un error, hable con el Administrador.',
-            err: error
         });
     }
 
 }
 
-
-
 module.exports = {
     rolesGet,
-    rolesTodosGet
+    rolesTodosGet,
+    rolesPermisosPut
 };
 

@@ -50,7 +50,8 @@ class Server {
             catalogoTolerancia: "/api/tolerancia",
             catalogoRoles: "/api/roles",
             catalogoPermiso: "/api/permiso",
-            catalogoModulo: "/api/modulo"
+            catalogoModulo: "/api/modulo",
+            catalogoBitacoraAcceso: "/api/bitacoraAcceso"
         };
 
         // Conexión a la base de datos de PostgreSQL
@@ -98,6 +99,8 @@ class Server {
         this.app.use(this.catalogosPath.catalogoRoles, require('../routes/catalogos/roles'));
         this.app.use(this.catalogosPath.catalogoPermiso, require('../routes/catalogos/permiso'));
         this.app.use(this.catalogosPath.catalogoModulo, require('../routes/catalogos/modulo'));
+        this.app.use(this.catalogosPath.catalogoBitacoraAcceso, require('../routes/catalogos/bitacoraAccesos'));
+
 
     }   
 

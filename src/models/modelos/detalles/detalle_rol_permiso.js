@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const pool = require('../../../database/config');
-const SubModulo = require('../catalogos/subModulos');
+const Rol = require('../catalogos/roles');
 const Permiso = require('../catalogos/permiso');
 
 
@@ -11,11 +11,11 @@ const DetalleRolPermiso = pool.define('detalle_rol_permiso', {
         autoIncrement: true,
         as:'id'
     },
-    fk_cat_submodulo: {
+    fk_cat_rol: {
         type: DataTypes.INTEGER,
         references: {
-            model: SubModulo,
-            key: 'id_cat_sub_modulo',
+            model: Rol,
+            key: 'id_cat_rol',
         },
     },
     fk_cat_permiso: {
@@ -31,10 +31,10 @@ const DetalleRolPermiso = pool.define('detalle_rol_permiso', {
 });
 
 // Establece las relaciones many-to-one
-SubModulo.hasMany(DetalleRolPermiso, { foreignKey: 'fk_cat_submodulo', as: 'fr' });
-DetalleRolPermiso.belongsTo(SubModulo, { foreignKey: 'fk_cat_submodulo', as: 'fr' });
+Rol.hasMany(DetalleRolPermiso, { foreignKey: 'fk_cat_rol'});
+DetalleRolPermiso.belongsTo(Rol, { foreignKey: 'fk_cat_rol'});
 
-Permiso.hasMany(DetalleRolPermiso, { foreignKey: 'fk_cat_permiso', as: 'fp' });
-DetalleRolPermiso.belongsTo(Permiso, { foreignKey: 'fk_cat_permiso', as: 'fp' });
+Permiso.hasMany(DetalleRolPermiso, { foreignKey: 'fk_cat_permiso'});
+DetalleRolPermiso.belongsTo(Permiso, { foreignKey: 'fk_cat_permiso'});
 
 module.exports = DetalleRolPermiso;

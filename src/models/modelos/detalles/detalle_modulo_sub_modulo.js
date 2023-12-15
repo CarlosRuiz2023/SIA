@@ -31,10 +31,10 @@ const DetalleModuloSubModulo = pool.define('detalle_modulo_sub_modulo', {
 });
 
 // Establece las relaciones many-to-one
-Modulos.hasMany(DetalleModuloSubModulo, { foreignKey: 'fk_cat_modulo', as: 'f_modulo' });
-DetalleModuloSubModulo.belongsTo(Modulos, { foreignKey: 'fk_cat_modulo', as: 'f_modulo'  });
+Modulos.hasMany(DetalleModuloSubModulo, { foreignKey: 'fk_cat_modulo'});
+DetalleModuloSubModulo.belongsTo(Modulos, { foreignKey: 'fk_cat_modulo'});
 
-SubModulo.hasMany(DetalleModuloSubModulo, { foreignKey: 'fk_cat_sub_modulo' , as: 'f_sub_modulo'  });
-DetalleModuloSubModulo.belongsTo(SubModulo, { foreignKey: 'fk_cat_sub_modulo' , as: 'f_sub_modulo' });
+SubModulo.hasMany(DetalleModuloSubModulo, { foreignKey: 'fk_cat_sub_modulo'});
+DetalleModuloSubModulo.belongsTo(SubModulo, { foreignKey: 'fk_cat_sub_modulo'});
 
 module.exports = DetalleModuloSubModulo;
