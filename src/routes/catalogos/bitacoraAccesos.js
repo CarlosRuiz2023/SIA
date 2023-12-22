@@ -1,10 +1,11 @@
 const { Router } = require('express');
 
-const { bitacoraAccesoGet  } = require('../../controllers/catalogos/bitacoraAccesos-controller');
+const { bitacoraAccesoGet, bitacoraAccesosPost  } = require('../../controllers/catalogos/bitacoraAccesos-controller');
 
 const router = Router();
 
-router.get('/', bitacoraAccesoGet);
+router.post('/datos', bitacoraAccesoGet);
+router.post('/', bitacoraAccesosPost);
 
 
 module.exports = router;

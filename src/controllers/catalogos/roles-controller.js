@@ -48,13 +48,17 @@ const rolesGet = async (req = request, res = response) => {
     try {
         // Obtener roles con detalles de módulos
         const roles = await Roles.findAll({
+            attributes: ['id_cat_rol', 'rol', 'descripccion', 'estatus'],
             include: [{
                 model: DetalleRolPermiso,
+                attributes: ['id_detalle_rol_permiso',],
                 include: [{
                     model: Permiso,
+                    attributes: ['id_cat_permiso', 'permiso'],
                 }],
             }],
         });
+
         res.status(200).json({
             roles,
         });
@@ -65,6 +69,7 @@ const rolesGet = async (req = request, res = response) => {
         });
     }
 }
+
 
 const rolesPermisosPut = async (req, res) => {
     try {

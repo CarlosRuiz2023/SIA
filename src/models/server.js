@@ -72,16 +72,17 @@ class Server {
     // Configuración de los middlewares del servidor
     middlewares() {
         // Middleware para manejar CORS
-        this.app.use(cors({
-            origin: ['http://localhost:4200'],
-            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-            headers: '*',
-            preflightContinue: false,
-            optionsSuccessStatus: 204,
-          }));
+        // this.app.use(cors({
+        //     origin: ['http://localhost:4200', 'http://192.168.40.1:5985'],
+        //     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        //     headers: '*',
+        //     preflightContinue: false,
+        //     optionsSuccessStatus: 204,
+        //   }));
+        this.app.use(cors());
     
         // Middleware para manejar solicitudes y respuestas en formato JSON
-        this.app.use(express.json());
+        this.app.use(express.json());   
     
         // Middleware para servir archivos estáticos desde la carpeta 'public'
         this.app.use(express.static('public'));

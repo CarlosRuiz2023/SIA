@@ -11,6 +11,9 @@ const BitacoraAcceso = pool.define('cat_bitacora_acceso', {
     },
     fecha_inicio: {
         type: Sequelize.DATE,
+    }, 
+    hora: {
+        type: Sequelize.TIME,
     },   
     plataforma_web: {
         type: Sequelize.STRING,
