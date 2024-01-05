@@ -70,7 +70,6 @@ const rolesGet = async (req = request, res = response) => {
     }
 }
 
-
 const rolesPermisosPut = async (req, res) => {
     try {
         const rolesPermisos = req.body;
@@ -84,23 +83,39 @@ const rolesPermisosPut = async (req, res) => {
                 });
             }
 
-            // Eliminar permisos antiguos asociados al rol
-            await DetalleRolPermiso.destroy({
+            // Obtener los registros actuales asociados al rol
+            const informacionRoles = await DetalleRolPermiso.findAll({
                 where: {
                     fk_cat_rol: idRol,
                 },
             });
 
-            // Asociar nuevos permisos al rol
+            // Mapear los registros actuales a sus respectivos IDs de permisos
+            const permisosActuales = informacionRoles.map((rol) => rol.fk_cat_permiso);
+
+            // Encontrar los permisos a agregar y eliminar
+            const permisosAgregar = permisos.filter((permiso) => !permisosActuales.includes(permiso));
+            const permisosEliminar = permisosActuales.filter((permiso) => !permisos.includes(permiso));
+
+            // Eliminar permisos no necesarios
+            await DetalleRolPermiso.destroy({
+                where: {
+                    fk_cat_rol: idRol,
+                    fk_cat_permiso: permisosEliminar,
+                },
+            });
+
+            // Crear nuevos registros para los permisos a agregar
             await DetalleRolPermiso.bulkCreate(
-                permisos.map((permisoId) => ({
+                permisosAgregar.map((permisoId) => ({
                     fk_cat_rol: idRol,
                     fk_cat_permiso: permisoId,
                 }))
             );
         }
 
-        const roles = await Roles.findAll({
+        // Obtener roles actualizados
+        const rolesActualizados = await Roles.findAll({
             include: [{
                 model: DetalleRolPermiso,
                 include: [{
@@ -111,7 +126,7 @@ const rolesPermisosPut = async (req, res) => {
 
         res.json({
             msg: 'Roles y permisos actualizados correctamente',
-            roles
+            roles: rolesActualizados,
         });
     } catch (error) {
         console.log(error);
@@ -120,6 +135,60 @@ const rolesPermisosPut = async (req, res) => {
         });
     }
 };
+
+
+
+
+// const rolesPermisosPut = async (req, res) => {
+//     try {
+//         const rolesPermisos = req.body;
+
+//         for (const { idRol, permisos } of rolesPermisos) {
+//             // Validar si el rol existe en la base de datos
+//             console.log('ESTE ES EL ID ROL'+idRol, 'ESTOS SON LOS PERMISO'+permisos)
+//             const rolExistente = await Roles.findByPk(idRol);
+//             if (!rolExistente) {
+//                 return res.status(404).json({
+//                     msg: `No se encontró el rol con ID ${idRol}.`,
+//                 });
+//             }
+
+//             // Eliminar permisos antiguos asociados al rol
+//             await DetalleRolPermiso.destroy({
+//                 where: {
+//                     fk_cat_rol: idRol,
+//                 },
+//             });
+
+//             // Asociar nuevos permisos al rol
+//             await DetalleRolPermiso.bulkCreate(
+//                 permisos.map((permisoId) => ({
+//                     fk_cat_rol: idRol,
+//                     fk_cat_permiso: permisoId,
+//                 }))
+//             );
+//         }
+
+//         const roles = await Roles.findAll({
+//             include: [{
+//                 model: DetalleRolPermiso,
+//                 include: [{
+//                     model: Permiso,
+//                 }],
+//             }],
+//         });
+
+//         res.json({
+//             msg: 'Roles y permisos actualizados correctamente',
+//             roles
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             msg: 'Ha ocurrido un error, hable con el Administrador.',
+//         });
+//     }
+// };
 
 
 

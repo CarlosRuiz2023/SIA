@@ -9,15 +9,20 @@ const Persona = require('../../models/modelos/catalogos/persona');
 const bitacoraAccesoGet = async (req, res) => {
     try {
         const { fecha_inicio, fecha_fin, empleados } = req.body;
-        const query = {
-            fecha_inicio: {
+        const query = {};
+
+        if (fecha_inicio && fecha_fin) {
+            query.fecha_inicio = {
                 [Op.gte]: fecha_inicio,
                 [Op.lte]: fecha_fin,
-            },
-            fk_cat_empleado: {
-                [Op.in]: empleados
-            }
-        };
+            };
+        }
+
+        if (empleados && empleados.length > 0) {
+            query.fk_cat_empleado = {
+                [Op.in]: empleados,
+            };
+        }
 
         const bitacoraAcceso = await BitacoraAccesos.findAll({
             where: query,
@@ -43,6 +48,7 @@ const bitacoraAccesoGet = async (req, res) => {
         });
     }
 };
+
 
 
 const bitacoraAccesosPost = async ( req = request, res = response ) => {
