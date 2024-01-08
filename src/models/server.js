@@ -23,7 +23,12 @@ const {EmpleadosRuta} = require('../routes/catalogos/empleado');
 //     preflightContinue: false,
 //     optionsSuccessStatus: 204,
 //   };
-  
+const   corsOptions = {
+    origin: 'http://localhost:4200',
+    optionsSuccessStatus: 200,
+    methods: "GET, PUT, POST, DELETE"
+}
+
   
  
   
@@ -79,8 +84,13 @@ class Server {
         //     preflightContinue: false,
         //     optionsSuccessStatus: 204,
         //   }));
-        this.app.use(cors());
-    
+        this.app.use(cors({
+            origin: ['http://localhost:4200','http://192.168.40.1:5985'], 
+            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+            preflightContinue: false,
+            optionsSuccessStatus: 204,
+         }));
+        
         // Middleware para manejar solicitudes y respuestas en formato JSON
         this.app.use(express.json());   
     
