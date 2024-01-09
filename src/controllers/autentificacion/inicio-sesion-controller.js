@@ -1,56 +1,70 @@
+// IMPORTACIÓN DEL OBJETO 'RESPONSE' DE LA BIBLIOTECA 'EXPRESS'.
 const { response } = require('express');
+// IMPORTACIÓN DEL MÓDULO 'BCRYPTJS' PARA EL MANEJO DE CONTRASEÑAS HASH.
 const bcryptjs = require('bcryptjs');
-
+// IMPORTACIÓN DEL MODELO 'USUARIO' DESDE LA RUTA CORRESPONDIENTE.
 const Usuario = require('../../models/modelos/usuario');
 
-const inicioSesion = async(req, res) =>{
-    const {correo, contrasenia} = req.body;
+/**
+ * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y mensaje JSON.
+ */
+const inicioSesion = async (req, res) => {
+    // EXTRAE EL CORREO Y LA CONTRASEÑA DEL CUERPO DE LA SOLICITUD.
+    const { correo, contrasenia } = req.body;
 
     try {
-        //Verificamos si el usuario existe 
+        // VERIFICAMOS SI EL USUARIO EXISTE EN LA BASE DE DATOS.
         const usuario = await Usuario.findOne({ where: { correo } });
 
-        if(!usuario){
+        //SI NO EXISTE EL USUARIOS MANDAR MENSAJE DE ERROR 
+        if (!usuario) {
+            //RETORNAMOS MENSAJE DE ERROR
             return res.status(400).json({
-                ok:false,
-                msg: 'Usuario o contraseña no son correctos. Intenta de nuevo - correo'
-            });
-        }
-        
-        //Verifica si el usuario esta activo
-        if(!usuario.estatus){
-            return res.status(400).json({
-                ok:false,
-                msg: 'Usuario o contraseña no son correctos. Intenta de nuevo - estatus: falso'
+                ok: false,
+                msg: 'Usuario o contraseña no son correctos. Intenta de nuevo'
             });
         }
 
-        //Verificamos si la contraseña es correcta
-        //const validarContrasenia = bcryptjs.compareSync(contrasenia, usuario.contrasenia);
-        const validarContrasenia = await Usuario.findOne({where: {contrasenia}});
-        if(!validarContrasenia){
+        // VERIFICA SI EL USUARIO ESTÁ ACTIVO.
+        if (!usuario.estatus) {
+             //RETORNAMOS MENSAJE DE ERROR
             return res.status(400).json({
-                ok:false,
-                msg: 'Usuario o contraseña no son correctos. Intenta de nuevo - contraseña'
+                ok: false,
+                msg: 'Usuario o contraseña no son correctos. Intenta de nuevo'
             });
         }
 
-        //Generar el JWT
-        //const token = await generarJWT(usuario.id_cat_usuario);
+        // VERIFICAMOS SI LA CONTRASEÑA PROPORCIONADA ES CORRECTA.
+        const validarContrasenia = await bcryptjs.compare(contrasenia, usuario.contrasenia);
 
+        //VERIFICA LA CONTRASÑA
+        if (!validarContrasenia) {
+            //RETORNAMOS MENSAJE DE ERROR
+            return res.status(400).json({
+                ok: false,
+                msg: 'Usuario o contraseña no son correctos. Intenta de nuevo - CONTRASEÑA'
+            });
+        }
+
+        // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
         res.status(200).json({
-           ok:true,
-           usuario
+            ok: true,
+            usuario
         });
-        
+
     } catch (error) {
-        console.log(error)
+        // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
+        console.log(error);
         res.status(500).json({
             msg: 'Ha ocurrido un error, hable con el Administrador.'
         });
     }
-}
+};
 
+// EXPORTA LA FUNCIÓN INICIOSESION PARA SER UTILIZADA EN OTROS ARCHIVOS.
 module.exports = {
     inicioSesion
-}
+};

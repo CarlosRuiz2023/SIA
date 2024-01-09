@@ -1,52 +1,21 @@
+// IMPORTACIÓN DE OBJETOS 'RESPONSE' Y 'REQUEST' DE LA BIBLIOTECA 'EXPRESS'.
 const { response, request } = require('express');
+// IMPORTACIÓN DE MODELOS DE BASE DE DATOS.
 const Roles = require('../../models/modelos/catalogos/roles');
-const Modulo = require('../../models/modelos/catalogos/modulo');
-const SubModulo = require('../../models/modelos/catalogos/subModulos')
 const Permiso = require('../../models/modelos/catalogos/permiso');
-const DetalleModuloRol = require('../../models/modelos/detalles/detalle_permiso_sub_modulo');
-const DetalleModuloSubModulo = require('../../models/modelos/detalles/detalle_modulo_sub_modulo');
 const DetalleRolPermiso = require('../../models/modelos/detalles/detalle_rol_permiso');
 
-// const rolesGet = async (req = request, res = response) => {
-//     try {
-//         // Obtener roles con detalles de módulos
-//         const roles = await Roles.findAll({
-//             include: [{
-//                 model: DetalleModuloRol,
-//                 include: [{
-//                     model: Modulo,
-//                     include: [{
-//                         model: DetalleModuloSubModulo,
-//                         as: 'f_modulo',
-//                         include: [{
-//                             model: SubModulo,
-//                             as: 'f_sub_modulo',
-//                             include: [{
-//                                 model: DetalleRolPermiso,
-//                                 as:'fr',
-//                                 include: [{
-//                                     model: Permiso,
-//                                     as:'fp',
-//                                 }],
-//                             }],
-//                         }],
-//                     }],
-//                 }],
-//             }],
-//         });
-//         res.status(200).json({
-//             roles,
-//         });
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({
-//             msg: 'Ha ocurrido un error, hable con el Administrador.',
-//         });
-//     }
-// };
+/**
+ * OBTIENE TODOS LOS ROLES CON LOS PERMISOS ASOCIADOS.
+ * @async
+ * @function rolesGet
+ * @param {request} req - OBJETO DE SOLICITUD HTTP.
+ * @param {response} res - OBJETO DE RESPUESTA HTTP.
+ * @returns {Object} RESPUESTA JSON CON LOS ROLES Y PERMISOS OBTENIDOS.
+ */
 const rolesGet = async (req = request, res = response) => {
     try {
-        // Obtener roles con detalles de módulos
+        // OBTENER ROLES CON DETALLES DE PERMISOS
         const roles = await Roles.findAll({
             attributes: ['id_cat_rol', 'rol', 'descripccion', 'estatus'],
             include: [{
@@ -59,23 +28,35 @@ const rolesGet = async (req = request, res = response) => {
             }],
         });
 
+        // RESPONDER CON UN OBJETO JSON QUE CONTIENE LOS ROLES Y PERMISOS OBTENIDOS.
         res.status(200).json({
             roles,
         });
     } catch (error) {
+        // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
         console.log(error);
         res.status(500).json({
-            msg: 'Ha ocurrido un error, hable con el Administrador.',
+            msg: 'HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.',
         });
     }
-}
+};
 
+/**
+ * ACTUALIZA LOS PERMISOS ASOCIADOS A LOS ROLES.
+ * @async
+ * @function rolesPermisosPut
+ * @param {request} req - OBJETO DE SOLICITUD HTTP.
+ * @param {response} res - OBJETO DE RESPUESTA HTTP.
+ * @returns {Object} RESPUESTA JSON CON EL RESULTADO DE LA ACTUALIZACIÓN.
+ */
 const rolesPermisosPut = async (req, res) => {
     try {
+        // OBTIENE LA INFORMACIÓN DE PERMISOS Y ROLES DEL CUERPO DE LA SOLICITUD.
         const rolesPermisos = req.body;
 
+        // ITERA A TRAVÉS DE CADA ELEMENTO EN LA LISTA DE ROLES Y PERMISOS.
         for (const { idRol, permisos } of rolesPermisos) {
-            // Validar si el rol existe en la base de datos
+            // VALIDA SI EL ROL EXISTE EN LA BASE DE DATOS.
             const rolExistente = await Roles.findByPk(idRol);
             if (!rolExistente) {
                 return res.status(404).json({
@@ -83,21 +64,21 @@ const rolesPermisosPut = async (req, res) => {
                 });
             }
 
-            // Obtener los registros actuales asociados al rol
+            // OBTIENE LOS REGISTROS ACTUALES ASOCIADOS AL ROL.
             const informacionRoles = await DetalleRolPermiso.findAll({
                 where: {
                     fk_cat_rol: idRol,
                 },
             });
 
-            // Mapear los registros actuales a sus respectivos IDs de permisos
+            // MAPEA LOS REGISTROS ACTUALES A SUS RESPECTIVOS IDS DE PERMISOS.
             const permisosActuales = informacionRoles.map((rol) => rol.fk_cat_permiso);
 
-            // Encontrar los permisos a agregar y eliminar
+            // ENCUENTRA LOS PERMISOS A AGREGAR Y ELIMINAR.
             const permisosAgregar = permisos.filter((permiso) => !permisosActuales.includes(permiso));
             const permisosEliminar = permisosActuales.filter((permiso) => !permisos.includes(permiso));
 
-            // Eliminar permisos no necesarios
+            // ELIMINA PERMISOS NO NECESARIOS.
             await DetalleRolPermiso.destroy({
                 where: {
                     fk_cat_rol: idRol,
@@ -105,7 +86,7 @@ const rolesPermisosPut = async (req, res) => {
                 },
             });
 
-            // Crear nuevos registros para los permisos a agregar
+            // CREA NUEVOS REGISTROS PARA LOS PERMISOS A AGREGAR.
             await DetalleRolPermiso.bulkCreate(
                 permisosAgregar.map((permisoId) => ({
                     fk_cat_rol: idRol,
@@ -114,7 +95,7 @@ const rolesPermisosPut = async (req, res) => {
             );
         }
 
-        // Obtener roles actualizados
+        // OBTIENE ROLES ACTUALIZADOS.
         const rolesActualizados = await Roles.findAll({
             include: [{
                 model: DetalleRolPermiso,
@@ -124,97 +105,54 @@ const rolesPermisosPut = async (req, res) => {
             }],
         });
 
+        // RESPONDE CON UN OBJETO JSON QUE CONTIENE UN MENSAJE Y LOS ROLES ACTUALIZADOS.
         res.json({
             msg: 'Roles y permisos actualizados correctamente',
             roles: rolesActualizados,
         });
     } catch (error) {
+        // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
         console.log(error);
         res.status(500).json({
-            msg: 'Ha ocurrido un error, hable con el Administrador.',
+            msg: 'HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.',
         });
     }
 };
 
-
-
-
-// const rolesPermisosPut = async (req, res) => {
-//     try {
-//         const rolesPermisos = req.body;
-
-//         for (const { idRol, permisos } of rolesPermisos) {
-//             // Validar si el rol existe en la base de datos
-//             console.log('ESTE ES EL ID ROL'+idRol, 'ESTOS SON LOS PERMISO'+permisos)
-//             const rolExistente = await Roles.findByPk(idRol);
-//             if (!rolExistente) {
-//                 return res.status(404).json({
-//                     msg: `No se encontró el rol con ID ${idRol}.`,
-//                 });
-//             }
-
-//             // Eliminar permisos antiguos asociados al rol
-//             await DetalleRolPermiso.destroy({
-//                 where: {
-//                     fk_cat_rol: idRol,
-//                 },
-//             });
-
-//             // Asociar nuevos permisos al rol
-//             await DetalleRolPermiso.bulkCreate(
-//                 permisos.map((permisoId) => ({
-//                     fk_cat_rol: idRol,
-//                     fk_cat_permiso: permisoId,
-//                 }))
-//             );
-//         }
-
-//         const roles = await Roles.findAll({
-//             include: [{
-//                 model: DetalleRolPermiso,
-//                 include: [{
-//                     model: Permiso,
-//                 }],
-//             }],
-//         });
-
-//         res.json({
-//             msg: 'Roles y permisos actualizados correctamente',
-//             roles
-//         });
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({
-//             msg: 'Ha ocurrido un error, hable con el Administrador.',
-//         });
-//     }
-// };
-
-
-
+/**
+ * OBTIENE TODOS LOS ROLES CON ESTATUS ACTIVO.
+ * @async
+ * @function rolesTodosGet
+ * @param {request} req - OBJETO DE SOLICITUD HTTP.
+ * @param {response} res - OBJETO DE RESPUESTA HTTP.
+ * @returns {Object} RESPUESTA JSON CON LOS ROLES ACTIVOS OBTENIDOS.
+ */
 const rolesTodosGet = async (req = request, res = response) => {
     try {
+        // DEFINE EL CRITERIO DE BÚSQUEDA PARA ROLES ACTIVOS.
         const query = { estatus: 1 };
+        // REALIZA LA CONSULTA A LA BASE DE DATOS PARA OBTENER LOS ROLES ACTIVOS.
         const roles = await Roles.findAll({
             where: query,
         });
 
+        // RESPONDE CON UN OBJETO JSON QUE CONTIENE LOS ROLES ACTIVOS OBTENIDOS.
         res.status(200).json({
             ok: true,
-            roles
+            roles,
         });
     } catch (error) {
+        // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
         console.log(error);
         res.status(500).json({
-            msg: 'Ha ocurrido un error, hable con el Administrador.',
+            msg: 'HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.',
         });
     }
+};
 
-}
-
+// EXPORTA LOS MÉTODOS PARA SER UTILIZADOS EN OTROS ARCHIVOS.
 module.exports = {
     rolesGet,
     rolesTodosGet,
     rolesPermisosPut
 };
-
