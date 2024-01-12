@@ -5,14 +5,14 @@
     Sistema: SIA
 */
 
-// Carga las variables de entorno desde el archivo .env
+// CARGA LAS VARIABLES DE ENTORNO DESDE EL ARCHIVO .env
 require('dotenv').config();
 
-// Importa la clase Server desde el archivo especificado
+// IMPORTA LA CLASE SERVER DESDE EL ARCHIVO ESPECIFICADO
 const Server = require('./src/models/server');
 
-// Crea una instancia de la clase Server
+// CREA UNA INSTANCIA DE LA CLASE SERVER
 const server = new Server();
 
-// Inicia el servidor, haciendo que escuche en el puerto especificado
+// INICIA EL SERVIDOR, HACIENDO QUE ESCUCHE EN EL PUERTO ESPECIFICADO
 server.listen();

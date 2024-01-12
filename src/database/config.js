@@ -5,21 +5,25 @@
     Sistema: SIA
 */
 
-// Importa el paquete pg, que es un cliente PostgreSQL para Node.js
+// IMPORTACIÓN DEL PAQUETE 'pg', UN CLIENTE POSTGRESQL PARA NODE.JS.
 const { Pool } = require("pg");
 
+// IMPORTACIÓN DE LA BIBLIOTECA 'Sequelize' PARA LA CONEXIÓN A LA BASE DE DATOS.
 const Sequelize = require('sequelize');
 
+// OBTENCIÓN DE LAS VARIABLES DE ENTORNO PARA LA CONFIGURACIÓN DE LA BASE DE DATOS.
 const database = process.env.NAME_DATABASE;
 const username = process.env.USER_NAME_DATABASE;
 const password = process.env.PASSWORD_DATABASE;
 const host = process.env.SERVER_DATABASE;
 
+// CREACIÓN DE UNA INSTANCIA DEL CLIENTE DE BASE DE DATOS POSTGRESQL.
 const pool = new Sequelize(database, username, password, {
   host: host,
   dialect: 'postgres',
 });
 
+// FUNCIÓN ASÍNCRONA PARA AUTENTICAR LA CONEXIÓN A LA BASE DE DATOS.
 (async () => {
   try {
     await pool.authenticate();
@@ -29,8 +33,8 @@ const pool = new Sequelize(database, username, password, {
   }
 })();
 
+// EXPORTACIÓN DE LA INSTANCIA DE LA CONEXIÓN A LA BASE DE DATOS.
 module.exports = pool;
-
 
 
 // // Crea una nueva instancia de Pool, que se utiliza para gestionar conexiones a la base de datos

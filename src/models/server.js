@@ -5,96 +5,100 @@
     Sistema: SIA
 */
 
-// Importa las bibliotecas necesarias
+// IMPORTACIÓN DE LAS BIBLIOTECAS NECESARIAS
 const express = require('express'); // Biblioteca para crear el servidor web
 const cors = require('cors'); // Middleware para manejar CORS (Cross-Origin Resource Sharing)
 
-// Importa la configuración de la base de datos PostgreSQL desde otro archivo
+// IMPORTACIÓN DE LA CONFIGURACIÓN DE LA BASE DE DATOS POSTGRESQL DESDE OTRO ARCHIVO
 const pool = require('../database/config');
 
-const {InicioSesionRuta} = require('../routes/autenticacion/inicio-sesion');
+// IMPORTACIÓN DE LAS RUTAS RELACIONADAS CON LA AUTENTICACIÓN
+const { InicioSesionRuta } = require('../routes/autenticacion/inicio-sesion');
 
-const {EmpleadosRuta} = require('../routes/catalogos/empleado');
+// IMPORTACIÓN DE LAS RUTAS RELACIONADAS CON LOS CATÁLOGOS
+const { EmpleadosRuta } = require('../routes/catalogos/empleado');
 
-// const corsOptions = {
-//     origin: 'http://localhost:4200', // Cambia esto según el dominio de tu aplicación Angular
-//     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//     Headers:'Access-Control-Allow-Origin'
-//     preflightContinue: false,
-//     optionsSuccessStatus: 204,
-//   };
-  
-  
- 
-  
-
-// Clase que representa el servidor
+// CLASE QUE REPRESENTA EL SERVIDOR
 class Server {
 
-    // Constructor de la clase
-    constructor(){
-        // Crea una instancia de Express para manejar el servidor
+    // CONSTRUCTOR DE LA CLASE
+    constructor() {
+        // CREA UNA INSTANCIA DE EXPRESS PARA MANEJAR EL SERVIDOR
         this.app = express();
-
-        // Configura el puerto del servidor, utiliza el puerto especificado en las variables de entorno o el puerto 3000 por defecto
+        // CONFIGURA EL PUERTO DEL SERVIDOR, UTILIZA EL PUERTO ESPECIFICADO EN LAS VARIABLES DE ENTORNO O EL PUERTO 3000 POR DEFECTO
         this.port = process.env.PORT || 3000;
 
-        // Ruta base para las rutas relacionadas con la autenticación
+        // RUTA BASE PARA LAS RUTAS RELACIONADAS CON LA AUTENTICACIÓN
         this.autenticacionPath = {
             catalogoAutenticacion: "/api/usuario",
         };
+        // RUTAS BASE PARA LOS CATÁLOGOS
         this.catalogosPath = {
             catalogoEmpleado: "/api/empleado",
+            catalogoCliente: "/api/cliente",
+            catalogoPuestoTrabajo: "/api/puestoTrabajo",
+            catalogoVacaciones: "/api/vacaciones",
+            catalogoTolerancia: "/api/tolerancia",
+            catalogoRoles: "/api/roles",
+            catalogoPermiso: "/api/permiso",
+            catalogoModulo: "/api/modulo",
+            catalogoBitacoraAcceso: "/api/bitacoraAcceso"
         };
 
-        // Conexión a la base de datos de PostgreSQL
+        // CONEXIÓN A LA BASE DE DATOS DE POSTGRESQL
         this.conectarDB();
 
-        // Configuración de middlewares
+        // CONFIGURACIÓN DE MIDDLEWARES
         this.middlewares();
 
-        // Configuración de rutas del sistema 
+        // CONFIGURACIÓN DE RUTAS DEL SISTEMA
         this.routes();
     }
 
-    // Función para realizar la conexión a la base de datos de PostgreSQL
-    async conectarDB(){
+    // FUNCIÓN PARA REALIZAR LA CONEXIÓN A LA BASE DE DATOS DE POSTGRESQL
+    async conectarDB() {
         await pool;
     }
 
-    // Configuración de los middlewares del servidor
+    // CONFIGURACIÓN DE LOS MIDDLEWARES DEL SERVIDOR
     middlewares() {
-        // Middleware para manejar CORS
+        // MIDDLEWARE PARA MANEJAR CORS
         this.app.use(cors({
-            origin: ['http://localhost:4200'],
+            origin: ['http://localhost:4200', 'http://192.168.40.1:5985'],
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-            headers: '*',
             preflightContinue: false,
             optionsSuccessStatus: 204,
-          }));
-    
-        // Middleware para manejar solicitudes y respuestas en formato JSON
+        }));
+
+        // MIDDLEWARE PARA MANEJAR SOLICITUDES Y RESPUESTAS EN FORMATO JSON
         this.app.use(express.json());
-    
-        // Middleware para servir archivos estáticos desde la carpeta 'public'
+
+        // MIDDLEWARE PARA SERVIR ARCHIVOS ESTÁTICOS DESDE LA CARPETA 'public'
         this.app.use(express.static('public'));
     }
-    
-    
-    // Configuración de las rutas del sistema (actualmente comentada)
-    routes(){
-        this.app.use(this.autenticacionPath.catalogoAutenticacion,require('../routes/autenticacion/inicio-sesion'));
-        this.app.use(this.catalogosPath.catalogoEmpleado,require('../routes/catalogos/empleado'));
+
+
+    // CONFIGURACIÓN DE LAS RUTAS DEL SISTEMA
+    routes() {
+        this.app.use(this.autenticacionPath.catalogoAutenticacion, require('../routes/autenticacion/inicio-sesion'));
+        this.app.use(this.catalogosPath.catalogoEmpleado, require('../routes/catalogos/empleado'));
+        this.app.use(this.catalogosPath.catalogoCliente, require('../routes/catalogos/cliente'));
+        this.app.use(this.catalogosPath.catalogoPuestoTrabajo, require('../routes/catalogos/puestoTrabajo'));
+        this.app.use(this.catalogosPath.catalogoVacaciones, require('../routes/catalogos/vacaciones'));
+        this.app.use(this.catalogosPath.catalogoTolerancia, require('../routes/catalogos/tolerancia'));
+        this.app.use(this.catalogosPath.catalogoRoles, require('../routes/catalogos/roles'));
+        this.app.use(this.catalogosPath.catalogoPermiso, require('../routes/catalogos/permiso'));
+        this.app.use(this.catalogosPath.catalogoModulo, require('../routes/catalogos/modulo'));
+        this.app.use(this.catalogosPath.catalogoBitacoraAcceso, require('../routes/catalogos/bitacoraAccesos'));
     }
 
-    // Función para iniciar el servidor y escuchar en el puerto especificado
-    listen(){
+    // FUNCIÓN PARA INICIAR EL SERVIDOR Y ESCUCHAR EN EL PUERTO ESPECIFICADO
+    listen() {
         this.app.listen(this.port, () => {
             console.log('Servidor corriendo en puerto ', this.port);
         });
     }
 }
 
-// Exporta la clase Server para poder utilizarla en otros archivos
+// EXPORTA LA CLASE SERVER PARA PODER UTILIZARLA EN OTROS ARCHIVOS
 module.exports = Server;
-
