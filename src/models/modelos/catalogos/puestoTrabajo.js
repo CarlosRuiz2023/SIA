@@ -11,7 +11,7 @@ const PuestoTrabajo = pool.define('cat_puesto_trabajos', {
         type: Sequelize.STRING,
         allowNull: false,
     },
-    descripccion: {
+    descripcion: {
         type: Sequelize.STRING,
         allowNull: false,
     },

@@ -11,7 +11,7 @@ const Permiso = pool.define('cat_permiso', {
         type: Sequelize.STRING,
         allowNull: false,
     },
-    descripccion: {
+    descripcion: {
         type: Sequelize.STRING,
         allowNull: false,
     },

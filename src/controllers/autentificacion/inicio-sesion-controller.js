@@ -2,6 +2,7 @@
 const { response } = require('express');
 // IMPORTACIÓN DEL MÓDULO 'BCRYPTJS' PARA EL MANEJO DE CONTRASEÑAS HASH.
 const bcryptjs = require('bcryptjs');
+const { generarJWT } = require("../../helpers/generar-jwt");
 // IMPORTACIÓN DEL MODELO 'USUARIO' DESDE LA RUTA CORRESPONDIENTE.
 const Usuario = require('../../models/modelos/usuario');
 
@@ -48,6 +49,14 @@ const inicioSesion = async (req, res) => {
                 msg: 'Usuario o contraseña no son correctos. Intenta de nuevo - CONTRASEÑA'
             });
         }
+
+        //Generar el JWT
+        const token = await generarJWT(usuario.id_cat_usuario);
+
+        usuario.token = token;
+
+        // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
+        await usuario.save();
 
         // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
         res.status(200).json({

@@ -2,8 +2,9 @@
 const { response, request } = require('express');
 // IMPORTACIÓN DE LOS MODELOS DE BASE DE DATOS.
 const Permiso = require('../../models/modelos/catalogos/permiso');
-const DetallePermisoSubModulo = require('../../models/modelos/detalles/detalle_permiso_sub_modulo');
+const DetalleRolSubModulo = require('../../models/modelos/detalles/detalle_rol_sub_modulo');
 const SubModulo = require('../../models/modelos/catalogos/subModulos');
+const Roles = require('../../models/modelos/catalogos/roles');
 
 /**
  * OBTIENE TODOS LOS PERMISOS CON ESTATUS ACTIVO.
@@ -48,18 +49,22 @@ const permisosGet = async (req = request, res = response) => {
 const permisoSubModuloGet = async (req = request, res = response) => {
     try {
         // OBTENER PERMISOS CON DETALLES DE SUBMÓDULOS.
-        const permiso = await Permiso.findAll({
+        const permisos_rol = await Roles.findAll({
+            where: {
+                estatus: 1
+              },
             include: [{
-                model: DetallePermisoSubModulo,
+                model: DetalleRolSubModulo,
                 include: [{
                     model: SubModulo,
+                    model: Permiso,
                 }],
             }],
         });
 
         // RESPONDE CON UN OBJETO JSON QUE CONTIENE LOS PERMISOS Y SUBMÓDULOS OBTENIDOS.
         res.status(200).json({
-            permiso,
+            permisos_rol,
         });
     } catch (error) {
         // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.

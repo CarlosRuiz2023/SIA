@@ -1,5 +1,6 @@
 // IMPORTACIÓN DE OBJETOS 'RESPONSE' Y 'REQUEST' DE LA BIBLIOTECA 'EXPRESS'.
 const { response, request } = require('express');
+const bcryptjs = require("bcryptjs");
 
 // IMPORTACIÓN DE LOS MODELOS NECESARIOS PARA REALIZAR CONSULTAS EN LA BASE DE DATOS.
 const Empleado = require('../../models/modelos/catalogos/empleado');
@@ -131,9 +132,14 @@ const empleadoPost = async (req = request, res = response) => {
             fk_cat_vacaciones,
             fk_cat_tolerancia,
             correo,
-            contrasenia,
             roles
         } = req.body;
+
+        let { contrasenia } = req.body;
+
+        //Encriptar la contraseña
+        const salt = bcryptjs.genSaltSync();
+        contrasenia = bcryptjs.hashSync(contrasenia, salt);
 
         // CREA UNA NUEVA PERSONA EN LA BASE DE DATOS.
         const persona = await Persona.create({
@@ -238,9 +244,14 @@ const empleadoPut = async (req = request, res = response) => {
             fk_cat_vacaciones,
             fk_cat_tolerancia,
             correo,
-            contrasenia,
             roles
         } = req.body;
+
+        let { contrasenia } = req.body;
+
+        //Encriptar la contraseña
+        const salt = bcryptjs.genSaltSync();
+        contrasenia = bcryptjs.hashSync(contrasenia, salt);
 
         // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
         const empleadoExistente = await Empleado.findByPk(id, {
