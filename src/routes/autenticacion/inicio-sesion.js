@@ -11,6 +11,10 @@ const {
   bloquearUsuario,
   usuarioActivar,
 } = require("../../controllers/autentificacion/inicio-sesion-controller");
+const {
+  emailExistente,
+  usuarioActivo,
+} = require("../../helpers/db-validators");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -21,6 +25,8 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
     check("correo", "El correo es obligatorio").isEmail(),
+    check("correo").custom(emailExistente),
+    check("correo").custom(usuarioActivo),
     check("contrasenia", "La contraseña es obligatoria").not().isEmpty(),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
@@ -34,6 +40,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
     check("correo", "El correo es obligatorio").isEmail(),
+    check("correo").custom(emailExistente),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],
@@ -46,6 +53,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
     check("correo", "El correo es obligatorio").isEmail(),
+    check("correo").custom(emailExistente),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],
@@ -58,6 +66,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
     check("correo", "El correo es obligatorio").isEmail(),
+    check("correo").custom(emailExistente),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],
@@ -68,6 +77,7 @@ router.get(
   "/cambiarContrasenia/:correo",
   [
     check("correo", "El id es obligatorio").not().isEmpty(),
+    check("correo").custom(emailExistente),
     check("password", "El password debe de ser más de 6 letras").isLength({
       min: 6,
     }),

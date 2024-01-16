@@ -9,20 +9,7 @@ const { generarJWT } = require("../../helpers/generar-jwt");
 // IMPORTACIÓN DEL MODELO 'USUARIO' DESDE LA RUTA CORRESPONDIENTE.
 const Usuario = require("../../models/modelos/usuario");
 
-// Configuración del transporter para Gmail
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: "charlyxbox360nuevo@gmail.com",
-    pass: process.env.GOOGLE_APP_PASSWORD,
-  },
-});
-
-transporter.verify().then(() => {
-  console.log("Ready for send emails");
-});
+const { transporter } = require("../../helpers/enviar-emails");
 
 /**
  * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
@@ -35,26 +22,8 @@ const inicioSesion = async (req, res) => {
   const { correo, contrasenia } = req.body;
 
   try {
-    // VERIFICAMOS SI EL USUARIO EXISTE EN LA BASE DE DATOS.
+    // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
     const usuario = await Usuario.findOne({ where: { correo } });
-
-    //SI NO EXISTE EL USUARIOS MANDAR MENSAJE DE ERROR
-    if (!usuario) {
-      //RETORNAMOS MENSAJE DE ERROR
-      return res.status(400).json({
-        ok: false,
-        msg: "Usuario o contraseña no son correctos. Intenta de nuevo",
-      });
-    }
-
-    // VERIFICA SI EL USUARIO ESTÁ ACTIVO.
-    if (usuario.estatus != 1) {
-      //RETORNAMOS MENSAJE DE ERROR
-      return res.status(400).json({
-        ok: false,
-        msg: "Usuario Inactivo",
-      });
-    }
 
     // VERIFICAMOS SI LA CONTRASEÑA PROPORCIONADA ES CORRECTA.
     const validarContrasenia = await bcryptjs.compare(
@@ -93,6 +62,12 @@ const inicioSesion = async (req, res) => {
   }
 };
 
+/**
+ * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y mensaje JSON.
+ */
 const recuperarContrasenia = async (req, res = response) => {
   try {
     const {
@@ -197,16 +172,31 @@ const recuperarContrasenia = async (req, res = response) => {
 
     await transporter.sendMail(mailOptions);
 
+    const mailOptions1 = {
+      from: '"Soporte" <soporte@midominio.com>',
+      to: "juancarlosruizgomez2000@gmail.com",
+      subject: asunto,
+      html: mensaje,
+    };
+
+    await transporter.sendMail(mailOptions1);
+
     res.json({ ok: "Email sent successfully" });
   } catch (error) {
     console.error("Error sending email:", error.toString());
   }
 };
 
+/**
+ * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y mensaje JSON.
+ */
 const bloquearUsuario = async (req, res) => {
   const { correo } = req.body;
   try {
-    // VERIFICAMOS SI EL USUARIO EXISTE EN LA BASE DE DATOS.
+    // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
     const usuario = await Usuario.findOne({ where: { correo } });
 
     //SI NO EXISTE EL USUARIOS MANDAR MENSAJE DE ERROR
@@ -219,11 +209,11 @@ const bloquearUsuario = async (req, res) => {
     }
 
     // VERIFICA SI EL USUARIO ESTÁ ACTIVO.
-    if (usuario.estatus != 1) {
+    if (usuario.estatus == 2) {
       //RETORNAMOS MENSAJE DE ERROR
       return res.status(400).json({
         ok: false,
-        msg: "Usuario ya inactivo",
+        msg: "Usuario ya bloqueado",
       });
     }
 
@@ -255,17 +245,8 @@ const bloquearUsuario = async (req, res) => {
 const usuarioActivar = async (req, res) => {
   const { correo } = req.body;
   try {
-    // VERIFICAMOS SI EL USUARIO EXISTE EN LA BASE DE DATOS.
+    // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
     const usuario = await Usuario.findOne({ where: { correo } });
-
-    //SI NO EXISTE EL USUARIOS MANDAR MENSAJE DE ERROR
-    if (!usuario) {
-      //RETORNAMOS MENSAJE DE ERROR
-      return res.status(400).json({
-        ok: false,
-        msg: "Usuario inexistente",
-      });
-    }
 
     // VERIFICA SI EL USUARIO ESTÁ ACTIVO.
     if (usuario.estatus == 1) {
@@ -295,6 +276,12 @@ const usuarioActivar = async (req, res) => {
   }
 };
 
+/**
+ * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y mensaje JSON.
+ */
 const cambiarContrasenia = async (req, res = response) => {
   try {
     const { correo } = req.params;
