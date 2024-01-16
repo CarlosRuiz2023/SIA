@@ -68,10 +68,6 @@ router.get(
   "/cambiarContrasenia/:correo",
   [
     check("correo", "El id es obligatorio").not().isEmpty(),
-    check("password", "La contrasenia es obligatoria").not().isEmpty(),
-    check("passwordConfirm", "La confirmacion de la contrasenia es obligatoria")
-      .not()
-      .isEmpty(),
     check("password", "El password debe de ser más de 6 letras").isLength({
       min: 6,
     }),

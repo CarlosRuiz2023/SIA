@@ -95,7 +95,11 @@ const inicioSesion = async (req, res) => {
 
 const recuperarContrasenia = async (req, res = response) => {
   try {
-    const { correo } = req.body;
+    const {
+      correo,
+      asunto = "Solicitud de cambio de contraseña",
+      mensaje = "Buen Día <br> Usted ha solicitado restablecer su contraseña. <br> Por favor ingresa y confirma tu nueva contraseña en el siguiente formulario:",
+    } = req.body;
 
     // Se construye el formulario
     const resetForm = `
@@ -164,9 +168,7 @@ const recuperarContrasenia = async (req, res = response) => {
       <tr>
         <td style="padding: 20px; line-height: 1.5; ">    
           <p style="font-size: 18px;">
-            Buen Día<br>
-            Usted ha solicitado restablecer su contraseña.
-            Por favor ingresa y confirma tu nueva contraseña en el siguiente formulario:
+            ${mensaje}
           </p>
   
           ${resetForm}
@@ -189,7 +191,7 @@ const recuperarContrasenia = async (req, res = response) => {
     const mailOptions = {
       from: '"Soporte" <soporte@midominio.com>',
       to: correo,
-      subject: "Solicitud de cambio de contraseña",
+      subject: asunto,
       html: html,
     };
 
