@@ -3,14 +3,14 @@ const { Router } = require("express");
 
 // IMPORTACIÓN DEL CONTROLADOR NECESARIO
 const {
-  tipoHorarioGet,
+  entradaSalidaGet,
 } = require("../../controllers/catalogos/tipoHorario-controller");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
 // DEFINICIÓN DE RUTA PARA OBTENER LAS TOLERANCIAS
-router.get("/", tipoHorarioGet);
+router.get("/", entradaSalidaGet);
 
 // EXPORTACIÓN DEL ENRUTADOR
 module.exports = router;
