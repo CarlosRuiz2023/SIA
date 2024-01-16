@@ -4,7 +4,7 @@ const { Router } = require("express");
 // IMPORTACIÓN DEL CONTROLADOR NECESARIO
 const {
   entradaSalidaGet,
-} = require("../../controllers/catalogos/tipoHorario-controller");
+} = require("../../controllers/catalogos/entradaSalida-controller");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
