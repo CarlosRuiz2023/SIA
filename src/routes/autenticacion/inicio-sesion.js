@@ -72,6 +72,13 @@ router.get(
     check("passwordConfirm", "La confirmacion de la contrasenia es obligatoria")
       .not()
       .isEmpty(),
+    check("password", "El password debe de ser más de 6 letras").isLength({
+      min: 6,
+    }),
+    check(
+      "passwordConfirm",
+      "El password debe de ser más de 6 letras"
+    ).isLength({ min: 6 }),
     validarCampos,
   ],
   cambiarContrasenia

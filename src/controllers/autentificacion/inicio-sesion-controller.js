@@ -106,7 +106,7 @@ const recuperarContrasenia = async (req, res = response) => {
             padding: 20px;
           " 
           method="GET" 
-          action="http://192.168.11.4:8080/api/usuario/cambiarContrasenia/${correo}">
+          action="${process.env.IP}/api/usuario/cambiarContrasenia/${correo}">
   
       <h1 style="text-align: center;">Restablecer contraseña</h1>  
   
