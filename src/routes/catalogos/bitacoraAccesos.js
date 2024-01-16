@@ -23,8 +23,12 @@ router.post(
   "/",
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
-    check("fecha_inicio", "La fecha_inicio es obligatoria").not().isEmpty(),
-    check("hora", "La hora es obligatoria").not().isEmpty(),
+    check("fecha_inicio", "Formato de fecha incorrecto").custom((value) => {
+      return /\d{4}-\d{2}-\d{2}/.test(value);
+    }),
+    check("hora", "Formato de hora incorrecto").custom((value) => {
+      return /\d{2}:\d{2}:\d{2}-\d{2}/.test(value);
+    }),
     check("plataforma_web", "La plataforma_web debe ser un numero entre 0 y 1")
       .isNumeric()
       .isInt({ min: 0, max: 1 }),

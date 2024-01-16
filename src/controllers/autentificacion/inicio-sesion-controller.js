@@ -8,7 +8,7 @@ const nodemailer = require("nodemailer");
 const { generarJWT } = require("../../helpers/generar-jwt");
 // IMPORTACIÓN DEL MODELO 'USUARIO' DESDE LA RUTA CORRESPONDIENTE.
 const Usuario = require("../../models/modelos/usuario");
-
+// IMPORTACIÓN DEL MODELO 'TRANSPORTER' DESDE LA RUTA CORRESPONDIENTE.
 const { transporter } = require("../../helpers/enviar-emails");
 
 /**
