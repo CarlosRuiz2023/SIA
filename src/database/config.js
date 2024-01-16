@@ -21,6 +21,12 @@ const host = process.env.SERVER_DATABASE;
 const pool = new Sequelize(database, username, password, {
   host: host,
   dialect: 'postgres',
+  port: 5432,
+  dialectOptions: {
+    ssl: {
+      require: true,
+    },
+  },
 });
 
 // FUNCIÓN ASÍNCRONA PARA AUTENTICAR LA CONEXIÓN A LA BASE DE DATOS.
