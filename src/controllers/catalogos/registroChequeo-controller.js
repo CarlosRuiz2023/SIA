@@ -88,18 +88,19 @@ const registroChequeoPost = async (req = request, res = response) => {
     const entradaSalida = await EntradaSalida.findByPk(entrada_salida);
 
     let hora_llegada = "";
-    if (entrada_salida == 1) {
-      hora_llegada = sumarHoras(
-        entradaSalida.hora,
-        tolerancia.tiempo_tolerancia
-      );
-    } else {
-      hora_llegada = entradaSalida.hora;
-    }
-    if (entrada_salida == 3) {
-      hora_llegada = sumarHoras(entradaSalida.hora, "00:15:00");
-    } else {
-      hora_llegada = entradaSalida.hora;
+    switch (entrada_salida) {
+      case 1:
+        hora_llegada = sumarHoras(
+          entradaSalida.hora,
+          tolerancia.tiempo_tolerancia
+        );
+        break;
+      case 3:
+        hora_llegada = sumarHoras(entradaSalida.hora, "00:15:00");
+        break;
+      default:
+        hora_llegada = entradaSalida.hora;
+        break;
     }
 
     const tiempoRetardo = restarHoras(hora, hora_llegada);

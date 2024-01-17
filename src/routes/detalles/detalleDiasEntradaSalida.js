@@ -15,8 +15,5 @@ const router = Router();
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
 router.get("/", detalleDiasEntradaSalidaGet);
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
-//router.post("/", detalleDiasEntradaSalidaPost);
-
 // EXPORTACIÓN DEL ENRUTADOR
 module.exports = router;
