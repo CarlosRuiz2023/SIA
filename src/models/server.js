@@ -45,6 +45,12 @@ class Server {
       catalogoDias: "/api/dias",
       catalogoEntradaSalida: "/api/entradaSalida",
       catalogoTipoHorario: "/api/tipoHorario",
+      catalogoRegistroChequeo: "/api/registroChequeo",
+      catalogoEventos: "/api/eventos",
+    };
+
+    this.detallesPath = {
+      detalleDiasEntradaSalida: "/api/detalleDiasEntradaSalida",
     };
 
     // CONEXIÓN A LA BASE DE DATOS DE POSTGRESQL
@@ -134,6 +140,18 @@ class Server {
     this.app.use(
       this.catalogosPath.catalogoTipoHorario,
       require("../routes/catalogos/tipoHorario")
+    );
+    this.app.use(
+      this.catalogosPath.catalogoRegistroChequeo,
+      require("../routes/catalogos/registroChequeo")
+    );
+    this.app.use(
+      this.catalogosPath.catalogoEventos,
+      require("../routes/catalogos/eventos")
+    );
+    this.app.use(
+      this.detallesPath.detalleDiasEntradaSalida,
+      require("../routes/detalles/detalleDiasEntradaSalida")
     );
   }
 
