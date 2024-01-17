@@ -70,10 +70,10 @@ const inicioSesion = async (req, res) => {
  */
 const recuperarContrasenia = async (req, res = response) => {
   try {
-    const {
-      correo,
-      asunto = "Solicitud de cambio de contraseña",
-      mensaje = "Buen Día <br> Usted ha solicitado restablecer su contraseña. <br> Por favor ingresa y confirma tu nueva contraseña en el siguiente formulario:",
+    const { correo, asunto = "Solicitud de cambio de contraseña" } = req.body;
+
+    let {
+      mensaje = `Usted ha solicitado restablecer su contraseña. <br> Por favor ingresa y confirma tu nueva contraseña en el siguiente formulario:`,
     } = req.body;
 
     // Se construye el formulario
@@ -143,6 +143,7 @@ const recuperarContrasenia = async (req, res = response) => {
       <tr>
         <td style="padding: 20px; line-height: 1.5; ">    
           <p style="font-size: 18px;">
+          Buen día ${correo}<br>
             ${mensaje}
           </p>
   
@@ -171,6 +172,9 @@ const recuperarContrasenia = async (req, res = response) => {
     };
 
     await transporter.sendMail(mailOptions);
+
+    mensaje = `Ha solicitado restablecer su contraseña.`;
+    mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">El usuario: ${correo},</h3> <p style="line-height: 1.5;">${mensaje}</p> </div>`;
 
     const mailOptions1 = {
       from: '"Soporte" <soporte@midominio.com>',

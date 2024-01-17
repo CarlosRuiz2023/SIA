@@ -1,6 +1,9 @@
 const Usuario = require("../models/modelos/usuario");
 const Empleado = require("../models/modelos/catalogos/empleado");
 const Cliente = require("../models/modelos/catalogos/cliente");
+const Dias = require("../models/modelos/catalogos/dias");
+const EntradaSalida = require("../models/modelos/catalogos/entradaSalida");
+const Eventos = require("../models/modelos/catalogos/eventos");
 
 const emailExiste = async (correo = "") => {
   //Verificar si el correo existe
@@ -78,6 +81,30 @@ const existeClientePorId = async (id_cat_cliente) => {
   }
 };
 
+const existeDiaPorId = async (id_cat_dias) => {
+  // Verificar si la visita existe por su ID
+  const dia = await Dias.findByPk(id_cat_dias);
+  if (!dia) {
+    throw new Error(`El dia con ID ${id_cat_dias} no existe`);
+  }
+};
+
+const existeEntradaSalidaPorId = async (id_cat_entrada_salida) => {
+  // Verificar si la visita existe por su ID
+  const entradaSalida = await EntradaSalida.findByPk(id_cat_entrada_salida);
+  if (!entradaSalida) {
+    throw new Error(`La ES con ID ${id_cat_entrada_salida} no existe`);
+  }
+};
+
+const existeEventoPorId = async (id_cat_eventos) => {
+  // Verificar si la visita existe por su ID
+  const evento = await Eventos.findByPk(id_cat_eventos);
+  if (!evento) {
+    throw new Error(`El evento con ID ${id_cat_eventos} no existe`);
+  }
+};
+
 module.exports = {
   emailInexiste,
   emailExiste,
@@ -85,4 +112,7 @@ module.exports = {
   existeEmpleadoPorId,
   existeClientePorId,
   usuarioActivo,
+  existeDiaPorId,
+  existeEntradaSalidaPorId,
+  existeEventoPorId,
 };
