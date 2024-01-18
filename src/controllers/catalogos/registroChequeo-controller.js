@@ -165,62 +165,229 @@ const registroChequeoPost = async (req = request, res = response) => {
     const tolerancia = await Tolerancia.findByPk(empleado.fk_cat_tolerancia);
     const entradaSalida = await EntradaSalida.findByPk(entrada_salida);
 
+    let registroChequeo = {};
     let hora_llegada = "";
+    let tiempoRetardo = "";
     switch (entrada_salida) {
       case 1:
         hora_llegada = sumarHoras(
           entradaSalida.hora,
           tolerancia.tiempo_tolerancia
         );
+
+        tiempoRetardo = restarHoras(hora, hora_llegada);
+
+        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        if (!timeRegex.test(tiempoRetardo)) {
+          const tiempoExtra = restarHoras(entradaSalida.hora, hora);
+          if (!timeRegex.test(tiempoExtra)) {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: "00:00:00",
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: "00:00:00",
+            });
+          } else {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: "00:00:00",
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: tiempoExtra,
+            });
+          }
+        } else {
+          registroChequeo = await RegistroChequeo.create({
+            fecha: fecha,
+            hora: hora,
+            tiempo_retardo: tiempoRetardo,
+            fk_cat_eventos: evento,
+            fk_cat_empleado: id_empleado,
+            fk_detalle_dias_entrada_salida:
+              detalleDiasEntradaSalida.id_detalle_entrada_salida,
+            tiempo_extra: "00:00:00",
+          });
+        }
+        break;
+      case 2:
+        hora_llegada = entradaSalida.hora;
+        tiempoExtra = restarHoras(hora, hora_llegada);
+
+        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        if (!timeRegex.test(tiempoExtra)) {
+          const tiempoRetardo = restarHoras(hora_llegada, hora);
+          if (!timeRegex.test(tiempoRetardo)) {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: "00:00:00",
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: "00:00:00",
+            });
+          } else {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: tiempoRetardo,
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: "00:00:00",
+            });
+          }
+        } else {
+          registroChequeo = await RegistroChequeo.create({
+            fecha: fecha,
+            hora: hora,
+            tiempo_retardo: "00:00:00",
+            fk_cat_eventos: evento,
+            fk_cat_empleado: id_empleado,
+            fk_detalle_dias_entrada_salida:
+              detalleDiasEntradaSalida.id_detalle_entrada_salida,
+            tiempo_extra: tiempoExtra,
+          });
+        }
         break;
       case 3:
         hora_llegada = sumarHoras(entradaSalida.hora, "00:15:00");
+        tiempoRetardo = restarHoras(hora, hora_llegada);
+
+        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        if (!timeRegex.test(tiempoRetardo)) {
+          const tiempoExtra = restarHoras(entradaSalida.hora, hora);
+          if (!timeRegex.test(tiempoExtra)) {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: "00:00:00",
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: "00:00:00",
+            });
+          } else {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: "00:00:00",
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: tiempoExtra,
+            });
+          }
+        } else {
+          registroChequeo = await RegistroChequeo.create({
+            fecha: fecha,
+            hora: hora,
+            tiempo_retardo: tiempoRetardo,
+            fk_cat_eventos: evento,
+            fk_cat_empleado: id_empleado,
+            fk_detalle_dias_entrada_salida:
+              detalleDiasEntradaSalida.id_detalle_entrada_salida,
+            tiempo_extra: "00:00:00",
+          });
+        }
+        break;
+      case 4:
+        hora_llegada = entradaSalida.hora;
+        tiempoExtra = restarHoras(hora, hora_llegada);
+
+        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        if (!timeRegex.test(tiempoExtra)) {
+          const tiempoRetardo = restarHoras(hora_llegada, hora);
+          if (!timeRegex.test(tiempoRetardo)) {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: "00:00:00",
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: "00:00:00",
+            });
+          } else {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: tiempoRetardo,
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: "00:00:00",
+            });
+          }
+        } else {
+          registroChequeo = await RegistroChequeo.create({
+            fecha: fecha,
+            hora: hora,
+            tiempo_retardo: "00:00:00",
+            fk_cat_eventos: evento,
+            fk_cat_empleado: id_empleado,
+            fk_detalle_dias_entrada_salida:
+              detalleDiasEntradaSalida.id_detalle_entrada_salida,
+            tiempo_extra: tiempoExtra,
+          });
+        }
         break;
       default:
         hora_llegada = entradaSalida.hora;
+        tiempoExtra = restarHoras(hora, hora_llegada);
+
+        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        if (!timeRegex.test(tiempoExtra)) {
+          const tiempoRetardo = restarHoras(hora_llegada, hora);
+          if (!timeRegex.test(tiempoRetardo)) {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: "00:00:00",
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: "00:00:00",
+            });
+          } else {
+            registroChequeo = await RegistroChequeo.create({
+              fecha: fecha,
+              hora: hora,
+              tiempo_retardo: tiempoRetardo,
+              fk_cat_eventos: evento,
+              fk_cat_empleado: id_empleado,
+              fk_detalle_dias_entrada_salida:
+                detalleDiasEntradaSalida.id_detalle_entrada_salida,
+              tiempo_extra: "00:00:00",
+            });
+          }
+        } else {
+          registroChequeo = await RegistroChequeo.create({
+            fecha: fecha,
+            hora: hora,
+            tiempo_retardo: "00:00:00",
+            fk_cat_eventos: evento,
+            fk_cat_empleado: id_empleado,
+            fk_detalle_dias_entrada_salida:
+              detalleDiasEntradaSalida.id_detalle_entrada_salida,
+            tiempo_extra: tiempoExtra,
+          });
+        }
         break;
-    }
-
-    const tiempoRetardo = restarHoras(hora, hora_llegada);
-
-    let registroChequeo = {};
-    // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
-    if (!timeRegex.test(tiempoRetardo)) {
-      const tiempoExtra = restarHoras(entradaSalida.hora, hora);
-      if (!timeRegex.test(tiempoExtra)) {
-        registroChequeo = await RegistroChequeo.create({
-          fecha: fecha,
-          hora: hora,
-          tiempo_retardo: "00:00:00",
-          fk_cat_eventos: evento,
-          fk_cat_empleado: id_empleado,
-          fk_detalle_dias_entrada_salida:
-            detalleDiasEntradaSalida.id_detalle_entrada_salida,
-          tiempo_extra: "00:00:00",
-        });
-      } else {
-        registroChequeo = await RegistroChequeo.create({
-          fecha: fecha,
-          hora: hora,
-          tiempo_retardo: "00:00:00",
-          fk_cat_eventos: evento,
-          fk_cat_empleado: id_empleado,
-          fk_detalle_dias_entrada_salida:
-            detalleDiasEntradaSalida.id_detalle_entrada_salida,
-          tiempo_extra: tiempoExtra,
-        });
-      }
-    } else {
-      registroChequeo = await RegistroChequeo.create({
-        fecha: fecha,
-        hora: hora,
-        tiempo_retardo: tiempoRetardo,
-        fk_cat_eventos: evento,
-        fk_cat_empleado: id_empleado,
-        fk_detalle_dias_entrada_salida:
-          detalleDiasEntradaSalida.id_detalle_entrada_salida,
-        tiempo_extra: "00:00:00",
-      });
     }
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
