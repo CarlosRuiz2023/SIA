@@ -47,6 +47,10 @@ const RegistroChequeo = pool.define(
         key: "id_detalle_entrada_salida",
       },
     },
+    tiempo_extra: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+    },
   },
   {
     timestamps: false,

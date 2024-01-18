@@ -76,10 +76,10 @@ const registroChequeoGet = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
-const reportePersonalPost = async (req, res) => {
+const reportePost = async (req, res) => {
   try {
     // EXTRAEMOS LOS PARÁMETROS DE LA SOLICITUD.
-    const { fecha_inicio, fecha_fin, id_empleado } = req.body;
+    const { fecha_inicio, fecha_fin, empleados } = req.body;
     const query = {};
 
     // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
@@ -89,10 +89,11 @@ const reportePersonalPost = async (req, res) => {
         [Op.lte]: fecha_fin,
       };
     }
-    if (id_empleado)
+    if (empleados && empleados.length > 0) {
       query.fk_cat_empleado = {
-        [Op.eq]: id_empleado,
+        [Op.in]: empleados,
       };
+    }
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
     const registroChequeo = await RegistroChequeo.findAll({
       where: query,
@@ -185,15 +186,30 @@ const registroChequeoPost = async (req = request, res = response) => {
     let registroChequeo = {};
     // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
     if (!timeRegex.test(tiempoRetardo)) {
-      registroChequeo = await RegistroChequeo.create({
-        fecha: fecha,
-        hora: hora,
-        tiempo_retardo: "00:00:00",
-        fk_cat_eventos: evento,
-        fk_cat_empleado: id_empleado,
-        fk_detalle_dias_entrada_salida:
-          detalleDiasEntradaSalida.id_detalle_entrada_salida,
-      });
+      const tiempoExtra = restarHoras(entradaSalida.hora, hora);
+      if (!timeRegex.test(tiempoExtra)) {
+        registroChequeo = await RegistroChequeo.create({
+          fecha: fecha,
+          hora: hora,
+          tiempo_retardo: "00:00:00",
+          fk_cat_eventos: evento,
+          fk_cat_empleado: id_empleado,
+          fk_detalle_dias_entrada_salida:
+            detalleDiasEntradaSalida.id_detalle_entrada_salida,
+          tiempo_extra: "00:00:00",
+        });
+      } else {
+        registroChequeo = await RegistroChequeo.create({
+          fecha: fecha,
+          hora: hora,
+          tiempo_retardo: "00:00:00",
+          fk_cat_eventos: evento,
+          fk_cat_empleado: id_empleado,
+          fk_detalle_dias_entrada_salida:
+            detalleDiasEntradaSalida.id_detalle_entrada_salida,
+          tiempo_extra: tiempoExtra,
+        });
+      }
     } else {
       registroChequeo = await RegistroChequeo.create({
         fecha: fecha,
@@ -203,6 +219,7 @@ const registroChequeoPost = async (req = request, res = response) => {
         fk_cat_empleado: id_empleado,
         fk_detalle_dias_entrada_salida:
           detalleDiasEntradaSalida.id_detalle_entrada_salida,
+        tiempo_extra: "00:00:00",
       });
     }
 
@@ -297,5 +314,5 @@ module.exports = {
   registroChequeoGet,
   registroChequeoPost,
   notificarNoChequeoPost,
-  reportePersonalPost,
+  reportePost,
 };
