@@ -10,6 +10,7 @@ const {
   cambiarContrasenia,
   bloquearUsuario,
   usuarioActivar,
+  cerrarSesion,
 } = require("../../controllers/autentificacion/inicio-sesion-controller");
 const {
   emailExistente,
@@ -88,6 +89,19 @@ router.get(
     validarCampos,
   ],
   cambiarContrasenia
+);
+
+// DEFINICIÓN DE RUTA PARA CERRAR SESIÓN
+router.post(
+  "/cerrarSesion",
+  [
+    // VALIDACIONES PARA LOS DATOS DE CERRAR DE SESIÓN
+    check("correo", "El correo es obligatorio").isEmail(),
+    check("correo").custom(emailExistente),
+    // MIDDLEWARE PARA VALIDAR CAMPOS
+    validarCampos,
+  ],
+  cerrarSesion
 );
 
 // EXPORTACIÓN DEL ENRUTADOR

@@ -314,6 +314,39 @@ const cambiarContrasenia = async (req, res = response) => {
   }
 };
 
+/**
+ * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y mensaje JSON.
+ */
+const cerrarSesion = async (req, res) => {
+  // EXTRAE EL CORREO DEL CUERPO DE LA SOLICITUD.
+  const { correo } = req.body;
+
+  try {
+    // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+    const usuario = await Usuario.findOne({ where: { correo } });
+
+    usuario.token = "";
+
+    // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
+    await usuario.save();
+
+    // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
+    res.status(200).json({
+      ok: true,
+      usuario,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
+};
+
 // EXPORTA LA FUNCIÓN INICIOSESION PARA SER UTILIZADA EN OTROS ARCHIVOS.
 module.exports = {
   inicioSesion,
@@ -321,4 +354,5 @@ module.exports = {
   cambiarContrasenia,
   bloquearUsuario,
   usuarioActivar,
+  cerrarSesion,
 };

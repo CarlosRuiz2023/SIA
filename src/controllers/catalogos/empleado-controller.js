@@ -1,13 +1,17 @@
 // IMPORTACIÓN DE OBJETOS 'RESPONSE' Y 'REQUEST' DE LA BIBLIOTECA 'EXPRESS'.
-const { response, request } = require('express');
+const { response, request } = require("express");
 const bcryptjs = require("bcryptjs");
 
+// IMPORTACIÓN DEL OPERADOR 'Op' DE SEQUELIZE PARA REALIZAR OPERACIONES COMPLEJAS.
+const { Op } = require("sequelize");
+
 // IMPORTACIÓN DE LOS MODELOS NECESARIOS PARA REALIZAR CONSULTAS EN LA BASE DE DATOS.
-const Empleado = require('../../models/modelos/catalogos/empleado');
-const Persona = require('../../models/modelos/catalogos/persona');
-const Usuario = require('../../models/modelos/usuario');
-const Roles = require('../../models/modelos/catalogos/roles');
-const DetalleUsuarioRol = require('../../models/modelos/detalles/detalle_usuario_rol');
+const Empleado = require("../../models/modelos/catalogos/empleado");
+const Persona = require("../../models/modelos/catalogos/persona");
+const Usuario = require("../../models/modelos/usuario");
+const Roles = require("../../models/modelos/catalogos/roles");
+const DetalleUsuarioRol = require("../../models/modelos/detalles/detalle_usuario_rol");
+const RegistroChequeo = require("../../models/modelos/catalogos/registroChequeo");
 
 /**
  * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
@@ -16,44 +20,41 @@ const DetalleUsuarioRol = require('../../models/modelos/detalles/detalle_usuario
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
 const empleadosGet = async (req = request, res = response) => {
-    try {
-        // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER EMPLEADOS ACTIVOS.
-        const query = { estatus: 1 };
+  try {
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER EMPLEADOS ACTIVOS.
+    const query = { estatus: 1 };
 
-        // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO EMPLEADOS Y SUS RELACIONES.
-        const empleados = await Empleado.findAll({
-            where: query,
-            include: [
-                { model: Persona, as: 'persona' },
-                {
-                    model: Usuario,
-                    as: 'usuario',
-                    include: [
-                        {
-                            model: DetalleUsuarioRol,
-                            as: 'detalle_usuario_rols',
-                            include: [
-                                { model: Roles, as: 'cat_role' }
-                            ]
-                        }
-                    ]
-                }
-            ],
-        });
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO EMPLEADOS Y SUS RELACIONES.
+    const empleados = await Empleado.findAll({
+      where: query,
+      include: [
+        { model: Persona, as: "persona" },
+        {
+          model: Usuario,
+          as: "usuario",
+          include: [
+            {
+              model: DetalleUsuarioRol,
+              as: "detalle_usuario_rols",
+              include: [{ model: Roles, as: "cat_role" }],
+            },
+          ],
+        },
+      ],
+    });
 
-        // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
-        res.status(200).json({
-            ok: true,
-            empleados,
-        });
-
-    } catch (error) {
-        // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
-        console.log(error);
-        res.status(500).json({
-            msg: 'Ha ocurrido un error, hable con el Administrador.',
-        });
-    }
+    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+    res.status(200).json({
+      ok: true,
+      empleados,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
 };
 
 /**
@@ -63,359 +64,415 @@ const empleadosGet = async (req = request, res = response) => {
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
 const empleadoIdGet = async (req = request, res = response) => {
-    try {
-        // OBTENEMOS EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
-        const { id } = req.params;
+  try {
+    // OBTENEMOS EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
+    const { id } = req.params;
 
-        // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO Y ACTIVO.
-        const query = {
-            id_cat_empleado: id,
-            estatus: 1,
-        };
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO Y ACTIVO.
+    const query = {
+      id_cat_empleado: id,
+      estatus: 1,
+    };
 
-        // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
-        const empleado = await Empleado.findOne({
-            where: query,
-            include: [
-                { model: Persona, as: 'persona' },
-                {
-                    model: Usuario,
-                    as: 'usuario',
-                    include: [
-                        {
-                            model: DetalleUsuarioRol,
-                            as: 'detalle_usuario_rols',
-                            include: [
-                                { model: Roles, as: 'cat_role' }
-                            ]
-                        }
-                    ]
-                }
-            ],
-        });
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
+    const empleado = await Empleado.findOne({
+      where: query,
+      include: [
+        { model: Persona, as: "persona" },
+        {
+          model: Usuario,
+          as: "usuario",
+          include: [
+            {
+              model: DetalleUsuarioRol,
+              as: "detalle_usuario_rols",
+              include: [{ model: Roles, as: "cat_role" }],
+            },
+          ],
+        },
+      ],
+    });
 
-        // SI NO SE ENCUENTRA EL EMPLEADO, SE RETORNA UNA RESPUESTA DE ERROR.
-        if (!empleado) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'Empleado no encontrado',
-            });
-        }
-
-        // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
-        res.status(200).json({
-            ok: true,
-            empleado,
-        });
-
-    } catch (error) {
-        // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
-        console.log(error);
-        res.status(500).json({
-            msg: 'Ha ocurrido un error, hable con el Administrador.',
-        });
+    // SI NO SE ENCUENTRA EL EMPLEADO, SE RETORNA UNA RESPUESTA DE ERROR.
+    if (!empleado) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Empleado no encontrado",
+      });
     }
+
+    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+    res.status(200).json({
+      ok: true,
+      empleado,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
 };
 // REGISTRA UN NUEVO EMPLEADO EN LA BASE DE DATOS.
 const empleadoPost = async (req = request, res = response) => {
-    try {
-        // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
-        const {
-            nombre,
-            apellido_Paterno,
-            apellido_Materno,
-            direccion,
-            sueldo,
-            fecha_nacimiento,
-            fecha_Contratacion,
-            fk_cat_puesto_trabajo,
-            fk_cat_vacaciones,
-            fk_cat_tolerancia,
-            correo,
-            roles
-        } = req.body;
+  try {
+    // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
+    const {
+      nombre,
+      apellido_Paterno,
+      apellido_Materno,
+      direccion,
+      sueldo,
+      fecha_nacimiento,
+      fecha_Contratacion,
+      fk_cat_puesto_trabajo,
+      fk_cat_vacaciones,
+      fk_cat_tolerancia,
+      correo,
+      roles,
+    } = req.body;
 
-        let { contrasenia } = req.body;
+    let { contrasenia } = req.body;
 
-        //Encriptar la contraseña
-        const salt = bcryptjs.genSaltSync();
-        contrasenia = bcryptjs.hashSync(contrasenia, salt);
+    //Encriptar la contraseña
+    const salt = bcryptjs.genSaltSync();
+    contrasenia = bcryptjs.hashSync(contrasenia, salt);
 
-        // CREA UNA NUEVA PERSONA EN LA BASE DE DATOS.
-        const persona = await Persona.create({
-            nombre,
-            apellido_Paterno,
-            apellido_Materno,
-            direccion,
-            estatus: 1,
-        });
+    // CREA UNA NUEVA PERSONA EN LA BASE DE DATOS.
+    const persona = await Persona.create({
+      nombre,
+      apellido_Paterno,
+      apellido_Materno,
+      direccion,
+      estatus: 1,
+    });
 
-        // CREA UN NUEVO USUARIO EN LA BASE DE DATOS.
-        const usuario = await Usuario.create({
-            correo,
-            contrasenia,
-            token: "",
-            estatus: 1
-        });
+    // CREA UN NUEVO USUARIO EN LA BASE DE DATOS.
+    const usuario = await Usuario.create({
+      correo,
+      contrasenia,
+      token: "",
+      estatus: 1,
+    });
 
-        // FUNCION PARA GENERAR EL NÚMERO DE EMPLEADO.
-        const generarNumeroEmpleado = () => {
-            const primerLetra = nombre.charAt(0);
-            const segundaLetra = apellido_Paterno.charAt(0);
-            let terceraLetra = apellido_Materno;
+    // FUNCION PARA GENERAR EL NÚMERO DE EMPLEADO.
+    const generarNumeroEmpleado = () => {
+      const primerLetra = nombre.charAt(0);
+      const segundaLetra = apellido_Paterno.charAt(0);
+      let terceraLetra = apellido_Materno;
 
-            if (apellido_Materno === "") {
-                terceraLetra = "X";
-            } else {
-                terceraLetra = terceraLetra.charAt(0);
-            }
+      if (apellido_Materno === "") {
+        terceraLetra = "X";
+      } else {
+        terceraLetra = terceraLetra.charAt(0);
+      }
 
-            const fechaOriginal = fecha_Contratacion;
-            const fechaConvertida = new Date(fechaOriginal).toISOString().slice(0, 10).replace(/-/g, "");
+      const fechaOriginal = fecha_Contratacion;
+      const fechaConvertida = new Date(fechaOriginal)
+        .toISOString()
+        .slice(0, 10)
+        .replace(/-/g, "");
 
-            return primerLetra.toUpperCase() + segundaLetra.toUpperCase() + terceraLetra.toUpperCase() + fechaConvertida;
-        };
+      return (
+        primerLetra.toUpperCase() +
+        segundaLetra.toUpperCase() +
+        terceraLetra.toUpperCase() +
+        fechaConvertida
+      );
+    };
 
-        // LLAMADA A LA FUNCIÓN PARA GENERAR EL NÚMERO DE EMPLEADO.
-        const numeroEmpleado = generarNumeroEmpleado();
+    // LLAMADA A LA FUNCIÓN PARA GENERAR EL NÚMERO DE EMPLEADO.
+    const numeroEmpleado = generarNumeroEmpleado();
 
-        // CREA EL EMPLEADO ASOCIANDO LA PERSONA Y EL USUARIO.
-        const empleado = await Empleado.create({
-            numero_empleado: numeroEmpleado,
-            sueldo,
-            fecha_nacimiento,
-            fecha_Contratacion,
-            fecha_Retiro: null,
-            estatus: 1,
-            fk_cat_persona: persona.id_cat_persona,
+    // CREA EL EMPLEADO ASOCIANDO LA PERSONA Y EL USUARIO.
+    const empleado = await Empleado.create({
+      numero_empleado: numeroEmpleado,
+      sueldo,
+      fecha_nacimiento,
+      fecha_Contratacion,
+      fecha_Retiro: null,
+      estatus: 1,
+      fk_cat_persona: persona.id_cat_persona,
+      fk_cat_usuario: usuario.id_cat_usuario,
+      fk_cat_puesto_trabajo,
+      fk_cat_vacaciones,
+      fk_cat_tolerancia,
+    });
+
+    // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
+    if (roles && roles.length > 0) {
+      await Promise.all(
+        roles.map(async (rol) => {
+          await DetalleUsuarioRol.create({
             fk_cat_usuario: usuario.id_cat_usuario,
-            fk_cat_puesto_trabajo,
-            fk_cat_vacaciones,
-            fk_cat_tolerancia
-        });
-
-        // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
-        if (roles && roles.length > 0) {
-            await Promise.all(roles.map(async (rol) => {
-                await DetalleUsuarioRol.create({
-                    fk_cat_usuario: usuario.id_cat_usuario,
-                    fk_cat_rol: rol.id_cat_role
-                });
-            }));
-        } else {
-            // SI NO SE PROPORCIONAN ROLES, RETORNA UNA RESPUESTA DE ERROR.
-            return res.status(400).json({
-                msg: 'El empleado debe contener al menos un rol',
-            });
-        }
-
-        // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
-        res.status(201).json({
-            ok: true,
-            msg: 'Empleado guardado correctamente',
-            persona,
-            empleado,
-            usuario,
-            roles: roles
-        });
-    } catch (error) {
-        // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
-        console.log(error);
-        res.status(500).json({
-            msg: 'Ha ocurrido un error, hable con el Administrador.',
-        });
+            fk_cat_rol: rol.id_cat_role,
+          });
+        })
+      );
+    } else {
+      // SI NO SE PROPORCIONAN ROLES, RETORNA UNA RESPUESTA DE ERROR.
+      return res.status(400).json({
+        msg: "El empleado debe contener al menos un rol",
+      });
     }
-}
+
+    // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
+    res.status(201).json({
+      ok: true,
+      msg: "Empleado guardado correctamente",
+      persona,
+      empleado,
+      usuario,
+      roles: roles,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
+};
 
 // ACTUALIZA LA INFORMACIÓN DE UN EMPLEADO EXISTENTE EN LA BASE DE DATOS.
 const empleadoPut = async (req = request, res = response) => {
-    try {
-        // OBTIENE EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA Y LOS DATOS ACTUALIZADOS DESDE EL CUERPO DE LA SOLICITUD.
-        const { id } = req.params;
-        const {
-            nombre,
-            apellido_Paterno,
-            apellido_Materno,
-            direccion,
-            sueldo,
-            fecha_nacimiento,
-            fecha_Contratacion,
-            fk_cat_puesto_trabajo,
-            fk_cat_vacaciones,
-            fk_cat_tolerancia,
-            correo,
-            roles
-        } = req.body;
+  try {
+    // OBTIENE EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA Y LOS DATOS ACTUALIZADOS DESDE EL CUERPO DE LA SOLICITUD.
+    const { id } = req.params;
+    const {
+      nombre,
+      apellido_Paterno,
+      apellido_Materno,
+      direccion,
+      sueldo,
+      fecha_nacimiento,
+      fecha_Contratacion,
+      fk_cat_puesto_trabajo,
+      fk_cat_vacaciones,
+      fk_cat_tolerancia,
+      correo,
+      roles,
+    } = req.body;
 
-        let { contrasenia } = req.body;
+    let { contrasenia } = req.body;
 
-        //Encriptar la contraseña
-        const salt = bcryptjs.genSaltSync();
-        contrasenia = bcryptjs.hashSync(contrasenia, salt);
+    //Encriptar la contraseña
+    const salt = bcryptjs.genSaltSync();
+    contrasenia = bcryptjs.hashSync(contrasenia, salt);
 
-        // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
-        const empleadoExistente = await Empleado.findByPk(id, {
-            include: [
-                { model: Persona, as: 'persona' },
-                { model: Usuario, as: 'usuario' },
-            ],
-        });
+    // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
+    const empleadoExistente = await Empleado.findByPk(id, {
+      include: [
+        { model: Persona, as: "persona" },
+        { model: Usuario, as: "usuario" },
+      ],
+    });
 
-        // SI EL EMPLEADO NO SE ENCUENTRA, RETORNA UNA RESPUESTA DE ERROR.
-        if (!empleadoExistente) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'Empleado no encontrado',
-            });
-        }
-
-        // ACTUALIZA LOS CAMPOS DIRECTOS DEL MODELO EMPLEADO.
-        empleadoExistente.sueldo = sueldo;
-        empleadoExistente.fecha_nacimiento = fecha_nacimiento;
-        empleadoExistente.fecha_Contratacion = fecha_Contratacion;
-        empleadoExistente.fk_cat_puesto_trabajo = fk_cat_puesto_trabajo;
-        empleadoExistente.fk_cat_vacaciones = fk_cat_vacaciones;
-        empleadoExistente.fk_cat_tolerancia = fk_cat_tolerancia;
-
-        // ACTUALIZA LOS CAMPOS DEL MODELO PERSONA.
-        empleadoExistente.persona.nombre = nombre;
-        empleadoExistente.persona.apellido_Paterno = apellido_Paterno;
-        empleadoExistente.persona.apellido_Materno = apellido_Materno;
-        empleadoExistente.persona.direccion = direccion;
-
-        // ACTUALIZA LOS CAMPOS DEL MODELO USUARIO.
-        empleadoExistente.usuario.correo = correo;
-        empleadoExistente.usuario.contrasenia = contrasenia;
-
-        // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
-        if (roles && roles.length > 0) {
-            // ELIMINA LOS ROLES ANTIGUOS ASOCIADOS AL USUARIO.
-            await DetalleUsuarioRol.destroy({ where: { fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario } });
-
-            // ASOCIA LOS NUEVOS ROLES PROPORCIONADOS.
-            await Promise.all(roles.map(async (rol) => {
-                await DetalleUsuarioRol.create({
-                    fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario,
-                    fk_cat_rol: rol.id_cat_role
-                });
-            }));
-        } else {
-            // SI NO SE PROPORCIONAN ROLES, RETORNA UNA RESPUESTA DE ERROR.
-            return res.status(400).json({
-                msg: 'El empleado debe contener al menos un rol',
-            });
-        }
-
-        // GUARDA LOS CAMBIOS EN LA BASE DE DATOS.
-        // GUARDA LOS CAMBIOS EN EL MODELO PERSONA.
-        await empleadoExistente.persona.save();
-
-        // GUARDA LOS CAMBIOS EN EL MODELO USUARIO.
-        await empleadoExistente.usuario.save();
-
-        await empleadoExistente.save();
-
-        // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTUALIZADO.
-        res.status(200).json({
-            ok: true,
-            msg: 'Empleado actualizado correctamente',
-            empleado: empleadoExistente,
-        });
-
-    } catch (error) {
-        // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
-        console.log(error);
-        res.status(500).json({
-            msg: 'Ha ocurrido un error, hable con el Administrador.',
-        });
+    // SI EL EMPLEADO NO SE ENCUENTRA, RETORNA UNA RESPUESTA DE ERROR.
+    if (!empleadoExistente) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Empleado no encontrado",
+      });
     }
+
+    // ACTUALIZA LOS CAMPOS DIRECTOS DEL MODELO EMPLEADO.
+    empleadoExistente.sueldo = sueldo;
+    empleadoExistente.fecha_nacimiento = fecha_nacimiento;
+    empleadoExistente.fecha_Contratacion = fecha_Contratacion;
+    empleadoExistente.fk_cat_puesto_trabajo = fk_cat_puesto_trabajo;
+    empleadoExistente.fk_cat_vacaciones = fk_cat_vacaciones;
+    empleadoExistente.fk_cat_tolerancia = fk_cat_tolerancia;
+
+    // ACTUALIZA LOS CAMPOS DEL MODELO PERSONA.
+    empleadoExistente.persona.nombre = nombre;
+    empleadoExistente.persona.apellido_Paterno = apellido_Paterno;
+    empleadoExistente.persona.apellido_Materno = apellido_Materno;
+    empleadoExistente.persona.direccion = direccion;
+
+    // ACTUALIZA LOS CAMPOS DEL MODELO USUARIO.
+    empleadoExistente.usuario.correo = correo;
+    empleadoExistente.usuario.contrasenia = contrasenia;
+
+    // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
+    if (roles && roles.length > 0) {
+      // ELIMINA LOS ROLES ANTIGUOS ASOCIADOS AL USUARIO.
+      await DetalleUsuarioRol.destroy({
+        where: { fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario },
+      });
+
+      // ASOCIA LOS NUEVOS ROLES PROPORCIONADOS.
+      await Promise.all(
+        roles.map(async (rol) => {
+          await DetalleUsuarioRol.create({
+            fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario,
+            fk_cat_rol: rol.id_cat_role,
+          });
+        })
+      );
+    } else {
+      // SI NO SE PROPORCIONAN ROLES, RETORNA UNA RESPUESTA DE ERROR.
+      return res.status(400).json({
+        msg: "El empleado debe contener al menos un rol",
+      });
+    }
+
+    // GUARDA LOS CAMBIOS EN LA BASE DE DATOS.
+    // GUARDA LOS CAMBIOS EN EL MODELO PERSONA.
+    await empleadoExistente.persona.save();
+
+    // GUARDA LOS CAMBIOS EN EL MODELO USUARIO.
+    await empleadoExistente.usuario.save();
+
+    await empleadoExistente.save();
+
+    // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTUALIZADO.
+    res.status(200).json({
+      ok: true,
+      msg: "Empleado actualizado correctamente",
+      empleado: empleadoExistente,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
 };
 
 // ELIMINA LÓGICAMENTE UN EMPLEADO ESTABLECIENDO SU ESTATUS A 0.
 const empleadoDelete = async (req = request, res = response) => {
-    try {
-        // OBTIENE EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
-        const { id } = req.params;
+  try {
+    // OBTIENE EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
+    const { id } = req.params;
 
-        // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
-        const empleadoExistente = await Empleado.findByPk(id);
+    // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
+    const empleadoExistente = await Empleado.findByPk(id);
 
-        // SI EL EMPLEADO NO SE ENCUENTRA, RETORNA UNA RESPUESTA DE ERROR.
-        if (!empleadoExistente) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'Empleado no encontrado',
-            });
-        }
-
-        // ESTABLECE EL ESTATUS A 0 PARA "ELIMINAR" LÓGICAMENTE EL EMPLEADO.
-        empleadoExistente.estatus = 0;
-
-        // GUARDA EL CAMBIO EN LA BASE DE DATOS.
-        await empleadoExistente.save();
-
-        // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ELIMINADO.
-        res.status(200).json({
-            ok: true,
-            msg: 'Empleado eliminado correctamente',
-            empleado: empleadoExistente,
-        });
-
-    } catch (error) {
-        // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
-        console.log(error);
-        res.status(500).json({
-            msg: 'Ha ocurrido un error, hable con el Administrador.',
-        });
+    // SI EL EMPLEADO NO SE ENCUENTRA, RETORNA UNA RESPUESTA DE ERROR.
+    if (!empleadoExistente) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Empleado no encontrado",
+      });
     }
+
+    // ESTABLECE EL ESTATUS A 0 PARA "ELIMINAR" LÓGICAMENTE EL EMPLEADO.
+    empleadoExistente.estatus = 0;
+
+    // GUARDA EL CAMBIO EN LA BASE DE DATOS.
+    await empleadoExistente.save();
+
+    // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ELIMINADO.
+    res.status(200).json({
+      ok: true,
+      msg: "Empleado eliminado correctamente",
+      empleado: empleadoExistente,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
 };
 
 // ACTUALIZA EL ESTATUS DE UN EMPLEADO A 1 PARA "ACTIVARLO".
 const empleadoActivarPut = async (req = request, res = response) => {
-    try {
-        // OBTIENE EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
-        const { id } = req.params;
+  try {
+    // OBTIENE EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
+    const { id } = req.params;
 
-        // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
-        const empleadoExistente = await Empleado.findByPk(id);
+    // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
+    const empleadoExistente = await Empleado.findByPk(id);
 
-        // SI EL EMPLEADO NO SE ENCUENTRA, RETORNA UNA RESPUESTA DE ERROR.
-        if (!empleadoExistente) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'Empleado no encontrado',
-            });
-        }
-
-        // ESTABLECE EL ESTATUS A 1 PARA "ACTUALIZAR" Y ACTIVAR EL EMPLEADO.
-        empleadoExistente.estatus = 1;
-
-        // GUARDA EL CAMBIO EN LA BASE DE DATOS.
-        await empleadoExistente.save();
-
-        // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTIVADO.
-        res.status(200).json({
-            ok: true,
-            msg: 'Empleado activado correctamente',
-            empleado: empleadoExistente,
-        });
-
-    } catch (error) {
-        // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
-        console.log(error);
-        res.status(500).json({
-            msg: 'Ha ocurrido un error, hable con el Administrador.',
-        });
+    // SI EL EMPLEADO NO SE ENCUENTRA, RETORNA UNA RESPUESTA DE ERROR.
+    if (!empleadoExistente) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Empleado no encontrado",
+      });
     }
+
+    // ESTABLECE EL ESTATUS A 1 PARA "ACTUALIZAR" Y ACTIVAR EL EMPLEADO.
+    empleadoExistente.estatus = 1;
+
+    // GUARDA EL CAMBIO EN LA BASE DE DATOS.
+    await empleadoExistente.save();
+
+    // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTIVADO.
+    res.status(200).json({
+      ok: true,
+      msg: "Empleado activado correctamente",
+      empleado: empleadoExistente,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
+};
+
+/**
+ * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y datos JSON.
+ */
+const reporteGeneralPost = async (req, res) => {
+  try {
+    // EXTRAEMOS LOS PARÁMETROS DE LA SOLICITUD.
+    const { fecha_inicio, fecha_fin, id_empleado } = req.body;
+    const query = {};
+
+    // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
+    if (fecha_inicio && fecha_fin) {
+      query.fecha = {
+        [Op.gte]: fecha_inicio,
+        [Op.lte]: fecha_fin,
+      };
+    }
+    query.fk_cat_empleado = {
+      [Op.in]: id_empleado,
+    };
+
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
+    const registroChequeo = await RegistroChequeo.findAll({
+      where: query,
+      include: [
+        {
+          model: Empleado,
+          include: [{ model: Persona, as: "persona" }],
+        },
+      ],
+    });
+
+    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+    res.status(200).json({
+      ok: true,
+      registroChequeo,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
 };
 
 // EXPORTA LOS MÉTODOS PARA SER UTILIZADOS EN OTROS ARCHIVOS.
 module.exports = {
-    empleadosGet,
-    empleadoPost,
-    empleadoIdGet,
-    empleadoPut,
-    empleadoDelete,
-    empleadoActivarPut
+  empleadosGet,
+  empleadoPost,
+  empleadoIdGet,
+  empleadoPut,
+  empleadoDelete,
+  empleadoActivarPut,
+  reporteGeneralPost,
 };
-

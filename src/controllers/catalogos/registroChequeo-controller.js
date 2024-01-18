@@ -12,6 +12,13 @@ const Eventos = require("../../models/modelos/catalogos/eventos");
 const Empleado = require("../../models/modelos/catalogos/empleado");
 const PuestoTrabajo = require("../../models/modelos/catalogos/puestoTrabajo");
 const Tolerancia = require("../../models/modelos/catalogos/tolerancia");
+const Usuario = require("../../models/modelos/usuario");
+const {
+  sumarHoras,
+  restarHoras,
+} = require("../../helpers/operacionesHorarias");
+const Persona = require("../../models/modelos/catalogos/persona");
+const Cliente = require("../../models/modelos/catalogos/cliente");
 
 /**
  * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
@@ -152,94 +159,68 @@ const registroChequeoPost = async (req = request, res = response) => {
  */
 const notificarNoChequeoPost = async (req, res = response) => {
   try {
-    const { correo } = req.body;
+    const { correo, tipo = 1 } = req.body;
 
-    const asunto = "Entrada de comida no checada";
-    const mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">Buen día ${correo},</h3> <p style="line-height: 1.5;"> Notamos que aún no has registrado tu regreso de comer el día de hoy. Te recomendamos checarla y completarla lo antes posible para tener un registro preciso de tu tiempo diario. </p> <p style="line-height: 1.5;"><b>No dejes pasar más tiempo, ingresa a tu cuenta y capture su entrada despues de comer.</b></p> </div>`;
+    // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+    const usuario = await Usuario.findOne({ where: { correo } });
 
-    const mailOptions = {
-      from: '"Soporte" <soporte@midominio.com>',
-      to: correo,
-      subject: asunto,
-      html: mensaje,
-    };
+    let name = "Usuario";
+    // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+    const empleado = await Empleado.findOne({
+      where: { fk_cat_usuario: usuario.id_cat_usuario },
+    });
 
-    await transporter.sendMail(mailOptions);
+    if (!empleado) {
+      // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+      const cliente = await Cliente.findOne({
+        where: { fk_cat_usuario: usuario.id_cat_usuario },
+      });
+      // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+      const persona = await Persona.findOne({
+        where: { id_cat_persona: cliente.fk_cat_persona },
+      });
+      name = `${persona.nombre} ${persona.apellido_Paterno} ${persona.apellido_Materno}`;
+    } else {
+      // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+      const persona = await Persona.findOne({
+        where: { id_cat_persona: empleado.fk_cat_persona },
+      });
+      name = `${persona.nombre} ${persona.apellido_Paterno} ${persona.apellido_Materno}`;
+    }
 
-    res.json({ ok: "Email sent successfully" });
+    if (tipo === 1) {
+      const asunto = "Entrada de comida no checada";
+      const mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">Hola ${name},</h3> <p style="line-height: 1.5;"> Notamos que aún no has registrado tu regreso de comer el día de hoy. Te recomendamos checarla y completarla lo antes posible para tener un registro preciso de tu tiempo diario. </p> <p style="line-height: 1.5;"><b>No dejes pasar más tiempo, ingresa a tu cuenta y capture su entrada despues de comer.</b></p> </div>`;
+
+      const mailOptions = {
+        from: '"Soporte" <soporte@midominio.com>',
+        to: correo,
+        subject: asunto,
+        html: mensaje,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      res.json({ ok: "Email sent successfully" });
+    } else {
+      const asunto = "Salida de la empresa no checada";
+      const mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">Hola ${name},</h3> <p style="line-height: 1.5;"> Notamos que aún no has registrado tu salida de la empresa el día de hoy. Te recomendamos checarla y completarla lo antes posible para tener un registro preciso de tu tiempo diario. </p> <p style="line-height: 1.5;"><b>No dejes pasar más tiempo, ingresa a tu cuenta y capture su salida de la empresa.</b></p> </div>`;
+
+      const mailOptions = {
+        from: '"Soporte" <soporte@midominio.com>',
+        to: correo,
+        subject: asunto,
+        html: mensaje,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      res.json({ ok: "Email sent successfully" });
+    }
   } catch (error) {
     console.error("Error sending email:", error.toString());
   }
 };
-
-function restarHoras(hora1, hora2) {
-  var partsHora1 = hora1.split(":");
-  var partsHora2 = hora2.split(":");
-
-  var h1 = parseInt(partsHora1[0]);
-  var m1 = parseInt(partsHora1[1]);
-  var s1 = parseInt(partsHora1[2]);
-
-  var h2 = parseInt(partsHora2[0]);
-  var m2 = parseInt(partsHora2[1]);
-  var s2 = parseInt(partsHora2[2]);
-
-  var h = h1 - h2;
-  var m = m1 - m2;
-  var s = s1 - s2;
-
-  if (s < 0) {
-    s += 60;
-    m--;
-  }
-  if (m < 0) {
-    m += 60;
-    h--;
-  }
-
-  return (
-    (h < 10 ? "0" + h : h) +
-    ":" +
-    (m < 10 ? "0" + m : m) +
-    ":" +
-    (s < 10 ? "0" + s : s)
-  );
-}
-
-function sumarHoras(hora1, hora2) {
-  var partsHora1 = hora1.split(":");
-  var partsHora2 = hora2.split(":");
-
-  var h1 = parseInt(partsHora1[0]);
-  var m1 = parseInt(partsHora1[1]);
-  var s1 = parseInt(partsHora1[2]);
-
-  var h2 = parseInt(partsHora2[0]);
-  var m2 = parseInt(partsHora2[1]);
-  var s2 = parseInt(partsHora2[2]);
-
-  var h = h1 + h2;
-  var m = m1 + m2;
-  var s = s1 + s2;
-
-  if (s >= 60) {
-    s -= 60;
-    m++;
-  }
-
-  if (m >= 60) {
-    m -= 60;
-    h++;
-  }
-
-  return (
-    (h < 10 ? "0" + h : h) +
-    ":" +
-    (m < 10 ? "0" + m : m) +
-    ":" +
-    (s < 10 ? "0" + s : s)
-  );
-}
 
 // EXPORTAMOS LAS FUNCIONES PARA SU USO EN OTROS ARCHIVOS.
 module.exports = {

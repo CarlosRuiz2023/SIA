@@ -13,17 +13,13 @@ const TipoHorario = require("../../models/modelos/catalogos/tipoHorario");
  */
 const tipoHorarioGet = async (req = request, res = response) => {
   try {
-    // DEFINE EL CRITERIO DE BÚSQUEDA PARA TOLERANCIAS ACTIVAS.
-    const query = { estatus: 1 };
     // REALIZA LA CONSULTA A LA BASE DE DATOS PARA OBTENER LAS TOLERANCIAS ACTIVAS.
-    const dias = await TipoHorario.findAll({
-      where: query,
-    });
+    const tipo_horario = await TipoHorario.findAll({});
 
     // RESPONDE CON UN OBJETO JSON QUE CONTIENE LAS TOLERANCIAS ACTIVAS OBTENIDAS.
     res.status(200).json({
       ok: true,
-      dias,
+      tipo_horario,
     });
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
