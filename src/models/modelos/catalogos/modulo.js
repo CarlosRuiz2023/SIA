@@ -11,7 +11,7 @@ const Modulo = pool.define('cat_modulos', {
         type: Sequelize.STRING,
         allowNull: false,
     },
-    descripccion: {
+    descripcion: {
         type: Sequelize.STRING,
         allowNull: false,
     },

@@ -1,5 +1,6 @@
 // IMPORTACIÓN DE OBJETOS 'RESPONSE' Y 'REQUEST' DE LA BIBLIOTECA 'EXPRESS'.
 const { response, request } = require('express');
+const bcryptjs = require("bcryptjs");
 
 // IMPORTACIÓN DE LOS MODELOS NECESARIOS PARA REALIZAR CONSULTAS EN LA BASE DE DATOS.
 const Cliente = require('../../models/modelos/catalogos/cliente');
@@ -106,8 +107,13 @@ const clientePost = async ( req = request, res = response ) => {
             direccion,
             empresa,
             correo,
-            contrasenia,
         } = req.body; 
+
+        let { contrasenia } = req.body;
+
+        //Encriptar la contraseña
+        const salt = bcryptjs.genSaltSync();
+        contrasenia = bcryptjs.hashSync(contrasenia, salt);
 
         // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
         const persona = await Persona.create({
@@ -171,8 +177,13 @@ const clientePut = async ( req= request, res= response) => {
             direccion,
             empresa,
             correo,
-            contrasenia,
         } = req.body;
+
+        let { contrasenia } = req.body;
+
+        //Encriptar la contraseña
+        const salt = bcryptjs.genSaltSync();
+        contrasenia = bcryptjs.hashSync(contrasenia, salt);
 
         // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
         const clienteExiste = await Cliente.findByPk(id, {

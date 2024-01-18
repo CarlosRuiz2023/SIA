@@ -11,7 +11,7 @@ const SubModulo = pool.define('cat_sub_modulos', {
         type: Sequelize.STRING,
         allowNull: false,
     },
-    descripccion: {
+    descripcion: {
         type: Sequelize.STRING,
         allowNull: false,
     },

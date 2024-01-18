@@ -21,7 +21,7 @@ const BitacoraAcceso = pool.define('cat_bitacora_acceso', {
     plataforma_movil: {
         type: Sequelize.STRING,
     },
-    descripccion: {
+    descripcion: {
         type: Sequelize.STRING,
     },
     direccion_ip: {

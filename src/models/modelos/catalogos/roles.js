@@ -15,7 +15,7 @@ const Roles = pool.define('cat_roles', {
         type: Sequelize.STRING,
         allowNull: false,
     },
-    descripccion: {
+    descripcion: {
         type: Sequelize.STRING,
     },
     estatus: {
