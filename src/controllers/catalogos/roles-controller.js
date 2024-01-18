@@ -55,28 +55,28 @@ const rolesGet = async (req = request, res = response) => {
 const rolesPermisosPut = async (req, res) => {
   try {
     // OBTIENE LA INFORMACIÓN DE PERMISOS Y ROLES DEL CUERPO DE LA SOLICITUD.
-    const datos = req.body;
+    const { id_detalle_rol_sub_modulo, estatus } = req.body;
 
-    for (let i = 0; i < datos.roles.length; i++) {
-      const rol = datos.roles[i];
-
-      // Actualizar en la BD
-      await DetalleRolSubModulo.update(
-        {
-          estatus: rol.estatus,
+    // Actualizar en la BD
+    await DetalleRolSubModulo.update(
+      {
+        estatus: estatus,
+      },
+      {
+        where: {
+          id_detalle_rol_sub_modulo: id_detalle_rol_sub_modulo,
         },
-        {
-          where: {
-            id_detalle_rol_sub_modulo: rol.id_detalle_rol_sub_modulo,
-          },
-        }
-      );
-    }
+      }
+    );
+
+    const detalleRolSubModulo = await DetalleRolSubModulo.findByPk(
+      id_detalle_rol_sub_modulo
+    );
 
     // RESPONDE CON UN OBJETO JSON QUE CONTIENE UN MENSAJE Y LOS ROLES ACTUALIZADOS.
     res.json({
       msg: "Roles y permisos actualizados correctamente",
-      roles: datos,
+      detalleRolSubModulo: detalleRolSubModulo,
     });
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
