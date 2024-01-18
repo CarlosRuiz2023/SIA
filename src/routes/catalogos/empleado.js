@@ -69,8 +69,5 @@ router.put(
   empleadoActivarPut
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
-router.post("/datos", reporteGeneralPost);
-
 // EXPORTACIÓN DEL ENRUTADOR
 module.exports = router;

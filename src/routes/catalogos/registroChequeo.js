@@ -15,6 +15,7 @@ const {
   registroChequeoGet,
   registroChequeoPost,
   notificarNoChequeoPost,
+  reportePersonalPost,
 } = require("../../controllers/catalogos/registroChequeo-controller");
 
 // CREACIÓN DEL ENRUTADOR
@@ -22,6 +23,9 @@ const router = Router();
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
 router.get("/", registroChequeoGet);
+
+// DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
+router.post("/datos", reportePersonalPost);
 
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
 router.post(

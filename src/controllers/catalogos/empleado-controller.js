@@ -2,9 +2,6 @@
 const { response, request } = require("express");
 const bcryptjs = require("bcryptjs");
 
-// IMPORTACIÓN DEL OPERADOR 'Op' DE SEQUELIZE PARA REALIZAR OPERACIONES COMPLEJAS.
-const { Op } = require("sequelize");
-
 // IMPORTACIÓN DE LOS MODELOS NECESARIOS PARA REALIZAR CONSULTAS EN LA BASE DE DATOS.
 const Empleado = require("../../models/modelos/catalogos/empleado");
 const Persona = require("../../models/modelos/catalogos/persona");
@@ -418,54 +415,6 @@ const empleadoActivarPut = async (req = request, res = response) => {
   }
 };
 
-/**
- * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
- * @param {Object} req - Objeto de solicitud de Express.
- * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
- */
-const reporteGeneralPost = async (req, res) => {
-  try {
-    // EXTRAEMOS LOS PARÁMETROS DE LA SOLICITUD.
-    const { fecha_inicio, fecha_fin, id_empleado } = req.body;
-    const query = {};
-
-    // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
-    if (fecha_inicio && fecha_fin) {
-      query.fecha = {
-        [Op.gte]: fecha_inicio,
-        [Op.lte]: fecha_fin,
-      };
-    }
-    query.fk_cat_empleado = {
-      [Op.in]: id_empleado,
-    };
-
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
-    const registroChequeo = await RegistroChequeo.findAll({
-      where: query,
-      include: [
-        {
-          model: Empleado,
-          include: [{ model: Persona, as: "persona" }],
-        },
-      ],
-    });
-
-    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
-    res.status(200).json({
-      ok: true,
-      registroChequeo,
-    });
-  } catch (error) {
-    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
-    console.log(error);
-    res.status(500).json({
-      msg: "Ha ocurrido un error, hable con el Administrador.",
-    });
-  }
-};
-
 // EXPORTA LOS MÉTODOS PARA SER UTILIZADOS EN OTROS ARCHIVOS.
 module.exports = {
   empleadosGet,
@@ -474,5 +423,4 @@ module.exports = {
   empleadoPut,
   empleadoDelete,
   empleadoActivarPut,
-  reporteGeneralPost,
 };
