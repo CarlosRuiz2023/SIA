@@ -10,6 +10,7 @@ const DetallePermisosEmpleado = require("../models/modelos/detalles/detalle_perm
 const PuestoTrabajo = require("../models/modelos/catalogos/puestoTrabajo");
 const Vacaciones = require("../models/modelos/catalogos/vacaciones");
 const Tolerancia = require("../models/modelos/catalogos/tolerancia");
+const Ausencia = require("../models/modelos/catalogos/ausencias");
 
 const emailExiste = async (correo = "") => {
   //Verificar si el correo existe
@@ -177,6 +178,14 @@ const alMenosUnRol = async (roles) => {
   }
 };
 
+const existeAusenciaPorId = async (id_cat_ausencia) => {
+  // Verificar si la visita existe por su ID
+  const ausencia = await Ausencia.findByPk(id_cat_ausencia);
+  if (!ausencia) {
+    throw new Error(`La Ausencia con ID ${id_cat_ausencia} no existe`);
+  }
+};
+
 module.exports = {
   emailInexiste,
   emailExiste,
@@ -194,4 +203,5 @@ module.exports = {
   existeVacacionPorId,
   existeToleranciaPorId,
   alMenosUnRol,
+  existeAusenciaPorId,
 };
