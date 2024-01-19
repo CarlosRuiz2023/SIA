@@ -1,0 +1,21 @@
+body {
+    font-family: Arial;
+  }
+  
+  .container {
+    height: 100vh;
+    display: flex;  
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;  
+  }
+  
+  .updated-message {
+    background-color: #fff;
+    border-radius: 4px;
+    text-align: center;
+    padding: 60px 100px;
+    box-shadow: 0 4px 5px #ccc;
+  }
+  
+  /* ...more styles */
