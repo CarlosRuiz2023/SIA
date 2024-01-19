@@ -4,6 +4,9 @@ const Cliente = require("../models/modelos/catalogos/cliente");
 const Dias = require("../models/modelos/catalogos/dias");
 const EntradaSalida = require("../models/modelos/catalogos/entradaSalida");
 const Eventos = require("../models/modelos/catalogos/eventos");
+const DetalleRolSubModulo = require("../models/modelos/detalles/detalle_rol_sub_modulo");
+const Permisos = require("../models/modelos/catalogos/permisos");
+const DetallePermisosEmpleado = require("../models/modelos/detalles/detalle_permisos_empleado");
 
 const emailExiste = async (correo = "") => {
   //Verificar si el correo existe
@@ -105,6 +108,38 @@ const existeEventoPorId = async (id_cat_eventos) => {
   }
 };
 
+const existeDetalleRolSubModuloPorId = async (id_detalle_rol_sub_modulo) => {
+  // Verificar si la visita existe por su ID
+  const detalleRolSubModulo = await DetalleRolSubModulo.findByPk(
+    id_detalle_rol_sub_modulo
+  );
+  if (!detalleRolSubModulo) {
+    throw new Error(
+      `El Detalle Rol-Sub modulo con ID ${id_detalle_rol_sub_modulo} no existe`
+    );
+  }
+};
+
+const existePermisoPorId = async (id_cat_permiso) => {
+  // Verificar si la visita existe por su ID
+  const permiso = await Permisos.findByPk(id_cat_permiso);
+  if (!permiso) {
+    throw new Error(`El Permiso con ID ${id_cat_permiso} no existe`);
+  }
+};
+
+const existePermisoEmpleadoPorId = async (id_detalle_permisos_empleado) => {
+  // Verificar si la visita existe por su ID
+  const detallePermisosEmpleado = await DetallePermisosEmpleado.findByPk(
+    id_detalle_permisos_empleado
+  );
+  if (!detallePermisosEmpleado) {
+    throw new Error(
+      `El Permiso Solicitado con ID ${id_detalle_permisos_empleado} no existe`
+    );
+  }
+};
+
 module.exports = {
   emailInexiste,
   emailExiste,
@@ -115,4 +150,7 @@ module.exports = {
   existeDiaPorId,
   existeEntradaSalidaPorId,
   existeEventoPorId,
+  existeDetalleRolSubModuloPorId,
+  existePermisoPorId,
+  existePermisoEmpleadoPorId,
 };

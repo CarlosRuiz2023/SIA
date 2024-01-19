@@ -47,6 +47,7 @@ class Server {
       catalogoTipoHorario: "/api/tipoHorario",
       catalogoRegistroChequeo: "/api/registroChequeo",
       catalogoEventos: "/api/eventos",
+      catalogoPermisos: "/api/permisos",
     };
 
     this.detallesPath = {
@@ -148,6 +149,10 @@ class Server {
     this.app.use(
       this.catalogosPath.catalogoEventos,
       require("../routes/catalogos/eventos")
+    );
+    this.app.use(
+      this.catalogosPath.catalogoPermisos,
+      require("../routes/catalogos/permisos")
     );
     this.app.use(
       this.detallesPath.detalleDiasEntradaSalida,
