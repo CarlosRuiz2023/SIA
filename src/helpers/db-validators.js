@@ -4,6 +4,12 @@ const Cliente = require("../models/modelos/catalogos/cliente");
 const Dias = require("../models/modelos/catalogos/dias");
 const EntradaSalida = require("../models/modelos/catalogos/entradaSalida");
 const Eventos = require("../models/modelos/catalogos/eventos");
+const DetalleRolSubModulo = require("../models/modelos/detalles/detalle_rol_sub_modulo");
+const Permisos = require("../models/modelos/catalogos/permisos");
+const DetallePermisosEmpleado = require("../models/modelos/detalles/detalle_permisos_empleado");
+const PuestoTrabajo = require("../models/modelos/catalogos/puestoTrabajo");
+const Vacaciones = require("../models/modelos/catalogos/vacaciones");
+const Tolerancia = require("../models/modelos/catalogos/tolerancia");
 
 const emailExiste = async (correo = "") => {
   //Verificar si el correo existe
@@ -105,6 +111,72 @@ const existeEventoPorId = async (id_cat_eventos) => {
   }
 };
 
+const existeDetalleRolSubModuloPorId = async (id_detalle_rol_sub_modulo) => {
+  // Verificar si la visita existe por su ID
+  const detalleRolSubModulo = await DetalleRolSubModulo.findByPk(
+    id_detalle_rol_sub_modulo
+  );
+  if (!detalleRolSubModulo) {
+    throw new Error(
+      `El Detalle Rol-Sub modulo con ID ${id_detalle_rol_sub_modulo} no existe`
+    );
+  }
+};
+
+const existePermisoPorId = async (id_cat_permiso) => {
+  // Verificar si la visita existe por su ID
+  const permiso = await Permisos.findByPk(id_cat_permiso);
+  if (!permiso) {
+    throw new Error(`El Permiso con ID ${id_cat_permiso} no existe`);
+  }
+};
+
+const existePermisoEmpleadoPorId = async (id_detalle_permisos_empleado) => {
+  // Verificar si la visita existe por su ID
+  const detallePermisosEmpleado = await DetallePermisosEmpleado.findByPk(
+    id_detalle_permisos_empleado
+  );
+  if (!detallePermisosEmpleado) {
+    throw new Error(
+      `El Permiso Solicitado con ID ${id_detalle_permisos_empleado} no existe`
+    );
+  }
+};
+
+const existePuestoTrabajoPorId = async (id_cat_puesto_trabajo) => {
+  // Verificar si la visita existe por su ID
+  const puestoTrabajo = await PuestoTrabajo.findByPk(id_cat_puesto_trabajo);
+  if (!puestoTrabajo) {
+    throw new Error(
+      `El Puesto de Trabajo con ID ${id_cat_puesto_trabajo} no existe`
+    );
+  }
+};
+
+const existeVacacionPorId = async (id_cat_vacacion) => {
+  // Verificar si la visita existe por su ID
+  const vacacion = await Vacaciones.findByPk(id_cat_vacacion);
+  if (!vacacion) {
+    throw new Error(`La Vacacion con ID ${id_cat_vacacion} no existe`);
+  }
+};
+
+const existeToleranciaPorId = async (id_cat_tolerancia) => {
+  // Verificar si la visita existe por su ID
+  const tolerancia = await Tolerancia.findByPk(id_cat_tolerancia);
+  if (!tolerancia) {
+    throw new Error(`La Tolerancia con ID ${id_cat_tolerancia} no existe`);
+  }
+};
+
+const alMenosUnRol = async (roles) => {
+  // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
+  if (!roles && roles.length == 0) {
+    // SI NO SE PROPORCIONAN ROLES, RETORNA UNA RESPUESTA DE ERROR.
+    throw new Error(`El empleado debe contener al menos un rol`);
+  }
+};
+
 module.exports = {
   emailInexiste,
   emailExiste,
@@ -115,4 +187,11 @@ module.exports = {
   existeDiaPorId,
   existeEntradaSalidaPorId,
   existeEventoPorId,
+  existeDetalleRolSubModuloPorId,
+  existePermisoPorId,
+  existePermisoEmpleadoPorId,
+  existePuestoTrabajoPorId,
+  existeVacacionPorId,
+  existeToleranciaPorId,
+  alMenosUnRol,
 };

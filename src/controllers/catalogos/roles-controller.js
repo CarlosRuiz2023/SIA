@@ -75,7 +75,7 @@ const rolesPermisosPut = async (req, res) => {
 
     // RESPONDE CON UN OBJETO JSON QUE CONTIENE UN MENSAJE Y LOS ROLES ACTUALIZADOS.
     res.json({
-      msg: "Roles y permisos actualizados correctamente",
+      msg: "Permiso actualizado correctamente",
       detalleRolSubModulo: detalleRolSubModulo,
     });
   } catch (error) {
