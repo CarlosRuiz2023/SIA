@@ -4,6 +4,8 @@ const pool = require("../../../database/config");
 const Persona = require("../catalogos/persona");
 const Usuario = require("../usuario");
 const PuestoTrabajo = require("./puestoTrabajo");
+const Vacacion = require("./vacaciones");
+const Tolerancia = require("./tolerancia");
 
 const Empleado = pool.define(
   "cat_empleados",
@@ -17,7 +19,7 @@ const Empleado = pool.define(
       type: Sequelize.STRING,
     },
     sueldo: {
-      type: Sequelize.STRING,
+      type: Sequelize.INTEGER,
     },
     fecha_nacimiento: {
       type: Sequelize.STRING,
@@ -54,9 +56,17 @@ const Empleado = pool.define(
     },
     fk_cat_vacaciones: {
       type: Sequelize.INTEGER,
+      references: {
+        model: Vacacion,
+        key: "id_cat_vacacion",
+      },
     },
     fk_cat_tolerancia: {
       type: Sequelize.INTEGER,
+      references: {
+        model: Tolerancia,
+        key: "id_cat_tolerancia",
+      },
     },
   },
   {
@@ -69,6 +79,14 @@ Empleado.belongsTo(Usuario, { foreignKey: "fk_cat_usuario", as: "usuario" });
 Empleado.belongsTo(PuestoTrabajo, {
   foreignKey: "fk_cat_puesto_trabajo",
   as: "puesto_trabajo",
+});
+Empleado.belongsTo(Vacacion, {
+  foreignKey: "fk_cat_vacaciones",
+  as: "vacaciones",
+});
+Empleado.belongsTo(Tolerancia, {
+  foreignKey: "fk_cat_tolerancia",
+  as: "tolerancia",
 });
 
 module.exports = Empleado;

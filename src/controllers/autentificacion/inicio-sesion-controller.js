@@ -293,7 +293,9 @@ const cambiarContrasenia = async (req, res = response) => {
     let { password, passwordConfirm } = req.query;
 
     if (password !== passwordConfirm) {
-      return res.status(400).json({ msg: "Error passwords diferentes" });
+      return res
+        .status(400)
+        .json({ msg: "Error passwords diferentes intente de nuevo" });
     }
 
     //Encriptar la contraseña

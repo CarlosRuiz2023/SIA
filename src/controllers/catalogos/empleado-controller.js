@@ -8,7 +8,9 @@ const Persona = require("../../models/modelos/catalogos/persona");
 const Usuario = require("../../models/modelos/usuario");
 const Roles = require("../../models/modelos/catalogos/roles");
 const DetalleUsuarioRol = require("../../models/modelos/detalles/detalle_usuario_rol");
-const RegistroChequeo = require("../../models/modelos/catalogos/registroChequeo");
+const Vacaciones = require("../../models/modelos/catalogos/vacaciones");
+const Tolerancia = require("../../models/modelos/catalogos/tolerancia");
+const { generarNumeroEmpleado } = require("../../helpers/operacionMatricula");
 
 /**
  * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
@@ -37,6 +39,8 @@ const empleadosGet = async (req = request, res = response) => {
             },
           ],
         },
+        { model: Vacaciones, as: "vacaciones" },
+        { model: Tolerancia, as: "tolerancia" },
       ],
     });
 
@@ -87,6 +91,8 @@ const empleadoIdGet = async (req = request, res = response) => {
             },
           ],
         },
+        { model: Vacaciones, as: "vacaciones" },
+        { model: Tolerancia, as: "tolerancia" },
       ],
     });
 
@@ -103,6 +109,13 @@ const empleadoIdGet = async (req = request, res = response) => {
     });
   }
 };
+
+/**
+ * OBTIENE UN EMPLEADO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y datos JSON.
+ */
 // REGISTRA UN NUEVO EMPLEADO EN LA BASE DE DATOS.
 const empleadoPost = async (req = request, res = response) => {
   try {
@@ -145,32 +158,6 @@ const empleadoPost = async (req = request, res = response) => {
       estatus: 1,
     });
 
-    // FUNCION PARA GENERAR EL NÚMERO DE EMPLEADO.
-    const generarNumeroEmpleado = () => {
-      const primerLetra = nombre.charAt(0);
-      const segundaLetra = apellido_Paterno.charAt(0);
-      let terceraLetra = apellido_Materno;
-
-      if (apellido_Materno === "") {
-        terceraLetra = "X";
-      } else {
-        terceraLetra = terceraLetra.charAt(0);
-      }
-
-      const fechaOriginal = fecha_contratacion;
-      const fechaConvertida = new Date(fechaOriginal)
-        .toISOString()
-        .slice(0, 10)
-        .replace(/-/g, "");
-
-      return (
-        primerLetra.toUpperCase() +
-        segundaLetra.toUpperCase() +
-        terceraLetra.toUpperCase() +
-        fechaConvertida
-      );
-    };
-
     // LLAMADA A LA FUNCIÓN PARA GENERAR EL NÚMERO DE EMPLEADO.
     const numeroEmpleado = generarNumeroEmpleado();
 
@@ -190,21 +177,14 @@ const empleadoPost = async (req = request, res = response) => {
     });
 
     // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
-    if (roles && roles.length > 0) {
-      await Promise.all(
-        roles.map(async (rol) => {
-          await DetalleUsuarioRol.create({
-            fk_cat_usuario: usuario.id_cat_usuario,
-            fk_cat_rol: rol.id_cat_role,
-          });
-        })
-      );
-    } else {
-      // SI NO SE PROPORCIONAN ROLES, RETORNA UNA RESPUESTA DE ERROR.
-      return res.status(400).json({
-        msg: "El empleado debe contener al menos un rol",
-      });
-    }
+    await Promise.all(
+      roles.map(async (rol) => {
+        await DetalleUsuarioRol.create({
+          fk_cat_usuario: usuario.id_cat_usuario,
+          fk_cat_rol: rol.id_cat_role,
+        });
+      })
+    );
 
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
     res.status(201).json({
@@ -224,6 +204,12 @@ const empleadoPost = async (req = request, res = response) => {
   }
 };
 
+/**
+ * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y datos JSON.
+ */
 // ACTUALIZA LA INFORMACIÓN DE UN EMPLEADO EXISTENTE EN LA BASE DE DATOS.
 const empleadoPut = async (req = request, res = response) => {
   try {
@@ -308,6 +294,12 @@ const empleadoPut = async (req = request, res = response) => {
   }
 };
 
+/**
+ * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y datos JSON.
+ */
 // ELIMINA LÓGICAMENTE UN EMPLEADO ESTABLECIENDO SU ESTATUS A 0.
 const empleadoDelete = async (req = request, res = response) => {
   try {
@@ -338,6 +330,12 @@ const empleadoDelete = async (req = request, res = response) => {
   }
 };
 
+/**
+ * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y datos JSON.
+ */
 // ACTUALIZA EL ESTATUS DE UN EMPLEADO A 1 PARA "ACTIVARLO".
 const empleadoActivarPut = async (req = request, res = response) => {
   try {
