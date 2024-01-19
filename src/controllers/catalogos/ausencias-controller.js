@@ -1,6 +1,6 @@
 // IMPORTACIÓN DE OBJETOS 'RESPONSE' Y 'REQUEST' DE LA BIBLIOTECA 'EXPRESS'.
 const { response, request } = require("express");
-const bcryptjs = require("bcryptjs");
+const schedule = require("node-schedule");
 
 // IMPORTACIÓN DE LOS MODELOS NECESARIOS PARA REALIZAR CONSULTAS EN LA BASE DE DATOS.
 const Empleado = require("../../models/modelos/catalogos/empleado");
@@ -218,6 +218,46 @@ const ausenciasPut = async (req = request, res = response) => {
     });
   }
 };
+
+// Función para registrar la ausencia
+const registrarAusencia = async () => {
+  try {
+    const fechaActual = new Date().toISOString().slice(0, 10);
+    // Lógica para obtener ID de empleado, fecha, descripción, etc.
+    const empleados = await Empleado.findAll();
+
+    for (let index = 0; index < empleados.length; index++) {
+      const empleado = empleados[index];
+
+      // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO Y ACTIVO.
+      const query = {
+        fecha: fechaActual,
+        fk_cat_empleado: empleado[array].id_cat_empleado,
+      };
+
+      // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
+      const registros = await RegistroChequeo.findOne({
+        where: query,
+      });
+
+      if (!registros) {
+        const ausencia = await Ausencia.create({
+          fecha: fechaActual,
+          descripcion: "No ha checado entrada y ya paso de las 10:30:00",
+          fk_cat_empleado: empleado[array].id_cat_empleado,
+        });
+        console.log(
+          `Ausencia registrada para el empleado ${empleado[index].id_cat_empleado}`
+        );
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// Programar la tarea para que se ejecute todos los días a las 10:30
+schedule.scheduleJob("30 10 * * *", registrarAusencia);
 
 // EXPORTA LOS MÉTODOS PARA SER UTILIZADOS EN OTROS ARCHIVOS.
 module.exports = {
