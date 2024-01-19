@@ -307,7 +307,7 @@ const cambiarContrasenia = async (req, res = response) => {
     usuario.contrasenia = password;
     await usuario.save();
 
-    res.json({ msg: "Contraseña actualizada" });
+    res.redirect(`${process.env.IP}/pagina.html`);
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "Error al actualizar password" });
