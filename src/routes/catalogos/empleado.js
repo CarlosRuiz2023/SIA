@@ -13,6 +13,13 @@ const {
   empleadoActivarPut,
   reporteGeneralPost,
 } = require("../../controllers/catalogos/empleado-controller");
+const {
+  existePuestoTrabajoPorId,
+  existeVacacionPorId,
+  existeToleranciaPorId,
+  alMenosUnRol,
+  existeEmpleadoPorId,
+} = require("../../helpers/db-validators");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -25,10 +32,34 @@ router.post(
   "/",
   [
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
+    check("apellido_Paterno", "El apellido paterno es obligatorio")
+      .not()
+      .isEmpty(),
+    check("apellido_Materno", "El apellido materno es obligatorio")
+      .not()
+      .isEmpty(),
+    check("direccion", "La direccion es obligatoria").not().isEmpty(),
+    check("sueldo", "El sueldo debe ser un numero").isNumeric(),
+    check(
+      "fecha_nacimiento",
+      "Formato de fecha incorrecto en fecha_nacimiento"
+    ).custom((value) => {
+      return /\d{4}-\d{2}-\d{2}/.test(value);
+    }),
+    check(
+      "fecha_contratacion",
+      "Formato de fecha incorrecto en fecha_contratacion"
+    ).custom((value) => {
+      return /\d{4}-\d{2}-\d{2}/.test(value);
+    }),
+    check("fk_cat_puesto_trabajo").custom(existePuestoTrabajoPorId),
+    check("fk_cat_vacaciones").custom(existeVacacionPorId),
+    check("fk_cat_tolerancia").custom(existeToleranciaPorId),
+    check("correo", "El correo no es válido").isEmail(),
+    check("roles").custom(alMenosUnRol),
     check("contrasenia", "El password debe de ser más de 6 letras").isLength({
       min: 6,
     }),
-    check("correo", "El correo no es válido").isEmail(),
     validarCampos,
   ],
   empleadoPost
@@ -37,7 +68,7 @@ router.post(
 // DEFINICIÓN DE RUTA PARA OBTENER UN EMPLEADO POR ID
 router.get(
   "/:id",
-  [check("id", "El id es obligatorio").not().isEmpty()],
+  [check("id").custom(existeEmpleadoPorId), validarCampos],
   empleadoIdGet
 );
 
@@ -45,11 +76,33 @@ router.get(
 router.put(
   "/:id",
   [
+    check("id").custom(existeEmpleadoPorId),
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
-    check("contrasenia", "El password debe de ser más de 6 letras").isLength({
-      min: 6,
+    check("apellido_Paterno", "El apellido paterno es obligatorio")
+      .not()
+      .isEmpty(),
+    check("apellido_Materno", "El apellido materno es obligatorio")
+      .not()
+      .isEmpty(),
+    check("direccion", "La direccion es obligatoria").not().isEmpty(),
+    check("sueldo", "El sueldo debe ser un numero").isNumeric(),
+    check(
+      "fecha_nacimiento",
+      "Formato de fecha incorrecto en fecha_nacimiento"
+    ).custom((value) => {
+      return /\d{4}-\d{2}-\d{2}/.test(value);
     }),
+    check(
+      "fecha_contratacion",
+      "Formato de fecha incorrecto en fecha_contratacion"
+    ).custom((value) => {
+      return /\d{4}-\d{2}-\d{2}/.test(value);
+    }),
+    check("fk_cat_puesto_trabajo").custom(existePuestoTrabajoPorId),
+    check("fk_cat_vacaciones").custom(existeVacacionPorId),
+    check("fk_cat_tolerancia").custom(existeToleranciaPorId),
     check("correo", "El correo no es válido").isEmail(),
+    check("roles").custom(alMenosUnRol),
     validarCampos,
   ],
   empleadoPut
@@ -58,14 +111,14 @@ router.put(
 // DEFINICIÓN DE RUTA PARA ELIMINAR UN EMPLEADO POR ID
 router.delete(
   "/:id",
-  [check("id", "El id es obligatorio").not().isEmpty()],
+  [check("id").custom(existeEmpleadoPorId), validarCampos],
   empleadoDelete
 );
 
 // DEFINICIÓN DE RUTA PARA ACTIVAR UN EMPLEADO POR ID
 router.put(
   "/activar/:id",
-  [check("id", "El id es obligatorio").not().isEmpty()],
+  [check("id").custom(existeEmpleadoPorId), validarCampos],
   empleadoActivarPut
 );
 

@@ -90,14 +90,6 @@ const empleadoIdGet = async (req = request, res = response) => {
       ],
     });
 
-    // SI NO SE ENCUENTRA EL EMPLEADO, SE RETORNA UNA RESPUESTA DE ERROR.
-    if (!empleado) {
-      return res.status(404).json({
-        ok: false,
-        msg: "Empleado no encontrado",
-      });
-    }
-
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
@@ -122,7 +114,7 @@ const empleadoPost = async (req = request, res = response) => {
       direccion,
       sueldo,
       fecha_nacimiento,
-      fecha_Contratacion,
+      fecha_contratacion,
       fk_cat_puesto_trabajo,
       fk_cat_vacaciones,
       fk_cat_tolerancia,
@@ -165,7 +157,7 @@ const empleadoPost = async (req = request, res = response) => {
         terceraLetra = terceraLetra.charAt(0);
       }
 
-      const fechaOriginal = fecha_Contratacion;
+      const fechaOriginal = fecha_contratacion;
       const fechaConvertida = new Date(fechaOriginal)
         .toISOString()
         .slice(0, 10)
@@ -187,7 +179,7 @@ const empleadoPost = async (req = request, res = response) => {
       numero_empleado: numeroEmpleado,
       sueldo,
       fecha_nacimiento,
-      fecha_Contratacion,
+      fecha_contratacion,
       fecha_Retiro: null,
       estatus: 1,
       fk_cat_persona: persona.id_cat_persona,
@@ -244,19 +236,13 @@ const empleadoPut = async (req = request, res = response) => {
       direccion,
       sueldo,
       fecha_nacimiento,
-      fecha_Contratacion,
+      fecha_contratacion,
       fk_cat_puesto_trabajo,
       fk_cat_vacaciones,
       fk_cat_tolerancia,
       correo,
       roles,
     } = req.body;
-
-    let { contrasenia } = req.body;
-
-    //Encriptar la contraseña
-    const salt = bcryptjs.genSaltSync();
-    contrasenia = bcryptjs.hashSync(contrasenia, salt);
 
     // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
     const empleadoExistente = await Empleado.findByPk(id, {
@@ -266,18 +252,10 @@ const empleadoPut = async (req = request, res = response) => {
       ],
     });
 
-    // SI EL EMPLEADO NO SE ENCUENTRA, RETORNA UNA RESPUESTA DE ERROR.
-    if (!empleadoExistente) {
-      return res.status(404).json({
-        ok: false,
-        msg: "Empleado no encontrado",
-      });
-    }
-
     // ACTUALIZA LOS CAMPOS DIRECTOS DEL MODELO EMPLEADO.
     empleadoExistente.sueldo = sueldo;
     empleadoExistente.fecha_nacimiento = fecha_nacimiento;
-    empleadoExistente.fecha_Contratacion = fecha_Contratacion;
+    empleadoExistente.fecha_Contratacion = fecha_contratacion;
     empleadoExistente.fk_cat_puesto_trabajo = fk_cat_puesto_trabajo;
     empleadoExistente.fk_cat_vacaciones = fk_cat_vacaciones;
     empleadoExistente.fk_cat_tolerancia = fk_cat_tolerancia;
@@ -290,30 +268,21 @@ const empleadoPut = async (req = request, res = response) => {
 
     // ACTUALIZA LOS CAMPOS DEL MODELO USUARIO.
     empleadoExistente.usuario.correo = correo;
-    empleadoExistente.usuario.contrasenia = contrasenia;
 
-    // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
-    if (roles && roles.length > 0) {
-      // ELIMINA LOS ROLES ANTIGUOS ASOCIADOS AL USUARIO.
-      await DetalleUsuarioRol.destroy({
-        where: { fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario },
-      });
+    // ELIMINA LOS ROLES ANTIGUOS ASOCIADOS AL USUARIO.
+    await DetalleUsuarioRol.destroy({
+      where: { fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario },
+    });
 
-      // ASOCIA LOS NUEVOS ROLES PROPORCIONADOS.
-      await Promise.all(
-        roles.map(async (rol) => {
-          await DetalleUsuarioRol.create({
-            fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario,
-            fk_cat_rol: rol.id_cat_role,
-          });
-        })
-      );
-    } else {
-      // SI NO SE PROPORCIONAN ROLES, RETORNA UNA RESPUESTA DE ERROR.
-      return res.status(400).json({
-        msg: "El empleado debe contener al menos un rol",
-      });
-    }
+    // ASOCIA LOS NUEVOS ROLES PROPORCIONADOS.
+    await Promise.all(
+      roles.map(async (rol) => {
+        await DetalleUsuarioRol.create({
+          fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario,
+          fk_cat_rol: rol.id_cat_role,
+        });
+      })
+    );
 
     // GUARDA LOS CAMBIOS EN LA BASE DE DATOS.
     // GUARDA LOS CAMBIOS EN EL MODELO PERSONA.
@@ -348,14 +317,6 @@ const empleadoDelete = async (req = request, res = response) => {
     // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
     const empleadoExistente = await Empleado.findByPk(id);
 
-    // SI EL EMPLEADO NO SE ENCUENTRA, RETORNA UNA RESPUESTA DE ERROR.
-    if (!empleadoExistente) {
-      return res.status(404).json({
-        ok: false,
-        msg: "Empleado no encontrado",
-      });
-    }
-
     // ESTABLECE EL ESTATUS A 0 PARA "ELIMINAR" LÓGICAMENTE EL EMPLEADO.
     empleadoExistente.estatus = 0;
 
@@ -385,14 +346,6 @@ const empleadoActivarPut = async (req = request, res = response) => {
 
     // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
     const empleadoExistente = await Empleado.findByPk(id);
-
-    // SI EL EMPLEADO NO SE ENCUENTRA, RETORNA UNA RESPUESTA DE ERROR.
-    if (!empleadoExistente) {
-      return res.status(404).json({
-        ok: false,
-        msg: "Empleado no encontrado",
-      });
-    }
 
     // ESTABLECE EL ESTATUS A 1 PARA "ACTUALIZAR" Y ACTIVAR EL EMPLEADO.
     empleadoExistente.estatus = 1;
