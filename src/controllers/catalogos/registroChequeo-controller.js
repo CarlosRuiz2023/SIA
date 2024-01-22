@@ -174,7 +174,6 @@ const reporteEventosYTiempoPost = async (req, res) => {
       case 1:
         resultado = await RegistroChequeo.findAll({
           attributes: [
-            ["fk_cat_empleado", "id_empleado"],
             [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "fecha_dia"],
             [
               pool.fn(
@@ -215,15 +214,21 @@ const reporteEventosYTiempoPost = async (req, res) => {
               "total_tiempo_retardo",
             ],
           ],
-          group: ["fecha_dia", "id_empleado"],
+          group: ["fecha_dia", "id_cat_empleado", "id_cat_persona"],
           order: [["fecha_dia"]],
           where: query,
+          include: [
+            {
+              model: Empleado,
+              as: "empleado",
+              include: [{ model: Persona, as: "persona" }],
+            },
+          ],
         });
         break;
       case 2:
         resultado = await RegistroChequeo.findAll({
           attributes: [
-            ["fk_cat_empleado", "id_empleado"],
             [pool.fn("DATE_TRUNC", "week", pool.col("fecha")), "inicio_semana"],
             [
               pool.fn(
@@ -264,15 +269,21 @@ const reporteEventosYTiempoPost = async (req, res) => {
               "total_tiempo_retardo",
             ],
           ],
-          group: ["inicio_semana", "id_empleado"],
+          group: ["inicio_semana", "id_cat_empleado", "id_cat_persona"],
           order: [["inicio_semana"]],
           where: query,
+          include: [
+            {
+              model: Empleado,
+              as: "empleado",
+              include: [{ model: Persona, as: "persona" }],
+            },
+          ],
         });
         break;
       case 3:
         resultado = await RegistroChequeo.findAll({
           attributes: [
-            ["fk_cat_empleado", "id_empleado"],
             [
               pool.literal(`
                 CASE
@@ -321,15 +332,21 @@ const reporteEventosYTiempoPost = async (req, res) => {
               "total_tiempo_retardo",
             ],
           ],
-          group: ["inicio_quincena", "id_empleado"],
+          group: ["inicio_quincena", "id_cat_empleado", "id_cat_persona"],
           order: [["inicio_quincena"]],
           where: query,
+          include: [
+            {
+              model: Empleado,
+              as: "empleado",
+              include: [{ model: Persona, as: "persona" }],
+            },
+          ],
         });
         break;
       case 4:
         resultado = await RegistroChequeo.findAll({
           attributes: [
-            ["fk_cat_empleado", "id_empleado"],
             [pool.fn("DATE_TRUNC", "MONTH", pool.col("fecha")), "inicio_mes"],
             [
               pool.fn(
@@ -370,9 +387,16 @@ const reporteEventosYTiempoPost = async (req, res) => {
               "total_tiempo_retardo",
             ],
           ],
-          group: ["inicio_mes", "id_empleado"],
+          group: ["inicio_mes", "id_cat_empleado", "id_cat_persona"],
           order: [["inicio_mes"]],
           where: query,
+          include: [
+            {
+              model: Empleado,
+              as: "empleado",
+              include: [{ model: Persona, as: "persona" }],
+            },
+          ],
         });
         break;
       default:
