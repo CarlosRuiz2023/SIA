@@ -4,6 +4,7 @@ const { response, request } = require("express");
 const Permisos = require("../../models/modelos/catalogos/permisos");
 const DetallePermisosEmpleado = require("../../models/modelos/detalles/detalle_permisos_empleado");
 const Empleado = require("../../models/modelos/catalogos/empleado");
+const Persona = require("../../models/modelos/catalogos/persona");
 
 /**
  * OBTIENE TODOS LOS PERMISOS CON ESTATUS ACTIVO.
@@ -48,7 +49,11 @@ const permisosGet = async (req = request, res = response) => {
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findAll({
       include: [
-        { model: Empleado, as: "empleado" },
+        {
+          model: Empleado,
+          as: "empleado",
+          include: [{ model: Persona, as: "persona" }],
+        },
         { model: Permisos, as: "permiso" },
       ],
     });
