@@ -10,6 +10,7 @@ const {
   existeEntradaSalidaPorId,
   existeEventoPorId,
   emailExistente,
+  alMenosUnRol,
 } = require("../../helpers/db-validators");
 const {
   registroChequeoGet,
@@ -26,10 +27,41 @@ const router = Router();
 router.get("/", registroChequeoGet);
 
 // DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
-router.post("/datos", reportePost);
+router.post(
+  "/datos",
+  [
+    check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
+      (value) => {
+        return /\d{4}-\d{2}-\d{2}/.test(value);
+      }
+    ),
+    check("fecha_fin", "Formato de fecha_fin incorrecto").custom((value) => {
+      return /\d{4}-\d{2}-\d{2}/.test(value);
+    }),
+    validarCampos,
+  ],
+  reportePost
+);
 
 // DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
-router.post("/reporte", reporteEventosYTiempoPost);
+router.post(
+  "/reporte",
+  [
+    check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
+      (value) => {
+        return /\d{4}-\d{2}-\d{2}/.test(value);
+      }
+    ),
+    check("fecha_fin", "Formato de fecha_fin incorrecto").custom((value) => {
+      return /\d{4}-\d{2}-\d{2}/.test(value);
+    }),
+    check("tipo", "El tipo debe ser un numero entre 1 y 4")
+      .isNumeric()
+      .isInt({ min: 1, max: 4 }),
+    validarCampos,
+  ],
+  reporteEventosYTiempoPost
+);
 
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
 router.post(
