@@ -3,9 +3,13 @@ const { response, request } = require("express");
 // IMPORTACIÓN DE LOS MODELOS DE BASE DE DATOS.
 const Permisos = require("../../models/modelos/catalogos/permisos");
 const DetallePermisosEmpleado = require("../../models/modelos/detalles/detalle_permisos_empleado");
+const DetalleUsuarioRol = require("../../models/modelos/detalles/detalle_usuario_rol");
 const Empleado = require("../../models/modelos/catalogos/empleado");
 const Persona = require("../../models/modelos/catalogos/persona");
+const Roles = require("../../models/modelos/catalogos/roles");
+const Usuario = require("../../models/modelos/usuario");
 
+const pool = require("../../database/config");
 /**
  * OBTIENE TODOS LOS PERMISOS CON ESTATUS ACTIVO.
  * @async
@@ -52,7 +56,20 @@ const permisosGet = async (req = request, res = response) => {
         {
           model: Empleado,
           as: "empleado",
-          include: [{ model: Persona, as: "persona" }],
+          include: [
+            { model: Persona, as: "persona" },
+            {
+              model: Usuario,
+              as: "usuario",
+              include: [
+                {
+                  model: DetalleUsuarioRol,
+                  as: "detalle_usuario_rols",
+                  include: [{ model: Roles, as: "cat_role" }],
+                },
+              ],
+            },
+          ],
         },
         { model: Permisos, as: "permiso" },
       ],

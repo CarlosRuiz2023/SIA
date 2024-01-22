@@ -17,12 +17,13 @@ const Empleado = require("../../models/modelos/catalogos/empleado");
 const PuestoTrabajo = require("../../models/modelos/catalogos/puestoTrabajo");
 const Tolerancia = require("../../models/modelos/catalogos/tolerancia");
 const Usuario = require("../../models/modelos/usuario");
+const Persona = require("../../models/modelos/catalogos/persona");
+const Cliente = require("../../models/modelos/catalogos/cliente");
+
 const {
   sumarHoras,
   restarHoras,
 } = require("../../helpers/operacionesHorarias");
-const Persona = require("../../models/modelos/catalogos/persona");
-const Cliente = require("../../models/modelos/catalogos/cliente");
 
 /**
  * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
@@ -172,33 +173,51 @@ const reporteEventosYTiempoPost = async (req, res) => {
     switch (tipo) {
       case 1:
         resultado = await RegistroChequeo.findAll({
-          where: query,
-          include: [
-            {
-              model: Empleado,
-              as: "empleado",
-              include: [{ model: Persona, as: "persona" }],
-            },
-            { model: Eventos, as: "evento" },
-            {
-              model: DetalleDiasEntradaSalida,
-              as: "detalleDiasEntradaSalida",
-              include: [
-                {
-                  model: Dias,
-                  as: "cat_dia",
-                },
-                {
-                  model: TipoHorario,
-                  as: "cat_tipo_horario",
-                },
-                {
-                  model: EntradaSalida,
-                  as: "cat_entrada_salida",
-                },
-              ],
-            },
+          attributes: [
+            ["fk_cat_empleado", "id_empleado"],
+            [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "fecha_dia"],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
+              `)
+              ),
+              "R",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
+              `)
+              ),
+              "S/R",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_extra",
+            ],
+
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn("SUM", pool.col("tiempo_retardo")),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_retardo",
+            ],
           ],
+          group: ["fecha_dia", "id_empleado"],
+          order: [["fecha_dia"]],
+          where: query,
         });
         break;
       case 2:
@@ -206,7 +225,24 @@ const reporteEventosYTiempoPost = async (req, res) => {
           attributes: [
             ["fk_cat_empleado", "id_empleado"],
             [pool.fn("DATE_TRUNC", "week", pool.col("fecha")), "inicio_semana"],
-            //[pool.fn("DATE_TRUNC", "month", pool.col("fecha")+ INTERVAL 7 DAYS), "inicio_semana"],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
+              `)
+              ),
+              "R",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
+              `)
+              ),
+              "S/R",
+            ],
             [
               pool.fn(
                 "TO_CHAR",
@@ -239,12 +275,30 @@ const reporteEventosYTiempoPost = async (req, res) => {
             ["fk_cat_empleado", "id_empleado"],
             [
               pool.literal(`
-                CASE 
+                CASE
                   WHEN EXTRACT(DAY FROM fecha) <= 15 THEN DATE_TRUNC('MONTH', fecha)
                   ELSE DATE_TRUNC('MONTH', fecha) + INTERVAL '15 days'
                 END
               `),
               "inicio_quincena",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
+              `)
+              ),
+              "R",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
+              `)
+              ),
+              "S/R",
             ],
             [
               pool.fn(
@@ -279,6 +333,24 @@ const reporteEventosYTiempoPost = async (req, res) => {
             [pool.fn("DATE_TRUNC", "MONTH", pool.col("fecha")), "inicio_mes"],
             [
               pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
+              `)
+              ),
+              "R",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
+              `)
+              ),
+              "S/R",
+            ],
+            [
+              pool.fn(
                 "TO_CHAR",
                 pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
                 "'HH24:MI:SS'"
@@ -301,43 +373,6 @@ const reporteEventosYTiempoPost = async (req, res) => {
           group: ["inicio_mes", "id_empleado"],
           order: [["inicio_mes"]],
           where: query,
-        });
-        break;
-      case 5:
-        resultado = await RegistroChequeo.findAll({
-          attributes: [
-            [pool.fn("DATE", pool.col("fecha")), "periodo"], // agrupar por día
-            [pool.fn("SUM", pool.col("tiempo_extra")), "total_minutos_extra"],
-          ],
-          group: ["periodo", "fk_cat_empleado"],
-          order: [["periodo"]],
-          where: query,
-          include: [
-            {
-              model: Empleado,
-              as: "empleado",
-              include: [{ model: Persona, as: "persona" }],
-            },
-            { model: Eventos, as: "evento" },
-            {
-              model: DetalleDiasEntradaSalida,
-              as: "detalleDiasEntradaSalida",
-              include: [
-                {
-                  model: Dias,
-                  as: "cat_dia",
-                },
-                {
-                  model: TipoHorario,
-                  as: "cat_tipo_horario",
-                },
-                {
-                  model: EntradaSalida,
-                  as: "cat_entrada_salida",
-                },
-              ],
-            },
-          ],
         });
         break;
       default:
