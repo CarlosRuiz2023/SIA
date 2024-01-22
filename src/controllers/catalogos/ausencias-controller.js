@@ -6,6 +6,8 @@ const schedule = require("node-schedule");
 const Empleado = require("../../models/modelos/catalogos/empleado");
 const Ausencia = require("../../models/modelos/catalogos/ausencias");
 const RegistroChequeo = require("../../models/modelos/catalogos/registroChequeo");
+const Persona = require("../../models/modelos/catalogos/persona");
+const Permisos = require("../../models/modelos/catalogos/permisos");
 
 /**
  * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
@@ -17,7 +19,17 @@ const ausenciasGet = async (req = request, res = response) => {
   try {
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO EMPLEADOS Y SUS RELACIONES.
     const ausencias = await Ausencia.findAll({
-      include: [{ model: Empleado, as: "empleado" }],
+      include: [
+        {
+          model: Empleado,
+          as: "empleado",
+          include: [{ model: Persona, as: "persona" }],
+        },
+        {
+          model: Permisos,
+          as: "permiso",
+        },
+      ],
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
@@ -53,7 +65,17 @@ const ausenciaIdGet = async (req = request, res = response) => {
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
     const ausencias = await Ausencia.findOne({
       where: query,
-      include: [{ model: Empleado, as: "empleado" }],
+      include: [
+        {
+          model: Empleado,
+          as: "empleado",
+          include: [{ model: Persona, as: "persona" }],
+        },
+        {
+          model: Permisos,
+          as: "permiso",
+        },
+      ],
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
@@ -89,7 +111,17 @@ const ausenciasIdGet = async (req = request, res = response) => {
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
     const ausencias = await Ausencia.findOne({
       where: query,
-      include: [{ model: Empleado, as: "empleado" }],
+      include: [
+        {
+          model: Empleado,
+          as: "empleado",
+          include: [{ model: Persona, as: "persona" }],
+        },
+        {
+          model: Permisos,
+          as: "permiso",
+        },
+      ],
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
@@ -116,12 +148,14 @@ const ausenciasIdGet = async (req = request, res = response) => {
 const ausenciasPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
-    const { fecha, descripcion, id_empleado } = req.body;
+    const { fecha, descripcion, id_empleado, id_permiso } = req.body;
 
     // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO Y ACTIVO.
     const query = {
       fecha: fecha,
       fk_cat_empleado: id_empleado,
+      fk_cat_permiso: id_permiso,
+      estatus: 0,
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
