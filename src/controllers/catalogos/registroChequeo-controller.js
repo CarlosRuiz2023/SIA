@@ -4,6 +4,8 @@ const { response, request } = require("express");
 const { Op } = require("sequelize");
 // IMPORTACIÓN DEL MODELO 'TRANSPORTER' DESDE LA RUTA CORRESPONDIENTE.
 const { transporter } = require("../../helpers/enviar-emails");
+
+const pool = require("../../database/config");
 // IMPORTACIÓN DE LOS MODELOS NECESARIOS PARA REALIZAR CONSULTAS EN LA BASE DE DATOS.
 const DetalleDiasEntradaSalida = require("../../models/modelos/detalles/detalle_dias_entrada_salida");
 const EntradaSalida = require("../../models/modelos/catalogos/entradaSalida");
@@ -129,6 +131,223 @@ const reportePost = async (req, res) => {
     res.status(200).json({
       ok: true,
       registroChequeo,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
+};
+
+/**
+ * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y datos JSON.
+ */
+const reporteEventosYTiempoPost = async (req, res) => {
+  try {
+    // EXTRAEMOS LOS PARÁMETROS DE LA SOLICITUD.
+    const { fecha_inicio, fecha_fin, tipo = 1, empleados } = req.body;
+    const query = {};
+
+    // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
+    if (fecha_inicio && fecha_fin) {
+      query.fecha = {
+        [Op.gte]: fecha_inicio,
+        [Op.lte]: fecha_fin,
+      };
+    }
+
+    if (empleados && empleados.length > 0) {
+      query.fk_cat_empleado = {
+        [Op.in]: empleados,
+      };
+    }
+
+    let resultado = {};
+
+    switch (tipo) {
+      case 1:
+        resultado = await RegistroChequeo.findAll({
+          where: query,
+          include: [
+            {
+              model: Empleado,
+              as: "empleado",
+              include: [{ model: Persona, as: "persona" }],
+            },
+            { model: Eventos, as: "evento" },
+            {
+              model: DetalleDiasEntradaSalida,
+              as: "detalleDiasEntradaSalida",
+              include: [
+                {
+                  model: Dias,
+                  as: "cat_dia",
+                },
+                {
+                  model: TipoHorario,
+                  as: "cat_tipo_horario",
+                },
+                {
+                  model: EntradaSalida,
+                  as: "cat_entrada_salida",
+                },
+              ],
+            },
+          ],
+        });
+        break;
+      case 2:
+        resultado = await RegistroChequeo.findAll({
+          attributes: [
+            ["fk_cat_empleado", "id_empleado"],
+            [pool.fn("DATE_TRUNC", "week", pool.col("fecha")), "inicio_semana"],
+            //[pool.fn("DATE_TRUNC", "month", pool.col("fecha")+ INTERVAL 7 DAYS), "inicio_semana"],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_extra",
+            ],
+
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn("SUM", pool.col("tiempo_retardo")),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_retardo",
+            ],
+          ],
+          group: ["inicio_semana", "id_empleado"],
+          order: [["inicio_semana"]],
+          where: query,
+        });
+        break;
+      case 3:
+        resultado = await RegistroChequeo.findAll({
+          attributes: [
+            ["fk_cat_empleado", "id_empleado"],
+            [
+              pool.literal(`
+                CASE 
+                  WHEN EXTRACT(DAY FROM fecha) <= 15 THEN DATE_TRUNC('MONTH', fecha)
+                  ELSE DATE_TRUNC('MONTH', fecha) + INTERVAL '15 days'
+                END
+              `),
+              "inicio_quincena",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_extra",
+            ],
+
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn("SUM", pool.col("tiempo_retardo")),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_retardo",
+            ],
+          ],
+          group: ["inicio_quincena", "id_empleado"],
+          order: [["inicio_quincena"]],
+          where: query,
+        });
+        break;
+      case 4:
+        resultado = await RegistroChequeo.findAll({
+          attributes: [
+            ["fk_cat_empleado", "id_empleado"],
+            [pool.fn("DATE_TRUNC", "MONTH", pool.col("fecha")), "inicio_mes"],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_extra",
+            ],
+
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn("SUM", pool.col("tiempo_retardo")),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_retardo",
+            ],
+          ],
+          group: ["inicio_mes", "id_empleado"],
+          order: [["inicio_mes"]],
+          where: query,
+        });
+        break;
+      case 5:
+        resultado = await RegistroChequeo.findAll({
+          attributes: [
+            [pool.fn("DATE", pool.col("fecha")), "periodo"], // agrupar por día
+            [pool.fn("SUM", pool.col("tiempo_extra")), "total_minutos_extra"],
+          ],
+          group: ["periodo", "fk_cat_empleado"],
+          order: [["periodo"]],
+          where: query,
+          include: [
+            {
+              model: Empleado,
+              as: "empleado",
+              include: [{ model: Persona, as: "persona" }],
+            },
+            { model: Eventos, as: "evento" },
+            {
+              model: DetalleDiasEntradaSalida,
+              as: "detalleDiasEntradaSalida",
+              include: [
+                {
+                  model: Dias,
+                  as: "cat_dia",
+                },
+                {
+                  model: TipoHorario,
+                  as: "cat_tipo_horario",
+                },
+                {
+                  model: EntradaSalida,
+                  as: "cat_entrada_salida",
+                },
+              ],
+            },
+          ],
+        });
+        break;
+      default:
+        break;
+    }
+
+    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+    res.status(200).json({
+      ok: true,
+      resultado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -482,4 +701,5 @@ module.exports = {
   registroChequeoPost,
   notificarNoChequeoPost,
   reportePost,
+  reporteEventosYTiempoPost,
 };
