@@ -6,7 +6,7 @@ const Empleado = require("../catalogos/empleado");
 const EquipoTrabajo = require("../catalogos/equipoTrabajo");
 
 const DetalleEmpleadoEquipoTrabajo = pool.define(
-  "detalle_empleado_equipo_trabajo",
+  "detalle_empleados",
   {
     id_detalle_empleado_equipo_trabajo: {
       type: DataTypes.INTEGER,
@@ -33,20 +33,18 @@ const DetalleEmpleadoEquipoTrabajo = pool.define(
     tableName: "detalle_empleado_equipo_trabajo",
   }
 );
-
+EquipoTrabajo.hasMany(DetalleEmpleadoEquipoTrabajo, {
+  foreignKey: "fk_cat_equipo_trabajo",
+});
+DetalleEmpleadoEquipoTrabajo.belongsTo(EquipoTrabajo, {
+  foreignKey: "fk_cat_equipo_trabajo",
+});
 // Establece las relaciones many-to-one
 Empleado.hasMany(DetalleEmpleadoEquipoTrabajo, {
   foreignKey: "fk_cat_empleado",
 });
 DetalleEmpleadoEquipoTrabajo.belongsTo(Empleado, {
   foreignKey: "fk_cat_empleado",
-});
-
-EquipoTrabajo.hasMany(DetalleEmpleadoEquipoTrabajo, {
-  foreignKey: "fk_cat_equipo_trabajo",
-});
-DetalleEmpleadoEquipoTrabajo.belongsTo(EquipoTrabajo, {
-  foreignKey: "fk_cat_equipo_trabajo",
 });
 
 module.exports = DetalleEmpleadoEquipoTrabajo;

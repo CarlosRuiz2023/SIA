@@ -34,9 +34,6 @@ router.post(
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
     check("id_empleado").custom(existeEmpleadoPorId),
     check("id_permiso").custom(existePermisoPorId),
-    check("estatus", "El estatus debe ser un numero entre 0 y 1")
-      .isNumeric()
-      .isInt({ min: 0, max: 1 }),
     validarCampos,
   ],
   ausenciasPost

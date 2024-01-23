@@ -23,22 +23,11 @@ router.get("/", equipoTrabajoGet);
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
 router.post(
   "/",
-  /* [
-    check("nombre", "El nombre es obligatorio").not().isEmpty(),
-    check("apellido_Paterno", "El apellido paterno es obligatorio")
-      .not()
-      .isEmpty(),
-    check("apellido_Materno", "El apellido materno es obligatorio")
-      .not()
-      .isEmpty(),
-    check("direccion", "La direccion es obligatoria").not().isEmpty(),
-    check("empresa", "La empresa es obligatoria").not().isEmpty(),
-    check("correo", "El correo no es válido").isEmail(),
-    check("contrasenia", "El password debe de ser más de 6 letras").isLength({
-      min: 6,
-    }),
+  [
+    check("equipo_trabajo", "El Equipo Trabajo es obligatorio").not().isEmpty(),
+    check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
     validarCampos,
-  ], */
+  ],
   equipoTrabajoPost
 );
 
@@ -52,20 +41,12 @@ router.get(
 // DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
 router.put(
   "/:id",
-  /* [
-    check("id").custom(existeClientePorId),
-    check("nombre", "El nombre es obligatorio").not().isEmpty(),
-    check("apellido_Paterno", "El apellido paterno es obligatorio")
-      .not()
-      .isEmpty(),
-    check("apellido_Materno", "El apellido materno es obligatorio")
-      .not()
-      .isEmpty(),
-    check("direccion", "La direccion es obligatoria").not().isEmpty(),
-    check("empresa", "La empresa es obligatoria").not().isEmpty(),
-    check("correo", "El correo no es válido").isEmail(),
+  [
+    check("equipo_trabajo", "El Equipo Trabajo es obligatorio").not().isEmpty(),
+    check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
+    check("empleados", "Los empleados son obligatorios").not().isEmpty(),
     validarCampos,
-  ], */
+  ],
   equipoTrabajoPut
 );
 

@@ -154,8 +154,6 @@ const ausenciasPost = async (req = request, res = response) => {
     const query = {
       fecha: fecha,
       fk_cat_empleado: id_empleado,
-      fk_cat_permiso: id_permiso,
-      estatus: 0,
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
@@ -176,6 +174,8 @@ const ausenciasPost = async (req = request, res = response) => {
       fecha,
       descripcion,
       fk_cat_empleado: id_empleado,
+      fk_cat_permiso: id_permiso,
+      estatus: 0,
     });
 
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
