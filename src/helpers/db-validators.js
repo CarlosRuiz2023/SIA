@@ -11,6 +11,7 @@ const PuestoTrabajo = require("../models/modelos/catalogos/puestoTrabajo");
 const Vacaciones = require("../models/modelos/catalogos/vacaciones");
 const Tolerancia = require("../models/modelos/catalogos/tolerancia");
 const Ausencia = require("../models/modelos/catalogos/ausencias");
+const EquipoTrabajo = require("../models/modelos/catalogos/equipoTrabajo");
 
 const emailExiste = async (correo = "") => {
   //Verificar si el correo existe
@@ -186,6 +187,16 @@ const existeAusenciaPorId = async (id_cat_ausencia) => {
   }
 };
 
+const existeEquipoTrabajoPorId = async (id_cat_equipo_trabajo) => {
+  // Verificar si la visita existe por su ID
+  const equipo_trabajo = await EquipoTrabajo.findByPk(id_cat_equipo_trabajo);
+  if (!equipo_trabajo) {
+    throw new Error(
+      `El Equipo de Trabajo con ID ${id_cat_equipo_trabajo} no existe`
+    );
+  }
+};
+
 module.exports = {
   emailInexiste,
   emailExiste,
@@ -204,4 +215,5 @@ module.exports = {
   existeToleranciaPorId,
   alMenosUnRol,
   existeAusenciaPorId,
+  existeEquipoTrabajoPorId,
 };

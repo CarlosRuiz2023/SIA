@@ -204,12 +204,14 @@ const ausenciasPut = async (req = request, res = response) => {
   try {
     // OBTIENE EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA Y LOS DATOS ACTUALIZADOS DESDE EL CUERPO DE LA SOLICITUD.
     const { id } = req.params;
-    const { fecha, descripcion, id_empleado } = req.body;
+    const { fecha, descripcion, id_empleado, id_permiso, estatus } = req.body;
 
     // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO Y ACTIVO.
     const query = {
       fecha: fecha,
       fk_cat_empleado: id_empleado,
+      fk_cat_permiso: id_permiso,
+      estatus,
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
