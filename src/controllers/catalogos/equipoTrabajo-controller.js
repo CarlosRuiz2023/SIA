@@ -23,6 +23,7 @@ const equipoTrabajoGet = async (req = request, res = response) => {
       include: [
         {
           model: DetalleEmpleadoEquipoTrabajo,
+          as: "detalle_empleados",
           include: [{ model: Empleado, as: "cat_empleado" }],
         },
       ],
@@ -65,6 +66,7 @@ const equipoTrabajoIdGet = async (req = request, res = response) => {
       include: [
         {
           model: DetalleEmpleadoEquipoTrabajo,
+          as: "detalle_empleados",
           include: [{ model: Empleado, as: "cat_empleado" }],
         },
       ],
@@ -141,6 +143,13 @@ const equipoTrabajoPut = async (req = request, res = response) => {
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
     await equipoTrabajo.save();
 
+    // ELIMINA PERMISOS NO NECESARIOS.
+    await DetalleEmpleadoEquipoTrabajo.destroy({
+      where: {
+        fk_cat_equipo_trabajo: equipoTrabajo.id_cat_equipo_trabajo,
+      },
+    });
+
     // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
     await Promise.all(
       empleados.map(async (empleado) => {
@@ -151,10 +160,11 @@ const equipoTrabajoPut = async (req = request, res = response) => {
       })
     );
 
-    const equipoTrabajoFinal = await EquipoTrabajo.findByPk(id, {
+    const equipoTrabajoFinal = await EquipoTrabajo.findAll({
       include: [
         {
           model: DetalleEmpleadoEquipoTrabajo,
+          as: "detalle_empleados",
           include: [{ model: Empleado, as: "cat_empleado" }],
         },
       ],
