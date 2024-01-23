@@ -200,6 +200,11 @@ const permisoPost = async (req = request, res = response) => {
       detalle = "",
     } = req.body;
 
+    const date = new Date();
+
+    const fecha_solicitada = date.toISOString().slice(0, 10);
+    const hora_solicitada = date.toTimeString().slice(0, 8);
+
     // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.create({
       fecha_inicio,
@@ -209,6 +214,8 @@ const permisoPost = async (req = request, res = response) => {
       fk_cat_permiso: id_cat_permiso,
       fecha_fin,
       detalle,
+      fecha_solicitada: fecha_solicitada,
+      hora_solicitada: hora_solicitada,
     });
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.

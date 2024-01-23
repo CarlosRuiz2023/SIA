@@ -5,6 +5,7 @@ const { response, request } = require("express");
 const EquipoTrabajo = require("../../models/modelos/catalogos/equipoTrabajo");
 const Empleado = require("../../models/modelos/catalogos/empleado");
 const DetalleEmpleadoEquipoTrabajo = require("../../models/modelos/detalles/detalle_empleado_equipo_trabajo");
+const Persona = require("../../models/modelos/catalogos/persona");
 
 /**
  * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
@@ -24,7 +25,18 @@ const equipoTrabajoGet = async (req = request, res = response) => {
         {
           model: DetalleEmpleadoEquipoTrabajo,
           as: "detalle_empleados",
-          include: [{ model: Empleado, as: "cat_empleado" }],
+          include: [
+            {
+              model: Empleado,
+              as: "cat_empleado",
+              include: [
+                {
+                  model: Persona,
+                  as: "persona",
+                },
+              ],
+            },
+          ],
         },
       ],
     });
@@ -67,7 +79,18 @@ const equipoTrabajoIdGet = async (req = request, res = response) => {
         {
           model: DetalleEmpleadoEquipoTrabajo,
           as: "detalle_empleados",
-          include: [{ model: Empleado, as: "cat_empleado" }],
+          include: [
+            {
+              model: Empleado,
+              as: "cat_empleado",
+              include: [
+                {
+                  model: Persona,
+                  as: "persona",
+                },
+              ],
+            },
+          ],
         },
       ],
     });
@@ -165,7 +188,18 @@ const equipoTrabajoPut = async (req = request, res = response) => {
         {
           model: DetalleEmpleadoEquipoTrabajo,
           as: "detalle_empleados",
-          include: [{ model: Empleado, as: "cat_empleado" }],
+          include: [
+            {
+              model: Empleado,
+              as: "cat_empleado",
+              include: [
+                {
+                  model: Persona,
+                  as: "persona",
+                },
+              ],
+            },
+          ],
         },
       ],
     });
