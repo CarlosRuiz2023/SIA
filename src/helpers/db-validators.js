@@ -12,6 +12,7 @@ const Vacaciones = require("../models/modelos/catalogos/vacaciones");
 const Tolerancia = require("../models/modelos/catalogos/tolerancia");
 const Ausencia = require("../models/modelos/catalogos/ausencias");
 const EquipoTrabajo = require("../models/modelos/catalogos/equipoTrabajo");
+const Actividades = require("../models/modelos/catalogos/actividades");
 
 const emailExiste = async (correo = "") => {
   //Verificar si el correo existe
@@ -153,6 +154,11 @@ const existePuestoTrabajoPorId = async (id_cat_puesto_trabajo) => {
       `El Puesto de Trabajo con ID ${id_cat_puesto_trabajo} no existe`
     );
   }
+  if (!puestoTrabajo.estatus) {
+    throw new Error(
+      `El Puesto de Trabajo con ID ${id_cat_puesto_trabajo} fue eliminado`
+    );
+  }
 };
 
 const existeVacacionPorId = async (id_cat_vacacion) => {
@@ -161,6 +167,9 @@ const existeVacacionPorId = async (id_cat_vacacion) => {
   if (!vacacion) {
     throw new Error(`La Vacacion con ID ${id_cat_vacacion} no existe`);
   }
+  if (!vacacion.estatus) {
+    throw new Error(`La Vacacion con ID ${id_cat_vacacion} fue eliminada`);
+  }
 };
 
 const existeToleranciaPorId = async (id_cat_tolerancia) => {
@@ -168,6 +177,9 @@ const existeToleranciaPorId = async (id_cat_tolerancia) => {
   const tolerancia = await Tolerancia.findByPk(id_cat_tolerancia);
   if (!tolerancia) {
     throw new Error(`La Tolerancia con ID ${id_cat_tolerancia} no existe`);
+  }
+  if (!tolerancia.estatus) {
+    throw new Error(`La Tolerancia con ID ${id_cat_actividad} fue eliminada`);
   }
 };
 
@@ -195,6 +207,22 @@ const existeEquipoTrabajoPorId = async (id_cat_equipo_trabajo) => {
       `El Equipo de Trabajo con ID ${id_cat_equipo_trabajo} no existe`
     );
   }
+  if (!equipo_trabajo.estatus) {
+    throw new Error(
+      `El Equipo de Trabajo con ID ${id_cat_actividad} fue eliminado`
+    );
+  }
+};
+
+const existeActividadPorId = async (id_cat_actividad) => {
+  // Verificar si la visita existe por su ID
+  const actividad = await Actividades.findByPk(id_cat_actividad);
+  if (!actividad) {
+    throw new Error(`La Actividad con ID ${id_cat_actividad} no existe`);
+  }
+  if (!actividad.estatus) {
+    throw new Error(`La Actividad con ID ${id_cat_actividad} fue eliminada`);
+  }
 };
 
 module.exports = {
@@ -216,4 +244,5 @@ module.exports = {
   alMenosUnRol,
   existeAusenciaPorId,
   existeEquipoTrabajoPorId,
+  existeActividadPorId,
 };
