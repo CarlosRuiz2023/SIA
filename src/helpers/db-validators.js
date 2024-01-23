@@ -13,6 +13,7 @@ const Tolerancia = require("../models/modelos/catalogos/tolerancia");
 const Ausencia = require("../models/modelos/catalogos/ausencias");
 const EquipoTrabajo = require("../models/modelos/catalogos/equipoTrabajo");
 const Actividades = require("../models/modelos/catalogos/actividades");
+const Proyectos = require("../models/modelos/catalogos/proyectos");
 
 const emailExiste = async (correo = "") => {
   //Verificar si el correo existe
@@ -225,6 +226,17 @@ const existeActividadPorId = async (id_cat_actividad) => {
   }
 };
 
+const existeProyectoPorId = async (id_cat_proyecto) => {
+  // Verificar si la visita existe por su ID
+  const proyecto = await Proyectos.findByPk(id_cat_proyecto);
+  if (!proyecto) {
+    throw new Error(`El Proyecto con ID ${id_cat_proyecto} no existe`);
+  }
+  if (!proyecto.estatus) {
+    throw new Error(`El Proyecto con ID ${id_cat_proyecto} fue eliminado`);
+  }
+};
+
 module.exports = {
   emailInexiste,
   emailExiste,
@@ -245,4 +257,5 @@ module.exports = {
   existeAusenciaPorId,
   existeEquipoTrabajoPorId,
   existeActividadPorId,
+  existeProyectoPorId,
 };

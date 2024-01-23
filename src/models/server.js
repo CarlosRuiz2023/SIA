@@ -51,6 +51,7 @@ class Server {
       catalogoAusencias: "/api/ausencias",
       catalogoEquipoTrabajo: "/api/equipoTrabajo",
       catalogoActividades: "/api/actividades",
+      catalogoProyectos: "/api/proyectos",
     };
 
     // CONEXIÓN A LA BASE DE DATOS DE POSTGRESQL
@@ -164,6 +165,10 @@ class Server {
     this.app.use(
       this.catalogosPath.catalogoActividades,
       require("../routes/catalogos/actividades")
+    );
+    this.app.use(
+      this.catalogosPath.catalogoProyectos,
+      require("../routes/catalogos/proyectos")
     );
   }
 
