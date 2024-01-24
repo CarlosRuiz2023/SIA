@@ -14,6 +14,7 @@ const Ausencia = require("../models/modelos/catalogos/ausencias");
 const EquipoTrabajo = require("../models/modelos/catalogos/equipoTrabajo");
 const Actividades = require("../models/modelos/catalogos/actividades");
 const Proyectos = require("../models/modelos/catalogos/proyectos");
+const Etapa = require("../models/modelos/catalogos/etapa");
 
 const emailExiste = async (correo = "") => {
   //Verificar si el correo existe
@@ -237,6 +238,17 @@ const existeProyectoPorId = async (id_cat_proyecto) => {
   }
 };
 
+const existeEtapaPorId = async (id_cat_etapa) => {
+  // Verificar si la visita existe por su ID
+  const etapa = await Etapa.findByPk(id_cat_etapa);
+  if (!etapa) {
+    throw new Error(`La Etapa con ID ${id_cat_etapa} no existe`);
+  }
+  if (!etapa.estatus) {
+    throw new Error(`La Etapa con ID ${id_cat_etapa} fue eliminado`);
+  }
+};
+
 module.exports = {
   emailInexiste,
   emailExiste,
@@ -258,4 +270,5 @@ module.exports = {
   existeEquipoTrabajoPorId,
   existeActividadPorId,
   existeProyectoPorId,
+  existeEtapaPorId,
 };

@@ -10,6 +10,8 @@ const {
   proyectoIdGet,
   proyectoPut,
   proyectoDelete,
+  proyectoEquipoTrabajoPost,
+  proyectoEtapaPost,
 } = require("../../controllers/catalogos/proyectos-controller");
 const { existeProyectoPorId } = require("../../helpers/db-validators");
 
@@ -83,6 +85,12 @@ router.delete(
   [check("id").custom(existeProyectoPorId), validarCampos],
   proyectoDelete
 );
+
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+router.post("/equipoTrabajo", proyectoEquipoTrabajoPost);
+
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+router.post("/etapas", proyectoEtapaPost);
 
 // EXPORTACIÓN DEL ENRUTADOR
 module.exports = router;
