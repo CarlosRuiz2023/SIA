@@ -1,6 +1,5 @@
 // IMPORTACIÓN DE OBJETOS 'RESPONSE' Y 'REQUEST' DE LA BIBLIOTECA 'EXPRESS'.
 const { response, request } = require("express");
-const schedule = require("node-schedule");
 
 // IMPORTACIÓN DE LOS MODELOS NECESARIOS PARA REALIZAR CONSULTAS EN LA BASE DE DATOS.
 const Empleado = require("../../models/modelos/catalogos/empleado");
@@ -292,9 +291,6 @@ const registrarAusencia = async () => {
   }
 };
 
-// Programar la tarea para que se ejecute todos los días a las 10:30
-schedule.scheduleJob("30 10 * * *", registrarAusencia);
-
 // EXPORTA LOS MÉTODOS PARA SER UTILIZADOS EN OTROS ARCHIVOS.
 module.exports = {
   ausenciasGet,
@@ -302,4 +298,5 @@ module.exports = {
   ausenciasPut,
   ausenciasIdGet,
   ausenciaIdGet,
+  registrarAusencia,
 };

@@ -2,11 +2,9 @@
 const { response, request } = require("express");
 
 // IMPORTACIÓN DE LOS MODELOS NECESARIOS PARA REALIZAR CONSULTAS EN LA BASE DE DATOS.
-const Proyectos = require("../../models/modelos/catalogos/proyectos");
-const DetalleProyectoEquipoTrabajo = require("../../models/modelos/detalles/detalle_proyecto_equipo_trabajo");
-const EquipoTrabajo = require("../../models/modelos/catalogos/equipoTrabajo");
-const DetalleProyectoEtapa = require("../../models/modelos/detalles/detalle_proyecto_etapa");
 const Etapa = require("../../models/modelos/catalogos/etapa");
+const DetalleEtapaActividad = require("../../models/modelos/detalles/detalle_etapa_actividad");
+const Actividades = require("../../models/modelos/catalogos/actividades");
 
 /**
  * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
@@ -14,29 +12,19 @@ const Etapa = require("../../models/modelos/catalogos/etapa");
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
-const proyectosGet = async (req = request, res = response) => {
+const etapasGet = async (req = request, res = response) => {
   try {
     // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER CLIENTES ACTIVOS.
     const query = { estatus: 1 };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
-    const proyectos = await Proyectos.findAll({
+    const etapas = await Etapa.findAll({
       where: query,
       include: [
         {
-          model: DetalleProyectoEquipoTrabajo,
-          as: "proyecto_equipos_trabajos",
-          include: [{ model: EquipoTrabajo, as: "cat_equipo_trabajo" }],
-        },
-        {
-          model: DetalleProyectoEtapa,
-          as: "proyecto_etapas",
-          include: [
-            {
-              model: Etapa,
-              as: "cat_etapa",
-            },
-          ],
+          model: DetalleEtapaActividad,
+          as: "etapa_actividads",
+          include: [{ model: Actividades, as: "cat_actividade" }],
         },
       ],
     });
@@ -44,7 +32,7 @@ const proyectosGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      proyectos,
+      etapas,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -61,35 +49,25 @@ const proyectosGet = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
-const proyectoIdGet = async (req = request, res = response) => {
+const etapaIdGet = async (req = request, res = response) => {
   try {
     // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
     const query = {
-      id_cat_proyecto: id,
+      id_cat_etapa: id,
       estatus: 1,
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
-    const proyectos = await Proyectos.findOne({
+    const etapas = await Etapa.findOne({
       where: query,
       include: [
         {
-          model: DetalleProyectoEquipoTrabajo,
-          as: "proyecto_equipos_trabajos",
-          include: [{ model: EquipoTrabajo, as: "cat_equipo_trabajo" }],
-        },
-        {
-          model: DetalleProyectoEtapa,
-          as: "proyecto_etapas",
-          include: [
-            {
-              model: Etapa,
-              as: "cat_etapa",
-            },
-          ],
+          model: DetalleEtapaActividad,
+          as: "etapa_actividads",
+          include: [{ model: Actividades, as: "cat_actividade" }],
         },
       ],
     });
@@ -97,7 +75,7 @@ const proyectoIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      proyectos,
+      etapas,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -114,32 +92,23 @@ const proyectoIdGet = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
  */
-const proyectosPost = async (req = request, res = response) => {
+const etapasPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
-    const {
-      proyecto_nombre,
-      descripcion,
-      fecha_inicio,
-      fecha_fin,
-      horas_maximas,
-    } = req.body;
+    const { etapa_nombre, descripcion } = req.body;
 
     // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
-    const proyecto = await Proyectos.create({
-      proyecto: proyecto_nombre,
+    const etapa = await Etapa.create({
+      etapa: etapa_nombre,
       descripcion,
       estatus: 1,
-      fecha_inicio,
-      fecha_fin,
-      horas_maximas,
     });
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
     res.status(201).json({
       ok: true,
-      msg: "Proyecto guardado correctamente",
-      proyecto,
+      msg: "Etapa guardada correctamente",
+      etapa,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -156,38 +125,29 @@ const proyectosPost = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
  */
-const proyectoPut = async (req = request, res = response) => {
+const etapaPut = async (req = request, res = response) => {
   try {
     // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // EXTRAEMOS LOS DATOS DEL CUERPO DE LA SOLICITUD.
-    const {
-      proyecto_nombre,
-      descripcion,
-      fecha_inicio,
-      fecha_fin,
-      horas_maximas,
-    } = req.body;
+    const { etapa_nombre, descripcion } = req.body;
 
     // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
-    const proyecto = await Proyectos.findByPk(id);
+    const etapa = await Etapa.findByPk(id);
 
     // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
-    proyecto.proyecto = proyecto_nombre;
-    proyecto.descripcion = descripcion;
-    proyecto.fecha_inicio = fecha_inicio;
-    proyecto.fecha_fin = fecha_fin;
-    proyecto.horas_maximas = horas_maximas;
+    etapa.etapa = etapa_nombre;
+    etapa.descripcion = descripcion;
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
-    await proyecto.save();
+    await etapa.save();
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ACTUALIZACIÓN.
     res.status(200).json({
       ok: true,
-      msg: "Proyecto actualizado correctamente",
-      cliente: proyecto,
+      msg: "Etapa actualizada correctamente",
+      cliente: etapa,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -204,23 +164,23 @@ const proyectoPut = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
  */
-const proyectoDelete = async (req = request, res = response) => {
+const etapaDelete = async (req = request, res = response) => {
   try {
     // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // OBTENEMOS EL CLIENTE EXISTENTE.
-    const proyecto = await Proyectos.findByPk(id);
+    const etapa = await Etapa.findByPk(id);
 
     // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
-    proyecto.estatus = 0;
-    await proyecto.save();
+    etapa.estatus = 0;
+    await etapa.save();
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ELIMINACIÓN.
     res.status(200).json({
       ok: true,
-      msg: "Proyecto eliminado correctamente",
-      cliente: proyecto,
+      msg: "Etapa eliminada correctamente",
+      cliente: etapa,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -237,90 +197,58 @@ const proyectoDelete = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
  */
-const proyectoEquipoTrabajoPost = async (req = request, res = response) => {
+const etapaActividadesPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
-    const { id_proyecto, equipos_trabajo } = req.body;
+    const { id_etapa, actividades } = req.body;
 
-    // ELIMINA PERMISOS NO NECESARIOS.
-    await DetalleProyectoEquipoTrabajo.destroy({
+    const fechaActual = new Date().toISOString().slice(0, 10);
+    // OBTIENE LOS REGISTROS ACTUALES ASOCIADOS AL ROL.
+    const informacionEtapa = await DetalleEtapaActividad.findAll({
       where: {
-        fk_cat_proyecto: id_proyecto,
+        fk_cat_etapa: id_etapa,
       },
     });
 
-    // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
-    await Promise.all(
-      equipos_trabajo.map(async (equipo_trabajo) => {
-        await DetalleProyectoEquipoTrabajo.create({
-          fk_cat_proyecto: id_proyecto,
-          fk_cat_equipo_trabajo: equipo_trabajo,
-        });
-      })
+    // MAPEA LOS REGISTROS ACTUALES A SUS RESPECTIVOS IDS DE PERMISOS.
+    const actividadesActuales = informacionEtapa.map(
+      (etapa) => etapa.fk_cat_actividad
     );
 
-    const detalle_proyecto_equipo_trabajo =
-      await DetalleProyectoEquipoTrabajo.findAll({
-        include: [
-          {
-            model: Proyectos,
-          },
-          {
-            model: EquipoTrabajo,
-          },
-        ],
-      });
-
-    // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
-    res.status(201).json({
-      ok: true,
-      msg: "Proyecto-Equipos de Trabajo actualizado correctamente",
-      detalle_proyecto_equipo_trabajo,
-    });
-  } catch (error) {
-    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
-    console.log(error);
-    res.status(500).json({
-      msg: "Ha ocurrido un error, hable con el Administrador.",
-    });
-  }
-};
-
-/**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
- * @param {Object} req - Objeto de solicitud de Express.
- * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
- */
-const proyectoEtapaPost = async (req = request, res = response) => {
-  try {
-    // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
-    const { id_proyecto, etapas } = req.body;
+    // ENCUENTRA LOS PERMISOS A AGREGAR Y ELIMINAR.
+    const actividadesAgregar = actividades.filter(
+      (actividad) => !actividadesActuales.includes(actividad)
+    );
+    const actividadesEliminar = actividadesActuales.filter(
+      (actividad) => !actividades.includes(actividad)
+    );
+    console.log(actividadesEliminar);
 
     // ELIMINA PERMISOS NO NECESARIOS.
-    await DetalleProyectoEtapaActividad.destroy({
+    await DetalleEtapaActividad.destroy({
       where: {
-        fk_cat_proyecto: id_proyecto,
+        fk_cat_etapa: id_etapa,
+        fk_cat_actividad: actividadesEliminar,
       },
     });
 
-    // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
-    await Promise.all(
-      etapas.map(async (etapa) => {
-        await DetalleProyectoEtapaActividad.create({
-          fk_cat_proyecto: id_proyecto,
-          fk_cat_etapa: etapa,
-        });
-      })
+    // CREA NUEVOS REGISTROS PARA LOS PERMISOS A AGREGAR.
+    await DetalleEtapaActividad.bulkCreate(
+      actividadesAgregar.map((actividad) => ({
+        fk_cat_etapa: id_etapa,
+        fk_cat_actividad: actividad,
+        fecha: fechaActual,
+      }))
     );
 
-    const detalle_proyecto_etapa = await DetalleProyectoEtapaActividad.findAll({
+    // OBTIENE ROLES ACTUALIZADOS.
+    const detalle_etapa_actividad = await DetalleEtapaActividad.findAll({
       include: [
         {
-          model: Proyectos,
+          model: Etapa,
         },
         {
-          model: Etapa,
+          model: Actividades,
         },
       ],
     });
@@ -328,8 +256,8 @@ const proyectoEtapaPost = async (req = request, res = response) => {
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
     res.status(201).json({
       ok: true,
-      msg: "Proyecto-Etapas actualizado correctamente",
-      detalle_proyecto_etapa,
+      msg: "Etapa-Actividades actualizada correctamente",
+      detalle_etapa_actividad,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -342,11 +270,10 @@ const proyectoEtapaPost = async (req = request, res = response) => {
 
 // EXPORTAMOS LAS FUNCIONES PARA SU USO EN OTROS ARCHIVOS.
 module.exports = {
-  proyectosGet,
-  proyectosPost,
-  proyectoPut,
-  proyectoDelete,
-  proyectoIdGet,
-  proyectoEquipoTrabajoPost,
-  proyectoEtapaPost,
+  etapasGet,
+  etapasPost,
+  etapaPut,
+  etapaDelete,
+  etapaIdGet,
+  etapaActividadesPost,
 };
