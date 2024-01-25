@@ -6,6 +6,12 @@ const EquipoTrabajo = require("../../models/modelos/catalogos/equipoTrabajo");
 const Empleado = require("../../models/modelos/catalogos/empleado");
 const DetalleEmpleadoEquipoTrabajo = require("../../models/modelos/detalles/detalle_empleado_equipo_trabajo");
 const Persona = require("../../models/modelos/catalogos/persona");
+const DetalleProyectoEquipoTrabajo = require("../../models/modelos/detalles/detalle_proyecto_equipo_trabajo");
+const DetalleProyectoEtapa = require("../../models/modelos/detalles/detalle_proyecto_etapa");
+const Etapa = require("../../models/modelos/catalogos/etapa");
+const DetalleEtapaActividad = require("../../models/modelos/detalles/detalle_etapa_actividad");
+const Actividades = require("../../models/modelos/catalogos/actividades");
+const Proyectos = require("../../models/modelos/catalogos/proyectos");
 
 /**
  * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
@@ -33,6 +39,69 @@ const equipoTrabajoGet = async (req = request, res = response) => {
                 {
                   model: Persona,
                   as: "persona",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: DetalleProyectoEquipoTrabajo,
+          as: "proyecto_equipos_trabajos",
+          include: [
+            {
+              model: Proyectos,
+              as: "cat_proyecto",
+            },
+          ],
+        },
+      ],
+    });
+
+    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+    res.status(200).json({
+      ok: true,
+      equipo_trabajo,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
+  }
+};
+
+/**
+ * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y datos JSON.
+ */
+const equipoTrabajoActividadesGet = async (req = request, res = response) => {
+  try {
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER CLIENTES ACTIVOS.
+    const query = { fk_cat_equipo_trabajo: 1 };
+
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
+    const equipo_trabajo = await DetalleProyectoEquipoTrabajo.findAll({
+      where: query,
+      include: [
+        {
+          model: Proyectos,
+          include: [
+            {
+              model: DetalleProyectoEtapa,
+              as: "proyecto_etapas",
+              include: [
+                {
+                  model: Etapa,
+                  include: [
+                    {
+                      model: DetalleEtapaActividad,
+                      as: "etapa_actividads",
+                      include: [{ model: Actividades }],
+                    },
+                  ],
                 },
               ],
             },
@@ -208,7 +277,7 @@ const equipoTrabajoPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Equipo Trabajo actualizado correctamente",
-      cliente: equipoTrabajoFinal,
+      equipoTrabajoFinal,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -241,7 +310,7 @@ const equipoTrabajoDelete = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Equipo de Trabajo eliminado correctamente",
-      cliente: equipo_trabajo,
+      equipo_trabajo,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -274,7 +343,7 @@ const equipoTrabajoActivarPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Equipo de Trabajo activado correctamente",
-      cliente: equipo_trabajo,
+      equipo_trabajo,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -293,4 +362,5 @@ module.exports = {
   equipoTrabajoDelete,
   equipoTrabajoIdGet,
   equipoTrabajoActivarPut,
+  equipoTrabajoActividadesGet,
 };

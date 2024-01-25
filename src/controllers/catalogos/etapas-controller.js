@@ -147,7 +147,7 @@ const etapaPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Etapa actualizada correctamente",
-      cliente: etapa,
+      etapa,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -180,7 +180,7 @@ const etapaDelete = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Etapa eliminada correctamente",
-      cliente: etapa,
+      etapa,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.

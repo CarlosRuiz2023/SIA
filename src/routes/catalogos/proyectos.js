@@ -13,7 +13,11 @@ const {
   proyectoEquipoTrabajoPost,
   proyectoEtapaPost,
 } = require("../../controllers/catalogos/proyectos-controller");
-const { existeProyectoPorId } = require("../../helpers/db-validators");
+const {
+  existeProyectoPorId,
+  existenEquiposTrabajoPorId,
+  existenEtapasPorId,
+} = require("../../helpers/db-validators");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -87,10 +91,26 @@ router.delete(
 );
 
 // DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
-router.post("/equipoTrabajo", proyectoEquipoTrabajoPost);
+router.post(
+  "/equipoTrabajo",
+  [
+    check("id_proyecto").custom(existeProyectoPorId),
+    check("equipos_trabajo").custom(existenEquiposTrabajoPorId),
+    validarCampos,
+  ],
+  proyectoEquipoTrabajoPost
+);
 
 // DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
-router.post("/etapas", proyectoEtapaPost);
+router.post(
+  "/etapas",
+  [
+    check("id_proyecto").custom(existeProyectoPorId),
+    check("etapas").custom(existenEtapasPorId),
+    validarCampos,
+  ],
+  proyectoEtapaPost
+);
 
 // EXPORTACIÓN DEL ENRUTADOR
 module.exports = router;

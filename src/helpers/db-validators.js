@@ -15,6 +15,8 @@ const EquipoTrabajo = require("../models/modelos/catalogos/equipoTrabajo");
 const Actividades = require("../models/modelos/catalogos/actividades");
 const Proyectos = require("../models/modelos/catalogos/proyectos");
 const Etapa = require("../models/modelos/catalogos/etapa");
+const Tarea = require("../models/modelos/detalles/detalle_actividad_tarea");
+const Roles = require("../models/modelos/catalogos/roles");
 
 const emailExiste = async (correo = "") => {
   //Verificar si el correo existe
@@ -185,14 +187,6 @@ const existeToleranciaPorId = async (id_cat_tolerancia) => {
   }
 };
 
-const alMenosUnRol = async (roles) => {
-  // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
-  if (!roles && roles.length == 0) {
-    // SI NO SE PROPORCIONAN ROLES, RETORNA UNA RESPUESTA DE ERROR.
-    throw new Error(`El empleado debe contener al menos un rol`);
-  }
-};
-
 const existeAusenciaPorId = async (id_cat_ausencia) => {
   // Verificar si la visita existe por su ID
   const ausencia = await Ausencia.findByPk(id_cat_ausencia);
@@ -222,9 +216,6 @@ const existeActividadPorId = async (id_cat_actividad) => {
   if (!actividad) {
     throw new Error(`La Actividad con ID ${id_cat_actividad} no existe`);
   }
-  if (!actividad.estatus) {
-    throw new Error(`La Actividad con ID ${id_cat_actividad} fue eliminada`);
-  }
 };
 
 const existeProyectoPorId = async (id_cat_proyecto) => {
@@ -240,12 +231,86 @@ const existeProyectoPorId = async (id_cat_proyecto) => {
 
 const existeEtapaPorId = async (id_cat_etapa) => {
   // Verificar si la visita existe por su ID
-  const etapa = await Etapa.findByPk(id_cat_etapa);
+  const etapa = await Tarea.findByPk(id_cat_etapa);
   if (!etapa) {
     throw new Error(`La Etapa con ID ${id_cat_etapa} no existe`);
   }
   if (!etapa.estatus) {
     throw new Error(`La Etapa con ID ${id_cat_etapa} fue eliminado`);
+  }
+};
+
+const existeTareaPorId = async (id_detalle_actividad_tarea) => {
+  // Verificar si la visita existe por su ID
+  const tarea = await Tarea.findByPk(id_detalle_actividad_tarea);
+  if (!tarea) {
+    throw new Error(`La Tarea con ID ${id_detalle_actividad_tarea} no existe`);
+  }
+};
+
+const existenEquiposTrabajoPorId = async (equipos_trabajo) => {
+  let validador = true;
+  let identificador = 0;
+  for (let index = 0; index < equipos_trabajo.length; index++) {
+    // Verificar si la visita existe por su ID
+    const equipo_trabajo_encontrado = await EquipoTrabajo.findByPk(
+      equipos_trabajo[index]
+    );
+    if (!equipo_trabajo_encontrado) {
+      identificador = equipos_trabajo[index];
+      validador = false;
+    }
+  }
+  if (!validador) {
+    throw new Error(`El equipo_trabajo con ID ${identificador} no existe`);
+  }
+};
+
+const existenEtapasPorId = async (etapas) => {
+  let validador = true;
+  let identificador = 0;
+  for (let index = 0; index < etapas.length; index++) {
+    // Verificar si la visita existe por su ID
+    const etapa_encontrada = await Etapa.findByPk(etapas[index]);
+    if (!etapa_encontrada) {
+      identificador = etapas[index];
+      validador = false;
+    }
+  }
+  if (!validador) {
+    throw new Error(`La etapa con ID ${identificador} no existe`);
+  }
+};
+
+const existenEmpleadosPorId = async (empleados) => {
+  let validador = true;
+  let identificador = 0;
+  for (let index = 0; index < empleados.length; index++) {
+    // Verificar si la visita existe por su ID
+    const empleado_encontrado = await Empleado.findByPk(empleados[index]);
+    if (!empleado_encontrado) {
+      identificador = empleados[index];
+      validador = false;
+    }
+  }
+  if (!validador) {
+    throw new Error(`El empleado con ID ${identificador} no existe`);
+  }
+};
+
+const existenRolesPorId = async (roles) => {
+  let validador = true;
+  let identificador = 0;
+  for (let index = 0; index < roles.length; index++) {
+    // Verificar si la visita existe por su ID
+    const rol_encontrado = await Roles.findByPk(roles[index]);
+    if (!rol_encontrado) {
+      identificador = roles[index];
+      validador = false;
+    }
+  }
+  if (!validador) {
+    throw new Error(`El rol con ID ${identificador} no existe`);
   }
 };
 
@@ -265,10 +330,14 @@ module.exports = {
   existePuestoTrabajoPorId,
   existeVacacionPorId,
   existeToleranciaPorId,
-  alMenosUnRol,
   existeAusenciaPorId,
   existeEquipoTrabajoPorId,
   existeActividadPorId,
   existeProyectoPorId,
   existeEtapaPorId,
+  existeTareaPorId,
+  existenEquiposTrabajoPorId,
+  existenEtapasPorId,
+  existenEmpleadosPorId,
+  existenRolesPorId,
 };
