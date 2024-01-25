@@ -2,28 +2,33 @@
 const { response, request } = require("express");
 
 // IMPORTACIÓN DE LOS MODELOS NECESARIOS PARA REALIZAR CONSULTAS EN LA BASE DE DATOS.
-const Actividades = require("../../models/modelos/catalogos/actividades");
+const Tarea = require("../../models/modelos/detalles/detalle_actividad_tarea");
 
 /**
- * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
- * @param {Object} req - Objeto de solicitud de Express.
+ * OBTIENE UN CLIENTE ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
-const actividadesGet = async (req = request, res = response) => {
+const tareasIdGet = async (req = request, res = response) => {
   try {
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER CLIENTES ACTIVOS.
-    const query = { estatus: 1 };
+    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    const { id } = req.params;
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
-    const actividades = await Actividades.findAll({
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
+    const query = {
+      fk_cat_actividad: id,
+    };
+
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+    const tareas = await Tarea.findOne({
       where: query,
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      actividades,
+      tareas,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -40,26 +45,26 @@ const actividadesGet = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
-const actividadIdGet = async (req = request, res = response) => {
+const tareasFaltantesIdGet = async (req = request, res = response) => {
   try {
     // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
     const query = {
-      id_cat_actividad: id,
-      estatus: 1,
+      fk_cat_actividad: id,
+      estatus: 0,
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
-    const actividades = await Actividades.findOne({
+    const tareas = await Tarea.findOne({
       where: query,
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      actividades,
+      tareas,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -76,26 +81,25 @@ const actividadIdGet = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
  */
-const actividadesPost = async (req = request, res = response) => {
+const tareasPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
-    const { actividad_nombre, descripcion } = req.body;
-
-    const date = new Date();
-    const fecha_solicitada = date.toISOString().slice(0, 10);
+    const { id_actividad, tarea, duracion } = req.body;
 
     // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
-    const actividad = await Actividades.create({
-      actividad: actividad_nombre,
-      descripcion,
-      estatus: 1,
+    const detalle_actividad_tarea = await Tarea.create({
+      fk_cat_actividad: id_actividad,
+      fk_cat_empleado: null,
+      tarea,
+      estatus: 0,
+      duracion,
     });
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
     res.status(201).json({
       ok: true,
-      msg: "Actividad guardada correctamente",
-      actividad,
+      msg: "Tarea guardada correctamente",
+      actividad: tarea,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -112,29 +116,32 @@ const actividadesPost = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
  */
-const actividadPut = async (req = request, res = response) => {
+const tareaPut = async (req = request, res = response) => {
   try {
     // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // EXTRAEMOS LOS DATOS DEL CUERPO DE LA SOLICITUD.
-    const { actividad_nombre, descripcion } = req.body;
+    const { id_actividad, id_empleado, tarea, duracion, estatus } = req.body;
 
     // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
-    const actividad = await Actividades.findByPk(id);
+    const detalle_actividad_tarea = await Tarea.findByPk(id);
 
     // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
-    actividad.actividad = actividad_nombre;
-    actividad.descripcion = descripcion;
+    detalle_actividad_tarea.fk_cat_actividad = id_actividad;
+    detalle_actividad_tarea.fk_cat_empleado = id_empleado;
+    detalle_actividad_tarea.tarea = tarea;
+    detalle_actividad_tarea.estatus = estatus;
+    detalle_actividad_tarea.duracion = duracion;
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
-    await actividad.save();
+    await detalle_actividad_tarea.save();
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ACTUALIZACIÓN.
     res.status(200).json({
       ok: true,
-      msg: "Actividad actualizada correctamente",
-      actividad,
+      msg: "Tarea actualizada correctamente",
+      detalle_actividad_tarea,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -151,23 +158,23 @@ const actividadPut = async (req = request, res = response) => {
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
  */
-const actividadDelete = async (req = request, res = response) => {
+const tareaDelete = async (req = request, res = response) => {
   try {
     // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // OBTENEMOS EL CLIENTE EXISTENTE.
-    const actividad = await Actividades.findByPk(id);
+    const tarea = await Tarea.findByPk(id);
 
     // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
-    actividad.estatus = 0;
-    await actividad.save();
+    tarea.estatus = 0;
+    await tarea.save();
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ELIMINACIÓN.
     res.status(200).json({
       ok: true,
-      msg: "Actividad eliminada correctamente",
-      actividad,
+      msg: "Tarea eliminada correctamente",
+      tarea,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -180,9 +187,9 @@ const actividadDelete = async (req = request, res = response) => {
 
 // EXPORTAMOS LAS FUNCIONES PARA SU USO EN OTROS ARCHIVOS.
 module.exports = {
-  actividadesGet,
-  actividadesPost,
-  actividadPut,
-  actividadDelete,
-  actividadIdGet,
+  tareasPost,
+  tareaPut,
+  tareaDelete,
+  tareasIdGet,
+  tareasFaltantesIdGet,
 };

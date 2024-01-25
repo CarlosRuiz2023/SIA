@@ -280,7 +280,7 @@ const permisoPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Permiso del empleado actualizado correctamente",
-      cliente: detallePermisosEmpleado,
+      detallePermisosEmpleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.

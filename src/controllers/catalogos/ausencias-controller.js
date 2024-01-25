@@ -243,7 +243,7 @@ const ausenciasPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Ausencia actualizado correctamente",
-      empleado: ausencia,
+      ausencia,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.

@@ -12,7 +12,10 @@ const {
   equipoTrabajoDelete,
   equipoTrabajoActivarPut,
 } = require("../../controllers/catalogos/equipoTrabajo-controller");
-const { existeEquipoTrabajoPorId } = require("../../helpers/db-validators");
+const {
+  existeEquipoTrabajoPorId,
+  existenEmpleadosPorId,
+} = require("../../helpers/db-validators");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -44,7 +47,7 @@ router.put(
   [
     check("equipo_trabajo", "El Equipo Trabajo es obligatorio").not().isEmpty(),
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
-    check("empleados", "Los empleados son obligatorios").not().isEmpty(),
+    check("empleados").custom(existenEmpleadosPorId),
     validarCampos,
   ],
   equipoTrabajoPut

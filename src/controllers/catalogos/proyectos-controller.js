@@ -187,7 +187,7 @@ const proyectoPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Proyecto actualizado correctamente",
-      cliente: proyecto,
+      proyecto,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -220,7 +220,7 @@ const proyectoDelete = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Proyecto eliminado correctamente",
-      cliente: proyecto,
+      proyecto,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -298,7 +298,7 @@ const proyectoEtapaPost = async (req = request, res = response) => {
     const { id_proyecto, etapas } = req.body;
 
     // ELIMINA PERMISOS NO NECESARIOS.
-    await DetalleProyectoEtapaActividad.destroy({
+    await DetalleProyectoEtapa.destroy({
       where: {
         fk_cat_proyecto: id_proyecto,
       },
@@ -307,14 +307,14 @@ const proyectoEtapaPost = async (req = request, res = response) => {
     // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
     await Promise.all(
       etapas.map(async (etapa) => {
-        await DetalleProyectoEtapaActividad.create({
+        await DetalleProyectoEtapa.create({
           fk_cat_proyecto: id_proyecto,
           fk_cat_etapa: etapa,
         });
       })
     );
 
-    const detalle_proyecto_etapa = await DetalleProyectoEtapaActividad.findAll({
+    const detalle_proyecto_etapa = await DetalleProyectoEtapa.findAll({
       include: [
         {
           model: Proyectos,
