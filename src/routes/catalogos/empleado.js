@@ -106,7 +106,10 @@ router.put(
     check("fk_cat_vacaciones").custom(existeVacacionPorId),
     check("fk_cat_tolerancia").custom(existeToleranciaPorId),
     check("correo", "El correo no es válido").isEmail(),
-    check("correo").custom(emailInexiste),
+    check("correo").custom((correo, { req }) => {
+      const id = req.params.id; // Obtén el ID de los parámetros de la ruta
+      return emailInexiste(correo, id);
+    }),
     check("roles").custom(existenRolesPorId),
     validarCampos,
   ],

@@ -69,7 +69,10 @@ router.put(
     check("direccion", "La direccion es obligatoria").not().isEmpty(),
     check("empresa", "La empresa es obligatoria").not().isEmpty(),
     check("correo", "El correo no es válido").isEmail(),
-    check("correo").custom(emailInexiste),
+    check("correo").custom((correo, { req }) => {
+      const id = req.params.id; // Obtén el ID de los parámetros de la ruta
+      return emailInexiste(correo, id);
+    }),
     validarCampos,
   ],
   clientePut
