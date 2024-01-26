@@ -35,12 +35,13 @@ const actividadesGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      actividades,
+      results: actividades,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -71,12 +72,13 @@ const actividadIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      actividades,
+      results: actividades,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -107,12 +109,13 @@ const actividadesPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Actividad guardada correctamente",
-      actividad,
+      results: actividad,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -146,12 +149,13 @@ const actividadPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Actividad actualizada correctamente",
-      actividad,
+      results: actividad,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -179,12 +183,13 @@ const actividadDelete = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Actividad eliminada correctamente",
-      actividad,
+      results: actividad,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -352,11 +357,13 @@ const reporteActividadesPost = async (req, res) => {
         // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
         res.status(200).json({
           ok: true,
-          equipos, // Array de equipos obtenidos
-          proyectos, // Array de proyectos obtenidos
-          etapas, // Array de etapas obtenidas
-          actividades, // Array de actividades obtenidas
-          actividadesInformes: resultado, // Resultado final obtenido
+          results: {
+            equipos, // Array de equipos obtenidos
+            proyectos, // Array de proyectos obtenidos
+            etapas, // Array de etapas obtenidas
+            actividades, // Array de actividades obtenidas
+            actividadesInformes: resultado, // Resultado final obtenido
+          },
         });
         break;
       case 2:
@@ -486,10 +493,13 @@ const reporteActividadesPost = async (req, res) => {
         // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
         res.status(200).json({
           ok: true,
-          proyectos, // Array de proyectos obtenidos
-          etapas, // Array de etapas obtenidas
-          actividades, // Array de actividades obtenidas
-          actividadesInformes: resultado, // Resultado final obtenido
+          results: {
+            equipos, // Array de equipos obtenidos
+            proyectos, // Array de proyectos obtenidos
+            etapas, // Array de etapas obtenidas
+            actividades, // Array de actividades obtenidas
+            actividadesInformes: resultado, // Resultado final obtenido
+          },
         });
         break;
       case 3:
@@ -501,6 +511,7 @@ const reporteActividadesPost = async (req, res) => {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }

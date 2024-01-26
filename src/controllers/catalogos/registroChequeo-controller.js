@@ -62,12 +62,13 @@ const registroChequeoGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      registroChequeo,
+      results: registroChequeo,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -131,12 +132,13 @@ const reportePost = async (req, res) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      registroChequeo,
+      results: registroChequeo,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -406,12 +408,13 @@ const reporteEventosYTiempoPost = async (req, res) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      resultado,
+      results: resultado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -672,12 +675,13 @@ const registroChequeoPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Chequeo guardado correctamente",
-      registroChequeo,
+      results: registroChequeo,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -747,10 +751,15 @@ const notificarNoChequeoPost = async (req, res = response) => {
 
       await transporter.sendMail(mailOptions);
 
-      res.json({ ok: "Email sent successfully" });
+      res.json({ ok: true, msg: "Email sent successfully" });
     }
   } catch (error) {
-    console.error("Error sending email:", error.toString());
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Ha ocurrido un error, hable con el Administrador.",
+    });
   }
 };
 

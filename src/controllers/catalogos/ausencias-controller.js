@@ -34,12 +34,13 @@ const ausenciasGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      ausencias,
+      results: ausencias,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -80,12 +81,13 @@ const ausenciaIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      ausencias,
+      results: ausencias,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -126,12 +128,13 @@ const ausenciasIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      ausencias,
+      results: ausencias,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -163,7 +166,7 @@ const ausenciasPost = async (req = request, res = response) => {
     if (registros) {
       // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
       return res.status(400).json({
-        ok: true,
+        ok: false,
         msg: "Ausencia no registrada debido a que el empleado ha checado ese dia",
       });
     }
@@ -181,12 +184,13 @@ const ausenciasPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Ausencia registrada correctamente",
-      ausencia,
+      results: ausencia,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -221,7 +225,7 @@ const ausenciasPut = async (req = request, res = response) => {
     if (registros) {
       // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
       return res.status(400).json({
-        ok: true,
+        ok: false,
         msg: "Ausencia no registrada debido a que el empleado ha checado ese dia",
       });
     }
@@ -243,12 +247,13 @@ const ausenciasPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Ausencia actualizado correctamente",
-      ausencia,
+      results: ausencia,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }

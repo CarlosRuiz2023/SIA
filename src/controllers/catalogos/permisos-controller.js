@@ -30,14 +30,14 @@ const permisoGet = async (req = request, res = response) => {
     // RESPONDE CON UN OBJETO JSON QUE CONTIENE LOS PERMISOS OBTENIDOS.
     res.status(200).json({
       ok: true,
-      permisos,
+      results: permisos,
     });
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
-      err: error,
     });
   }
 };
@@ -78,12 +78,13 @@ const permisosGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      detallePermisosEmpleado,
+      results: detallePermisosEmpleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -125,12 +126,13 @@ const permisoIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      detallePermisosEmpleado,
+      results: detallePermisosEmpleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -171,12 +173,13 @@ const permisosIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      detallePermisosEmpleado,
+      results: detallePermisosEmpleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -222,12 +225,13 @@ const permisoPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Permiso del empleado registrado correctamente",
-      detallePermisosEmpleado,
+      results: detallePermisosEmpleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -280,12 +284,13 @@ const permisoPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Permiso del empleado actualizado correctamente",
-      detallePermisosEmpleado,
+      results: detallePermisosEmpleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }

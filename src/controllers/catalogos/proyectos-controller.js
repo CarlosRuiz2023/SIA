@@ -44,12 +44,13 @@ const proyectosGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      proyectos,
+      results: proyectos,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -97,12 +98,13 @@ const proyectoIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      proyectos,
+      results: proyectos,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -139,12 +141,13 @@ const proyectosPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Proyecto guardado correctamente",
-      proyecto,
+      results: proyecto,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -187,12 +190,13 @@ const proyectoPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Proyecto actualizado correctamente",
-      proyecto,
+      results: proyecto,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -220,12 +224,13 @@ const proyectoDelete = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Proyecto eliminado correctamente",
-      proyecto,
+      results: proyecto,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -275,12 +280,13 @@ const proyectoEquipoTrabajoPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Proyecto-Equipos de Trabajo actualizado correctamente",
-      detalle_proyecto_equipo_trabajo,
+      results: detalle_proyecto_equipo_trabajo,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -329,12 +335,13 @@ const proyectoEtapaPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Proyecto-Etapas actualizado correctamente",
-      detalle_proyecto_etapa,
+      results: detalle_proyecto_etapa,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }

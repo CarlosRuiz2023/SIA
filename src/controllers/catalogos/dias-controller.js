@@ -23,12 +23,13 @@ const diasGet = async (req = request, res = response) => {
     // RESPONDE CON UN OBJETO JSON QUE CONTIENE LAS TOLERANCIAS ACTIVAS OBTENIDAS.
     res.status(200).json({
       ok: true,
-      dias,
+      results: dias,
     });
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
     });
   }

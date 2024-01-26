@@ -47,12 +47,13 @@ const empleadosGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      empleados,
+      results: empleados,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -99,12 +100,13 @@ const empleadoIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      empleado,
+      results: empleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -190,15 +192,18 @@ const empleadoPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Empleado guardado correctamente",
-      persona,
-      empleado,
-      usuario,
-      roles: roles,
+      results: {
+        persona,
+        empleado,
+        usuario,
+        roles,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -283,12 +288,13 @@ const empleadoPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Empleado actualizado correctamente",
-      empleado: empleadoExistente,
+      results: empleadoExistente,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -319,12 +325,13 @@ const empleadoDelete = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Empleado eliminado correctamente",
-      empleado: empleadoExistente,
+      results: empleadoExistente,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -355,12 +362,13 @@ const empleadoActivarPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Empleado activado correctamente",
-      empleado: empleadoExistente,
+      results: empleadoExistente,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }

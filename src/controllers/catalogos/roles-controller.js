@@ -33,12 +33,14 @@ const rolesGet = async (req = request, res = response) => {
 
     // RESPONDER CON UN OBJETO JSON QUE CONTIENE LOS ROLES Y PERMISOS OBTENIDOS.
     res.status(200).json({
-      roles,
+      ok: true,
+      results: roles,
     });
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
     });
   }
@@ -76,12 +78,13 @@ const rolesPermisosPut = async (req, res) => {
     // RESPONDE CON UN OBJETO JSON QUE CONTIENE UN MENSAJE Y LOS ROLES ACTUALIZADOS.
     res.json({
       msg: "Permiso actualizado correctamente",
-      detalleRolSubModulo,
+      results: detalleRolSubModulo,
     });
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
     });
   }
@@ -107,12 +110,13 @@ const rolesTodosGet = async (req = request, res = response) => {
     // RESPONDE CON UN OBJETO JSON QUE CONTIENE LOS ROLES ACTIVOS OBTENIDOS.
     res.status(200).json({
       ok: true,
-      roles,
+      results: roles,
     });
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
     });
   }

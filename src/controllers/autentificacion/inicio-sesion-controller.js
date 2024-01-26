@@ -36,7 +36,7 @@ const inicioSesion = async (req, res) => {
       //RETORNAMOS MENSAJE DE ERROR
       return res.status(400).json({
         ok: false,
-        msg: "Usuario o contraseña no son correctos. Intenta de nuevo - CONTRASEÑA",
+        msg: "Usuario o contraseña no son correctos.",
       });
     }
 
@@ -51,12 +51,13 @@ const inicioSesion = async (req, res) => {
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      usuario,
+      results: usuario,
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -185,9 +186,14 @@ const recuperarContrasenia = async (req, res = response) => {
 
     await transporter.sendMail(mailOptions1);
 
-    res.json({ ok: "Email sent successfully" });
+    res.json({ ok: true, msg: "Email sent successfully" });
   } catch (error) {
-    console.error("Error sending email:", error.toString());
+    // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
+    });
   }
 };
 
@@ -202,15 +208,6 @@ const bloquearUsuario = async (req, res) => {
   try {
     // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
     const usuario = await Usuario.findOne({ where: { correo } });
-
-    //SI NO EXISTE EL USUARIOS MANDAR MENSAJE DE ERROR
-    if (!usuario) {
-      //RETORNAMOS MENSAJE DE ERROR
-      return res.status(400).json({
-        ok: false,
-        msg: "Usuario o contraseña no son correctos. Intenta de nuevo",
-      });
-    }
 
     // VERIFICA SI EL USUARIO ESTÁ ACTIVO.
     if (usuario.estatus == 2) {
@@ -229,12 +226,13 @@ const bloquearUsuario = async (req, res) => {
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      usuario,
+      results: usuario,
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -269,12 +267,13 @@ const usuarioActivar = async (req, res) => {
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      usuario,
+      results: usuario,
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -293,9 +292,10 @@ const cambiarContrasenia = async (req, res = response) => {
     let { password, passwordConfirm } = req.query;
 
     if (password !== passwordConfirm) {
-      return res
-        .status(400)
-        .json({ msg: "Error passwords diferentes intente de nuevo" });
+      return res.status(400).json({
+        ok: false,
+        msg: "Error passwords diferentes intente de nuevo",
+      });
     }
 
     //Encriptar la contraseña
@@ -311,8 +311,12 @@ const cambiarContrasenia = async (req, res = response) => {
 
     res.redirect(`${process.env.IP}/pagina.html`);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: "Error al actualizar password" });
+    // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
+    });
   }
 };
 
@@ -338,12 +342,13 @@ const cerrarSesion = async (req, res) => {
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      usuario,
+      results: usuario,
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
