@@ -20,6 +20,8 @@ const {
   alMenosUnRol,
   existeEmpleadoPorId,
   existenRolesPorId,
+  emailExiste,
+  emailInexiste,
 } = require("../../helpers/db-validators");
 
 // CREACIÓN DEL ENRUTADOR
@@ -57,6 +59,7 @@ router.post(
     check("fk_cat_vacaciones").custom(existeVacacionPorId),
     check("fk_cat_tolerancia").custom(existeToleranciaPorId),
     check("correo", "El correo no es válido").isEmail(),
+    check("correo").custom(emailExiste),
     check("roles").custom(existenRolesPorId),
     check("contrasenia", "El password debe de ser más de 6 letras").isLength({
       min: 6,
@@ -103,6 +106,7 @@ router.put(
     check("fk_cat_vacaciones").custom(existeVacacionPorId),
     check("fk_cat_tolerancia").custom(existeToleranciaPorId),
     check("correo", "El correo no es válido").isEmail(),
+    check("correo").custom(emailInexiste),
     check("roles").custom(existenRolesPorId),
     validarCampos,
   ],

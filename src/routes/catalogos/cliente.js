@@ -12,7 +12,11 @@ const {
   clienteActivarPut,
   clienteDelete,
 } = require("../../controllers/catalogos/cliente-controller");
-const { existeClientePorId } = require("../../helpers/db-validators");
+const {
+  existeClientePorId,
+  emailExiste,
+  emailInexiste,
+} = require("../../helpers/db-validators");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -34,6 +38,7 @@ router.post(
     check("direccion", "La direccion es obligatoria").not().isEmpty(),
     check("empresa", "La empresa es obligatoria").not().isEmpty(),
     check("correo", "El correo no es válido").isEmail(),
+    check("correo").custom(emailExiste),
     check("contrasenia", "El password debe de ser más de 6 letras").isLength({
       min: 6,
     }),
@@ -64,6 +69,7 @@ router.put(
     check("direccion", "La direccion es obligatoria").not().isEmpty(),
     check("empresa", "La empresa es obligatoria").not().isEmpty(),
     check("correo", "El correo no es válido").isEmail(),
+    check("correo").custom(emailInexiste),
     validarCampos,
   ],
   clientePut
