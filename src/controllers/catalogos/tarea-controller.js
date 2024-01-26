@@ -21,8 +21,9 @@ const tareasIdGet = async (req = request, res = response) => {
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
-    const tareas = await Tarea.findOne({
+    const tareas = await Tarea.findAll({
       where: query,
+      as: "actividad_tareas",
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
@@ -59,6 +60,7 @@ const tareasFaltantesIdGet = async (req = request, res = response) => {
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
     const tareas = await Tarea.findOne({
       where: query,
+      as: "actividad_tareas",
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
@@ -99,7 +101,7 @@ const tareasPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Tarea guardada correctamente",
-      actividad: tarea,
+      detalle_actividad_tarea,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.

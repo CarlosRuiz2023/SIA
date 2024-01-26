@@ -231,7 +231,7 @@ const existeProyectoPorId = async (id_cat_proyecto) => {
 
 const existeEtapaPorId = async (id_cat_etapa) => {
   // Verificar si la visita existe por su ID
-  const etapa = await Tarea.findByPk(id_cat_etapa);
+  const etapa = await Etapa.findByPk(id_cat_etapa);
   if (!etapa) {
     throw new Error(`La Etapa con ID ${id_cat_etapa} no existe`);
   }
@@ -314,6 +314,22 @@ const existenRolesPorId = async (roles) => {
   }
 };
 
+const existenActividadesPorId = async (actividades) => {
+  let validador = true;
+  let identificador = 0;
+  for (let index = 0; index < actividades.length; index++) {
+    // Verificar si la visita existe por su ID
+    const actividad_encontrada = await Actividades.findByPk(actividades[index]);
+    if (!actividad_encontrada) {
+      identificador = actividades[index];
+      validador = false;
+    }
+  }
+  if (!validador) {
+    throw new Error(`La actividad con ID ${identificador} no existe`);
+  }
+};
+
 module.exports = {
   emailInexiste,
   emailExiste,
@@ -340,4 +356,5 @@ module.exports = {
   existenEtapasPorId,
   existenEmpleadosPorId,
   existenRolesPorId,
+  existenActividadesPorId,
 };

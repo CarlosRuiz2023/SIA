@@ -12,7 +12,10 @@ const {
   etapaDelete,
   etapaActividadesPost,
 } = require("../../controllers/catalogos/etapas-controller");
-const { existeEtapaPorId } = require("../../helpers/db-validators");
+const {
+  existeEtapaPorId,
+  existenActividadesPorId,
+} = require("../../helpers/db-validators");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -60,11 +63,11 @@ router.delete(
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
 router.post(
   "/actividades",
-  /* [
-    check("etapa_nombre", "La actividad_nombre es obligatoria").not().isEmpty(),
-    check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
+  [
+    check("id_etapa").custom(existeEtapaPorId),
+    check("actividades").custom(existenActividadesPorId),
     validarCampos,
-  ], */
+  ],
   etapaActividadesPost
 );
 

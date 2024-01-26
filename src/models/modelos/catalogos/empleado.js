@@ -27,7 +27,7 @@ const Empleado = pool.define(
     fecha_contratacion: {
       type: Sequelize.STRING,
     },
-    fecha_Retiro: {
+    fecha_retiro: {
       type: Sequelize.STRING,
     },
     estatus: {

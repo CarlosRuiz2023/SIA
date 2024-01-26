@@ -9,39 +9,42 @@
 const { Pool } = require("pg");
 
 // IMPORTACIÓN DE LA BIBLIOTECA 'Sequelize' PARA LA CONEXIÓN A LA BASE DE DATOS.
-const Sequelize = require('sequelize');
+const Sequelize = require("sequelize");
 
 // OBTENCIÓN DE LAS VARIABLES DE ENTORNO PARA LA CONFIGURACIÓN DE LA BASE DE DATOS.
 const database = process.env.NAME_DATABASE;
 const username = process.env.USER_NAME_DATABASE;
 const password = process.env.PASSWORD_DATABASE;
 const host = process.env.SERVER_DATABASE;
+const puerto = process.env.PORT_DATABASE;
 
 // CREACIÓN DE UNA INSTANCIA DEL CLIENTE DE BASE DE DATOS POSTGRESQL.
 const pool = new Sequelize(database, username, password, {
   host: host,
-  dialect: 'postgres',
-  port: 5432,
-  dialectOptions: {
+  dialect: "postgres",
+  port: puerto,
+  /* dialectOptions: {
     ssl: {
       require: true,
     },
-  },
+  }, */
 });
 
 // FUNCIÓN ASÍNCRONA PARA AUTENTICAR LA CONEXIÓN A LA BASE DE DATOS.
 (async () => {
   try {
     await pool.authenticate();
-    console.log('La conexión de la base de datos ha sido exitosa.');
+    console.log("La conexión de la base de datos ha sido exitosa.");
   } catch (error) {
-    console.error('Ha ocurrido un error al hacer conexión con la Base de Datos:', error);
+    console.error(
+      "Ha ocurrido un error al hacer conexión con la Base de Datos:",
+      error
+    );
   }
 })();
 
 // EXPORTACIÓN DE LA INSTANCIA DE LA CONEXIÓN A LA BASE DE DATOS.
 module.exports = pool;
-
 
 // // Crea una nueva instancia de Pool, que se utiliza para gestionar conexiones a la base de datos
 // const pool = new Pool({
@@ -67,5 +70,3 @@ module.exports = pool;
 
 // // Exporta la instancia del Pool para que pueda ser utilizada en otros archivos
 // module.exports = pool;
-
-

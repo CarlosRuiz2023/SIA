@@ -167,7 +167,7 @@ const empleadoPost = async (req = request, res = response) => {
       sueldo,
       fecha_nacimiento,
       fecha_contratacion,
-      fecha_Retiro: null,
+      fecha_retiro: null,
       estatus: 1,
       fk_cat_persona: persona.id_cat_persona,
       fk_cat_usuario: usuario.id_cat_usuario,

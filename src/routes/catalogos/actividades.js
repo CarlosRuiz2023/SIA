@@ -10,6 +10,7 @@ const {
   actividadIdGet,
   actividadPut,
   actividadDelete,
+  reporteActividadesPost,
 } = require("../../controllers/catalogos/actividades-controller");
 const { existeActividadPorId } = require("../../helpers/db-validators");
 
@@ -58,6 +59,19 @@ router.delete(
   "/:id",
   [check("id").custom(existeActividadPorId), validarCampos],
   actividadDelete
+);
+
+// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+router.post(
+  "/reporte/",
+  /* [
+    check("actividad_nombre", "La actividad_nombre es obligatoria")
+      .not()
+      .isEmpty(),
+    check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
+    validarCampos,
+  ], */
+  reporteActividadesPost
 );
 
 // EXPORTACIÓN DEL ENRUTADOR

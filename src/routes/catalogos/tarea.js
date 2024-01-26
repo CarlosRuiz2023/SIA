@@ -27,7 +27,7 @@ router.post(
     check("id_actividad").custom(existeActividadPorId),
     check("tarea", "La descripcion es obligatoria").not().isEmpty(),
     check("duracion", "Formato de hora incorrecto").custom((value) => {
-      return /\d{2}:\d{2}:\d{2}-\d{2}/.test(value);
+      return /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(value);
     }),
     validarCampos,
   ],
@@ -56,7 +56,7 @@ router.put(
     check("id_empleado").custom(existeEmpleadoPorId),
     check("tarea", "La descripcion es obligatoria").not().isEmpty(),
     check("duracion", "Formato de hora incorrecto").custom((value) => {
-      return /\d{2}:\d{2}:\d{2}-\d{2}/.test(value);
+      return /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(value);
     }),
     check("estatus", "El estatus debe ser un numero entre 1 y 2")
       .isNumeric()
