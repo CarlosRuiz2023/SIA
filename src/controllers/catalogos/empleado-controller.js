@@ -161,7 +161,12 @@ const empleadoPost = async (req = request, res = response) => {
     });
 
     // LLAMADA A LA FUNCIÓN PARA GENERAR EL NÚMERO DE EMPLEADO.
-    const numeroEmpleado = generarNumeroEmpleado();
+    const numeroEmpleado = generarNumeroEmpleado(
+      nombre,
+      apellido_Paterno,
+      apellido_Materno,
+      fecha_contratacion
+    );
 
     // CREA EL EMPLEADO ASOCIANDO LA PERSONA Y EL USUARIO.
     const empleado = await Empleado.create({
@@ -243,8 +248,17 @@ const empleadoPut = async (req = request, res = response) => {
       ],
     });
 
+    // LLAMADA A LA FUNCIÓN PARA GENERAR EL NÚMERO DE EMPLEADO.
+    const numeroEmpleado = generarNumeroEmpleado(
+      nombre,
+      apellido_Paterno,
+      apellido_Materno,
+      fecha_contratacion
+    );
+
     // ACTUALIZA LOS CAMPOS DIRECTOS DEL MODELO EMPLEADO.
     empleadoExistente.sueldo = sueldo;
+    empleadoExistente.numero_empleado = numeroEmpleado;
     empleadoExistente.fecha_nacimiento = fecha_nacimiento;
     empleadoExistente.fecha_Contratacion = fecha_contratacion;
     empleadoExistente.fk_cat_puesto_trabajo = fk_cat_puesto_trabajo;
