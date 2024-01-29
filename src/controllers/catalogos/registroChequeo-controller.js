@@ -175,90 +175,14 @@ const reporteEventosYTiempoPost = async (req, res) => {
 
     switch (tipo) {
       case 1:
-        /* resultado = await RegistroChequeo.findAll({
+        resultado = await RegistroChequeo.findAll({
           attributes: [
             [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "fecha_dia"],
             [
               pool.fn(
                 "COUNT",
                 pool.literal(`
-                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
-              `)
-              ),
-              "R",
-            ],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
-              `)
-              ),
-              "S/R",
-            ],
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_extra",
-            ],
-
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(
-                  pool.fn("SUM", pool.col("tiempo_retardo")),
-                  "interval"
-                ),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_retardo",
-            ],
-          ],
-          group: ["fecha_dia", "id_cat_empleado", "id_cat_persona"],
-          order: [["fecha_dia"]],
-          where: query,
-          include: [
-            {
-              model: Empleado,
-              as: "empleado",
-              include: [{ model: Persona, as: "persona" }],
-            },
-          ],
-        }); */
-        //resultado = await Ausencia.findAll({ where: query });
-        resultado.ausencia = await Ausencia.findAll({
-          attributes: [
-            [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "fecha_dia"],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN cat_ausencias.estatus = 0 THEN 1 ELSE NULL END
-              `)
-              ),
-              "A",
-            ],
-          ],
-          group: ["fecha_dia", "id_cat_empleado"],
-          order: [["fecha_dia"]],
-          where: query,
-          include: {
-            model: Empleado,
-            as: "empleado",
-          },
-        });
-
-        resultado.chequeos = await RegistroChequeo.findAll({
-          attributes: [
-            [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "fecha_dia"],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
+                CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
               `)
               ),
               "R",
@@ -304,7 +228,6 @@ const reporteEventosYTiempoPost = async (req, res) => {
             },
           ],
         });
-
         break;
       case 2:
         resultado = await RegistroChequeo.findAll({
@@ -314,7 +237,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
+                CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
               `)
               ),
               "R",
@@ -377,7 +300,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
+                CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
               `)
               ),
               "R",
@@ -432,7 +355,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
+                CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
               `)
               ),
               "R",

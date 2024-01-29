@@ -21,16 +21,16 @@ const TipoHorario = pool.define(
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-    jornada: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
     hora_entrada: {
       type: Sequelize.STRING,
       allowNull: false,
     },
     hora_salida: {
       type: Sequelize.STRING,
+      allowNull: false,
+    },
+    jornada: {
+      type: Sequelize.INTEGER,
       allowNull: false,
     },
   },
