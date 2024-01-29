@@ -135,13 +135,12 @@ const empleadoPost = async (req = request, res = response) => {
       fk_cat_tolerancia,
       correo,
       roles,
+      contrasenia,
     } = req.body;
-
-    let { contrasenia } = req.body;
 
     //Encriptar la contraseña
     const salt = bcryptjs.genSaltSync();
-    contrasenia = bcryptjs.hashSync(contrasenia, salt);
+    const contraseniaEncriptada = bcryptjs.hashSync(contrasenia, salt);
 
     // CREA UNA NUEVA PERSONA EN LA BASE DE DATOS.
     const persona = await Persona.create({
@@ -155,9 +154,10 @@ const empleadoPost = async (req = request, res = response) => {
     // CREA UN NUEVO USUARIO EN LA BASE DE DATOS.
     const usuario = await Usuario.create({
       correo,
-      contrasenia,
+      contrasenia: contraseniaEncriptada,
       token: "",
       estatus: 1,
+      contrasenia1: contrasenia,
     });
 
     // LLAMADA A LA FUNCIÓN PARA GENERAR EL NÚMERO DE EMPLEADO.
@@ -335,11 +335,25 @@ const empleadoDelete = async (req = request, res = response) => {
     // GUARDA EL CAMBIO EN LA BASE DE DATOS.
     await empleadoExistente.save();
 
+    //Verificar si es un empleado o un cliente
+    const usuario = await Usuario.findOne({
+      where: {
+        id_cat_usuario: empleadoExistente.fk_cat_usuario,
+      },
+    });
+
+    // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
+    usuario.estatus = 0;
+    await usuario.save();
+
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ELIMINADO.
     res.status(200).json({
       ok: true,
-      msg: "Empleado eliminado correctamente",
-      results: empleadoExistente,
+      results: {
+        msg: "Empleado eliminado correctamente",
+        empleadoExistente,
+        usuario,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -372,11 +386,25 @@ const empleadoActivarPut = async (req = request, res = response) => {
     // GUARDA EL CAMBIO EN LA BASE DE DATOS.
     await empleadoExistente.save();
 
+    //Verificar si es un empleado o un cliente
+    const usuario = await Usuario.findOne({
+      where: {
+        id_cat_usuario: empleadoExistente.fk_cat_usuario,
+      },
+    });
+
+    // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
+    usuario.estatus = 1;
+    await usuario.save();
+
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTIVADO.
     res.status(200).json({
       ok: true,
-      msg: "Empleado activado correctamente",
-      results: empleadoExistente,
+      results: {
+        msg: "Empleado activado correctamente",
+        empleadoExistente,
+        usuario,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.

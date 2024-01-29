@@ -10,6 +10,8 @@ const { generarJWT } = require("../../helpers/generar-jwt");
 const Usuario = require("../../models/modelos/usuario");
 // IMPORTACIÓN DEL MODELO 'TRANSPORTER' DESDE LA RUTA CORRESPONDIENTE.
 const { transporter } = require("../../helpers/enviar-emails");
+const Persona = require("../../models/modelos/catalogos/persona");
+const Empleado = require("../../models/modelos/catalogos/empleado");
 
 /**
  * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
@@ -23,12 +25,17 @@ const inicioSesion = async (req, res) => {
 
   try {
     // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
-    const usuario = await Usuario.findOne({ where: { correo } });
+    const empleado = await Empleado.findOne({
+      include: [
+        { model: Usuario, as: "usuario", where: { correo } },
+        { model: Persona, as: "persona" },
+      ],
+    });
 
     // VERIFICAMOS SI LA CONTRASEÑA PROPORCIONADA ES CORRECTA.
     const validarContrasenia = await bcryptjs.compare(
       contrasenia,
-      usuario.contrasenia
+      empleado.usuario.contrasenia
     );
 
     //VERIFICA LA CONTRASÑA
@@ -39,19 +46,18 @@ const inicioSesion = async (req, res) => {
         msg: "Usuario o contraseña no son correctos.",
       });
     }
-
     //Generar el JWT
-    const token = await generarJWT(usuario.id_cat_usuario);
+    const token = await generarJWT(empleado.usuario.id_cat_usuario);
 
-    usuario.token = token;
+    empleado.usuario.token = token;
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
-    await usuario.save();
+    await empleado.usuario.save();
 
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      results: usuario,
+      results: empleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.

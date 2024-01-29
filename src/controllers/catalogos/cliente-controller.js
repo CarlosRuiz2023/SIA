@@ -99,13 +99,12 @@ const clientePost = async (req = request, res = response) => {
       direccion,
       empresa,
       correo,
+      contrasenia,
     } = req.body;
-
-    let { contrasenia } = req.body;
 
     //Encriptar la contraseña
     const salt = bcryptjs.genSaltSync();
-    contrasenia = bcryptjs.hashSync(contrasenia, salt);
+    const contraseniaEncriptada = bcryptjs.hashSync(contrasenia, salt);
 
     // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
     const persona = await Persona.create({
@@ -119,9 +118,10 @@ const clientePost = async (req = request, res = response) => {
     // CREAMOS UN NUEVO USUARIO EN LA BASE DE DATOS.
     const usuario = await Usuario.create({
       correo,
-      contrasenia,
+      contrasenia: contraseniaEncriptada,
       token: "",
       estatus: 1,
+      contrasenia1: contrasenia,
     });
 
     // CREAMOS UN NUEVO CLIENTE EN LA BASE DE DATOS.
@@ -228,11 +228,25 @@ const clienteDelete = async (req = request, res = response) => {
     clienteExiste.estatus = 0;
     await clienteExiste.save();
 
+    //Verificar si es un empleado o un cliente
+    const usuario = await Usuario.findOne({
+      where: {
+        id_cat_usuario: clienteExiste.fk_cat_usuario,
+      },
+    });
+
+    // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
+    usuario.estatus = 0;
+    await usuario.save();
+
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ELIMINACIÓN.
     res.status(200).json({
       ok: true,
-      msg: "Cliente eliminado correctamente",
-      results: clienteExiste,
+      results: {
+        msg: "Cliente eliminado correctamente",
+        clienteExiste,
+        usuario,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -262,11 +276,25 @@ const clienteActivarPut = async (req = request, res = response) => {
     clienteExiste.estatus = 1;
     await clienteExiste.save();
 
+    //Verificar si es un empleado o un cliente
+    const usuario = await Usuario.findOne({
+      where: {
+        id_cat_usuario: clienteExiste.fk_cat_usuario,
+      },
+    });
+
+    // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
+    usuario.estatus = 1;
+    await usuario.save();
+
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ACTIVACIÓN.
     res.status(200).json({
       ok: true,
-      msg: "Cliente activado correctamente",
-      results: clienteExiste,
+      results: {
+        msg: "Cliente activado correctamente",
+        clienteExiste,
+        usuario,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.

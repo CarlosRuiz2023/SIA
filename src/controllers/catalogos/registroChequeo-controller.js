@@ -24,6 +24,7 @@ const {
   sumarHoras,
   restarHoras,
 } = require("../../helpers/operacionesHorarias");
+const Ausencia = require("../../models/modelos/catalogos/ausencias");
 
 /**
  * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
@@ -174,7 +175,83 @@ const reporteEventosYTiempoPost = async (req, res) => {
 
     switch (tipo) {
       case 1:
-        resultado = await RegistroChequeo.findAll({
+        /* resultado = await RegistroChequeo.findAll({
+          attributes: [
+            [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "fecha_dia"],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 1 THEN 1 ELSE NULL END
+              `)
+              ),
+              "R",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
+              `)
+              ),
+              "S/R",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_extra",
+            ],
+
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn("SUM", pool.col("tiempo_retardo")),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_retardo",
+            ],
+          ],
+          group: ["fecha_dia", "id_cat_empleado", "id_cat_persona"],
+          order: [["fecha_dia"]],
+          where: query,
+          include: [
+            {
+              model: Empleado,
+              as: "empleado",
+              include: [{ model: Persona, as: "persona" }],
+            },
+          ],
+        }); */
+        //resultado = await Ausencia.findAll({ where: query });
+        resultado.ausencia = await Ausencia.findAll({
+          attributes: [
+            [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "fecha_dia"],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN cat_ausencias.estatus = 0 THEN 1 ELSE NULL END
+              `)
+              ),
+              "A",
+            ],
+          ],
+          group: ["fecha_dia", "id_cat_empleado"],
+          order: [["fecha_dia"]],
+          where: query,
+          include: {
+            model: Empleado,
+            as: "empleado",
+          },
+        });
+
+        resultado.chequeos = await RegistroChequeo.findAll({
           attributes: [
             [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "fecha_dia"],
             [
@@ -227,6 +304,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
             },
           ],
         });
+
         break;
       case 2:
         resultado = await RegistroChequeo.findAll({
@@ -415,7 +493,9 @@ const reporteEventosYTiempoPost = async (req, res) => {
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -674,15 +754,16 @@ const registroChequeoPost = async (req = request, res = response) => {
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
     res.status(201).json({
       ok: true,
-      msg: "Chequeo guardado correctamente",
-      results: registroChequeo,
+      results: { registroChequeo, msg: "Chequeo guardado correctamente" },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -724,41 +805,66 @@ const notificarNoChequeoPost = async (req, res = response) => {
       name = `${persona.nombre} ${persona.apellido_Paterno} ${persona.apellido_Materno}`;
     }
 
-    if (tipo === 1) {
-      const asunto = "Entrada de comida no checada";
-      const mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">Hola ${name},</h3> <p style="line-height: 1.5;"> Notamos que aún no has registrado tu regreso de comer el día de hoy. Te recomendamos checarla y completarla lo antes posible para tener un registro preciso de tu tiempo diario. </p> <p style="line-height: 1.5;"><b>No dejes pasar más tiempo, ingresa a tu cuenta y capture su entrada despues de comer.</b></p> </div>`;
+    let asunto = "";
+    let mensaje = "";
+    let mailOptions = {};
 
-      const mailOptions = {
-        from: '"Soporte" <soporte@midominio.com>',
-        to: correo,
-        subject: asunto,
-        html: mensaje,
-      };
+    switch (tipo) {
+      case 1:
+        asunto = "Entrada a la empresa no checada";
+        mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">Hola ${name},</h3> <p style="line-height: 1.5;"> Notamos que aún no has registrado tu ingreso a la empresa el día de hoy. Te recomendamos checarla y completarla lo antes posible para tener un registro preciso de tu tiempo diario. </p> <p style="line-height: 1.5;"><b>No dejes pasar más tiempo, ingresa a tu cuenta y capture su entrada a la empresa.</b></p> </div>`;
 
-      await transporter.sendMail(mailOptions);
+        mailOptions = {
+          from: '"Soporte" <soporte@midominio.com>',
+          to: correo,
+          subject: asunto,
+          html: mensaje,
+        };
+        break;
+      case 2:
+        asunto = "Salida a comer no checada";
+        mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">Hola ${name},</h3> <p style="line-height: 1.5;"> Notamos que aún no has registrado tu salida a comer el día de hoy. Te recomendamos checarla y completarla lo antes posible para tener un registro preciso de tu tiempo diario. </p> <p style="line-height: 1.5;"><b>No dejes pasar más tiempo, ingresa a tu cuenta y capture su salida a comer.</b></p> </div>`;
 
-      res.json({ ok: "Email sent successfully" });
-    } else {
-      const asunto = "Salida de la empresa no checada";
-      const mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">Hola ${name},</h3> <p style="line-height: 1.5;"> Notamos que aún no has registrado tu salida de la empresa el día de hoy. Te recomendamos checarla y completarla lo antes posible para tener un registro preciso de tu tiempo diario. </p> <p style="line-height: 1.5;"><b>No dejes pasar más tiempo, ingresa a tu cuenta y capture su salida de la empresa.</b></p> </div>`;
+        mailOptions = {
+          from: '"Soporte" <soporte@midominio.com>',
+          to: correo,
+          subject: asunto,
+          html: mensaje,
+        };
+        break;
+      case 3:
+        asunto = "Salida de la empresa no checada";
+        mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">Hola ${name},</h3> <p style="line-height: 1.5;"> Notamos que aún no has registrado tu salida de la empresa el día de hoy. Te recomendamos checarla y completarla lo antes posible para tener un registro preciso de tu tiempo diario. </p> <p style="line-height: 1.5;"><b>No dejes pasar más tiempo, ingresa a tu cuenta y capture su salida de la empresa.</b></p> </div>`;
 
-      const mailOptions = {
-        from: '"Soporte" <soporte@midominio.com>',
-        to: correo,
-        subject: asunto,
-        html: mensaje,
-      };
+        mailOptions = {
+          from: '"Soporte" <soporte@midominio.com>',
+          to: correo,
+          subject: asunto,
+          html: mensaje,
+        };
+        break;
+      case 4:
+        asunto = "Salida de la empresa no checada";
+        mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">Hola ${name},</h3> <p style="line-height: 1.5;"> Notamos que aún no has registrado tu salida de la empresa el día de hoy. Te recomendamos checarla y completarla lo antes posible para tener un registro preciso de tu tiempo diario. </p> <p style="line-height: 1.5;"><b>No dejes pasar más tiempo, ingresa a tu cuenta y capture su salida de la empresa.</b></p> </div>`;
 
-      await transporter.sendMail(mailOptions);
-
-      res.json({ ok: true, msg: "Email sent successfully" });
+        mailOptions = {
+          from: '"Soporte" <soporte@midominio.com>',
+          to: correo,
+          subject: asunto,
+          html: mensaje,
+        };
+        break;
+        await transporter.sendMail(mailOptions);
+        res.json({ ok: true, results: { msg: "Email sent successfully" } });
     }
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
