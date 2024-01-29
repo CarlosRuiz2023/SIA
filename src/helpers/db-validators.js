@@ -69,11 +69,32 @@ const emailInexiste = async (correo = "", id_cat_usuario = 0) => {
       correo: correo,
     },
   });
+  console.log(usuario);
   if (usuario) {
-    if (usuario.dataValues.id_cat_usuario != `${id_cat_usuario}`) {
-      throw new Error(
-        `El correo ${correo} ya está registrado con otro usuario`
-      );
+    //Verificar si es un empleado o un cliente
+    const empleado = await Empleado.findOne({
+      where: {
+        fk_cat_usuario: usuario.dataValues.id_cat_usuario,
+      },
+    });
+    if (!empleado) {
+      //Verificar si es un empleado o un cliente
+      const cliente = await Cliente.findOne({
+        where: {
+          fk_cat_usuario: usuario.dataValues.id_cat_usuario,
+        },
+      });
+      if (cliente.dataValues.id_cat_cliente != `${id_cat_usuario}`) {
+        throw new Error(
+          `El correo ${correo} ya está registrado con otro usuario`
+        );
+      }
+    } else {
+      if (empleado.dataValues.id_cat_empleado != `${id_cat_usuario}`) {
+        throw new Error(
+          `El correo ${correo} ya está registrado con otro usuario`
+        );
+      }
     }
   }
 };

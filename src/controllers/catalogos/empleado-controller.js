@@ -188,7 +188,7 @@ const empleadoPost = async (req = request, res = response) => {
       roles.map(async (rol) => {
         await DetalleUsuarioRol.create({
           fk_cat_usuario: usuario.id_cat_usuario,
-          fk_cat_rol: rol.id_cat_role,
+          fk_cat_rol: rol,
         });
       })
     );
@@ -284,7 +284,7 @@ const empleadoPut = async (req = request, res = response) => {
       roles.map(async (rol) => {
         await DetalleUsuarioRol.create({
           fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario,
-          fk_cat_rol: rol.id_cat_role,
+          fk_cat_rol: rol,
         });
       })
     );
