@@ -29,6 +29,10 @@ const DetalleEtapaActividad = pool.define(
       type: Sequelize.STRING,
       allowNull: false,
     },
+    estatus: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
   },
   {
     timestamps: false,

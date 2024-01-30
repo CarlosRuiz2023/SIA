@@ -191,7 +191,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
+                CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
               `)
               ),
               "S/R",
@@ -246,7 +246,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
+                CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
               `)
               ),
               "S/R",
@@ -309,7 +309,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
+                CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
               `)
               ),
               "S/R",
@@ -364,7 +364,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-                CASE WHEN fk_cat_eventos = 2 THEN 2 ELSE NULL END
+                CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
               `)
               ),
               "S/R",

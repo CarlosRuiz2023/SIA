@@ -243,6 +243,7 @@ const etapaActividadesPost = async (req = request, res = response) => {
         fk_cat_etapa: id_etapa,
         fk_cat_actividad: actividad,
         fecha: fechaActual,
+        estatus: 1,
       }))
     );
 
