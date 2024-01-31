@@ -307,11 +307,17 @@ const reporteEntradasSalidasPost = async (req, res) => {
       );
 
       totales[idCatEmpleado].sumaA += parseInt(resultado.A);
+
+      totales[idCatEmpleado].sumaAs += parseInt(resultado.As);
+
+      totales[idCatEmpleado].sumaR += parseInt(resultado.R);
+
+      totales[idCatEmpleado].sumaSR += parseInt(resultado.SR);
     });
 
     // Restar tiempos extras y a reponer
     Object.keys(totales).forEach((idEmpleado) => {
-      const resultado = resultadosFinales[idEmpleado];
+      const resultado = totales[idEmpleado];
 
       // Convertir tiempos extras y a reponer a segundos
       let TotalTiemposReponer = "00:00:00";
@@ -324,8 +330,8 @@ const reporteEntradasSalidasPost = async (req, res) => {
       if (!timeRegex.test(TotalTiemposExtra)) {
         TotalTiemposExtra = "00:00:00";
         TotalTiemposReponer = restarHoras(
-          resultado.sumaTiemposExtra,
-          resultado.sumaTiemposReponer
+          resultado.sumaTiemposReponer,
+          resultado.sumaTiemposExtra
         );
         // Actualizar la propiedad con la nueva suma de horas trabajadas
         resultado.sumaTiemposExtra = TotalTiemposExtra;

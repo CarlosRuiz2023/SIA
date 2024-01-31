@@ -1,5 +1,7 @@
 // IMPORTACIÓN DE OBJETOS 'RESPONSE' Y 'REQUEST' DE LA BIBLIOTECA 'EXPRESS'.
 const { response, request } = require("express");
+// IMPORTACIÓN DEL OPERADOR 'Op' DE SEQUELIZE PARA REALIZAR OPERACIONES COMPLEJAS.
+const { Op } = require("sequelize");
 // IMPORTACIÓN DE LOS MODELOS DE BASE DE DATOS.
 const Permisos = require("../../models/modelos/catalogos/permisos");
 const DetallePermisosEmpleado = require("../../models/modelos/detalles/detalle_permisos_empleado");
@@ -195,11 +197,10 @@ const permisoPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
     const {
-      fecha_inicio,
+      fecha_permiso,
       tiempo_horas,
       id_cat_empleado,
       id_cat_permiso,
-      fecha_fin,
       detalle = "",
     } = req.body;
 
@@ -208,14 +209,40 @@ const permisoPost = async (req = request, res = response) => {
     const fecha_solicitada = date.toISOString().slice(0, 10);
     const hora_solicitada = date.toTimeString().slice(0, 8);
 
+    // Verificar si hay permisos existentes en los últimos 3 días hábiles
+    const tresDiasAntes = new Date(fecha_permiso);
+    tresDiasAntes.setDate(tresDiasAntes.getDate() - 3);
+
+    // Verificar si hay permisos existentes en los últimos 3 días hábiles
+    const tresDiasExtras = new Date(fecha_permiso);
+    tresDiasExtras.setDate(tresDiasExtras.getDate() + 3);
+
+    const existenPermisosAnteriores = await DetallePermisosEmpleado.findOne({
+      where: {
+        fk_cat_empleado: id_cat_empleado,
+        estatus: 1,
+        fecha_permiso: {
+          [Op.gte]: tresDiasAntes,
+          [Op.lte]: tresDiasExtras,
+        },
+      },
+    });
+
+    if (existenPermisosAnteriores) {
+      // Hay permisos existentes en los últimos 3 días hábiles
+      return res.status(400).json({
+        ok: false,
+        msg: "No se puede completar el permiso. Ya hay permisos en los últimos 3 días hábiles.",
+      });
+    }
+
     // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.create({
-      fecha_inicio,
+      fecha_permiso,
       tiempo_horas,
       estatus: 1,
       fk_cat_empleado: id_cat_empleado,
       fk_cat_permiso: id_cat_permiso,
-      fecha_fin,
       detalle,
       fecha_solicitada: fecha_solicitada,
       hora_solicitada: hora_solicitada,
@@ -249,14 +276,7 @@ const permisoPut = async (req = request, res = response) => {
     const { id } = req.params;
 
     // EXTRAEMOS LOS DATOS DEL CUERPO DE LA SOLICITUD.
-    const {
-      fecha_inicio,
-      tiempo_horas,
-      estatus,
-      id_cat_permiso,
-      fecha_fin,
-      detalle = "",
-    } = req.body;
+    const { estatus, id_cat_permiso, detalle = "" } = req.body;
 
     // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findByPk(id);
@@ -265,16 +285,15 @@ const permisoPut = async (req = request, res = response) => {
     if (!detallePermisosEmpleado) {
       return res.status(404).json({
         ok: false,
-        msg: "Permiso no encontrado",
+        results: {
+          msg: "Permiso no encontrado",
+        },
       });
     }
 
     // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
-    detallePermisosEmpleado.fecha_inicio = fecha_inicio;
-    detallePermisosEmpleado.tiempo_horas = tiempo_horas;
     detallePermisosEmpleado.estatus = estatus;
     detallePermisosEmpleado.fk_cat_permiso = id_cat_permiso;
-    detallePermisosEmpleado.fecha_fin = fecha_fin;
     detallePermisosEmpleado.detalle = detalle;
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.

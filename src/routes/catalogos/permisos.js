@@ -34,15 +34,14 @@ router.post(
   "/",
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
-    check("fecha_inicio", "Formato de fecha incorrecto").custom((value) => {
+    check("fecha_permiso", "Formato de fecha incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),
-    check("tiempo_horas", "El tiempo_horas debe ser un numero.").isNumeric(),
+    check("tiempo_horas", "El tiempo_horas debe ser un numero.")
+      .isNumeric()
+      .isInt({ min: 1, max: 4 }),
     check("id_cat_empleado").custom(existeEmpleadoPorId),
     check("id_cat_permiso").custom(existePermisoPorId),
-    check("fecha_fin", "Formato de fecha incorrecto").custom((value) => {
-      return /\d{4}-\d{2}-\d{2}/.test(value);
-    }),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],
@@ -76,17 +75,10 @@ router.put(
   "/:id",
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
-    check("fecha_inicio", "Formato de fecha incorrecto").custom((value) => {
-      return /\d{4}-\d{2}-\d{2}/.test(value);
-    }),
-    check("tiempo_horas", "El tiempo_horas debe ser un numero.").isNumeric(),
     check("estatus", "El estatus debe ser un numero entre 0 y 2")
       .isNumeric()
       .isInt({ min: 0, max: 2 }),
     check("id_cat_permiso").custom(existePermisoPorId),
-    check("fecha_fin", "Formato de fecha incorrecto").custom((value) => {
-      return /\d{4}-\d{2}-\d{2}/.test(value);
-    }),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],

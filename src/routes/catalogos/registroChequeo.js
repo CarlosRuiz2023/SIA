@@ -18,6 +18,7 @@ const {
   notificarNoChequeoPost,
   reportePost,
   reporteEventosYTiempoPost,
+  reporteEventosEmpleadoPost,
 } = require("../../controllers/catalogos/registroChequeo-controller");
 
 // CREACIÓN DEL ENRUTADOR
@@ -61,6 +62,26 @@ router.post(
     validarCampos,
   ],
   reporteEventosYTiempoPost
+);
+
+// DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
+router.post(
+  "/reporteEmpleado",
+  /* [
+    check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
+      (value) => {
+        return /\d{4}-\d{2}-\d{2}/.test(value);
+      }
+    ),
+    check("fecha_fin", "Formato de fecha_fin incorrecto").custom((value) => {
+      return /\d{4}-\d{2}-\d{2}/.test(value);
+    }),
+    check("tipo", "El tipo debe ser un numero entre 1 y 4")
+      .isNumeric()
+      .isInt({ min: 1, max: 4 }),
+    validarCampos,
+  ], */
+  reporteEventosEmpleadoPost
 );
 
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE

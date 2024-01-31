@@ -7,6 +7,7 @@ const DetalleProyectoEquipoTrabajo = require("../../models/modelos/detalles/deta
 const EquipoTrabajo = require("../../models/modelos/catalogos/equipoTrabajo");
 const DetalleProyectoEtapa = require("../../models/modelos/detalles/detalle_proyecto_etapa");
 const Etapa = require("../../models/modelos/catalogos/etapa");
+const DetalleClienteProyectos = require("../../models/modelos/detalles/detalle_cliente_proyectos");
 
 /**
  * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
@@ -125,6 +126,7 @@ const proyectosPost = async (req = request, res = response) => {
       fecha_inicio,
       fecha_fin,
       horas_maximas,
+      id_cliente,
     } = req.body;
 
     // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
@@ -137,11 +139,19 @@ const proyectosPost = async (req = request, res = response) => {
       horas_maximas,
     });
 
+    const detalleClienteProyectos = await DetalleClienteProyectos.create({
+      fk_cat_cliente: id_cliente,
+      fk_cat_proyecto: proyecto.id_cat_proyecto,
+    });
+
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
     res.status(201).json({
       ok: true,
-      msg: "Proyecto guardado correctamente",
-      results: proyecto,
+      results: {
+        msg: "Proyecto guardado correctamente",
+        proyecto,
+        detalleClienteProyectos,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -171,6 +181,7 @@ const proyectoPut = async (req = request, res = response) => {
       fecha_inicio,
       fecha_fin,
       horas_maximas,
+      id_cliente,
     } = req.body;
 
     // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
@@ -186,11 +197,25 @@ const proyectoPut = async (req = request, res = response) => {
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
     await proyecto.save();
 
+    // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
+    const detalleClienteProyectos = await DetalleClienteProyectos.findOne({
+      fk_cat_proyecto: id,
+    });
+
+    // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
+    detalleClienteProyectos.fk_cat_cliente = id_cliente;
+
+    // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
+    await detalleClienteProyectos.save();
+
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ACTUALIZACIÓN.
     res.status(200).json({
       ok: true,
-      msg: "Proyecto actualizado correctamente",
-      results: proyecto,
+      results: {
+        msg: "Proyecto actualizado correctamente",
+        proyecto,
+        detalleClienteProyectos,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.

@@ -157,6 +157,8 @@ const reporteEventosYTiempoPost = async (req, res) => {
     const { fecha_inicio, fecha_fin, tipo = 1, empleados } = req.body;
     const query = {};
 
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+
     // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
     if (fecha_inicio && fecha_fin) {
       query.fecha = {
@@ -172,6 +174,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
     }
 
     let resultado = {};
+    const totales = {};
 
     switch (tipo) {
       case 1:
@@ -194,7 +197,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
                 CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
               `)
               ),
-              "S/R",
+              "SR",
             ],
             [
               pool.fn(
@@ -249,7 +252,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
                 CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
               `)
               ),
-              "S/R",
+              "SR",
             ],
             [
               pool.fn(
@@ -312,7 +315,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
                 CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
               `)
               ),
-              "S/R",
+              "SR",
             ],
             [
               pool.fn(
@@ -367,7 +370,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
                 CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
               `)
               ),
-              "S/R",
+              "SR",
             ],
             [
               pool.fn(
@@ -402,14 +405,80 @@ const reporteEventosYTiempoPost = async (req, res) => {
           ],
         });
         break;
-      default:
-        break;
     }
+    // Itera sobre los resultados y suma los valores
+    resultado.forEach((resultado) => {
+      console.log(resultado);
+      const idCatEmpleado = resultado.empleado.id_cat_empleado;
 
+      // Eliminar una comilla simple o doble al principio y al final
+      let totalTiempoExtra = resultado.dataValues.total_tiempo_extra.replace(
+        /^['"]|['"]$/g,
+        ""
+      );
+
+      // Eliminar una comilla simple o doble al principio y al final
+      let totalTiempoRetardo =
+        resultado.dataValues.total_tiempo_retardo.replace(/^['"]|['"]$/g, "");
+
+      // Verifica si ya existe una entrada para el empleado en el objeto
+      if (!totales[idCatEmpleado]) {
+        totales[idCatEmpleado] = {
+          R: 0,
+          SR: 0,
+          total_tiempo_extra: "00:00:00",
+          total_tiempo_retardo: "00:00:00",
+        };
+      }
+
+      // Suma los valores para el empleado actual
+      totales[idCatEmpleado].total_tiempo_extra = sumarHoras(
+        totales[idCatEmpleado].total_tiempo_extra,
+        totalTiempoExtra
+      );
+
+      totales[idCatEmpleado].total_tiempo_retardo = sumarHoras(
+        totales[idCatEmpleado].total_tiempo_retardo,
+        totalTiempoRetardo
+      );
+
+      totales[idCatEmpleado].R += parseInt(resultado.dataValues.R);
+
+      totales[idCatEmpleado].SR += parseInt(resultado.dataValues.SR);
+    });
+    // Restar tiempos extras y a reponer
+    Object.keys(totales).forEach((idEmpleado) => {
+      const resultado = totales[idEmpleado];
+
+      // Convertir tiempos extras y a reponer a segundos
+      let TotalTiemposReponer = "00:00:00";
+
+      let TotalTiemposExtra = restarHoras(
+        resultado.total_tiempo_extra,
+        resultado.total_tiempo_retardo
+      );
+
+      if (!timeRegex.test(TotalTiemposExtra)) {
+        TotalTiemposExtra = "00:00:00";
+        TotalTiemposReponer = restarHoras(
+          resultado.total_tiempo_retardo,
+          resultado.total_tiempo_extra
+        );
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.total_tiempo_extra = TotalTiemposExtra;
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.total_tiempo_retardo = TotalTiemposReponer;
+      } else {
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.total_tiempo_extra = TotalTiemposExtra;
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.total_tiempo_retardo = TotalTiemposReponer;
+      }
+    });
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      results: resultado,
+      results: { resultado, totales },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -795,6 +864,57 @@ const notificarNoChequeoPost = async (req, res = response) => {
   }
 };
 
+/**
+ * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y datos JSON.
+ */
+const reporteEventosEmpleadoPost = async (req, res) => {
+  try {
+    // EXTRAEMOS LOS PARÁMETROS DE LA SOLICITUD.
+    const { id_empleado } = req.body;
+    const query = {};
+
+    query.fk_cat_empleado = {
+      [Op.eq]: id_empleado,
+    };
+    const resultado1 = await Ausencia.findAll({
+      order: [["fecha"]],
+      where: query,
+    });
+    query.fk_cat_eventos = {
+      [Op.ne]: 1,
+    };
+
+    const resultado = await RegistroChequeo.findAll({
+      order: [["fecha"]],
+      where: query,
+    });
+
+    // Combina los dos arrays
+    const resultadosCombinados = [...resultado1, ...resultado];
+
+    // Ordena el array combinado por fecha
+    resultadosCombinados.sort((b, a) => new Date(a.fecha) - new Date(b.fecha));
+
+    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+    res.status(200).json({
+      ok: true,
+      results: { resultadosCombinados },
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
+    });
+  }
+};
+
 // EXPORTAMOS LAS FUNCIONES PARA SU USO EN OTROS ARCHIVOS.
 module.exports = {
   registroChequeoGet,
@@ -802,4 +922,5 @@ module.exports = {
   notificarNoChequeoPost,
   reportePost,
   reporteEventosYTiempoPost,
+  reporteEventosEmpleadoPost,
 };
