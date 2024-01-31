@@ -224,11 +224,6 @@ const existeEquipoTrabajoPorId = async (id_cat_equipo_trabajo) => {
       `El Equipo de Trabajo con ID ${id_cat_equipo_trabajo} no existe`
     );
   }
-  if (!equipo_trabajo.estatus) {
-    throw new Error(
-      `El Equipo de Trabajo con ID ${id_cat_actividad} fue eliminado`
-    );
-  }
 };
 
 const existeActividadPorId = async (id_cat_actividad) => {

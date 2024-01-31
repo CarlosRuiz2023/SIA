@@ -7,6 +7,7 @@ const Ausencia = require("../../models/modelos/catalogos/ausencias");
 const RegistroChequeo = require("../../models/modelos/catalogos/registroChequeo");
 const Persona = require("../../models/modelos/catalogos/persona");
 const Permisos = require("../../models/modelos/catalogos/permisos");
+const Dias = require("../../models/modelos/catalogos/dias");
 
 /**
  * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
@@ -28,6 +29,10 @@ const ausenciasGet = async (req = request, res = response) => {
           model: Permisos,
           as: "permiso",
         },
+        {
+          model: Dias,
+          as: "dia",
+        },
       ],
     });
 
@@ -41,7 +46,9 @@ const ausenciasGet = async (req = request, res = response) => {
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -63,7 +70,7 @@ const ausenciaIdGet = async (req = request, res = response) => {
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
-    const ausencias = await Ausencia.findOne({
+    const ausencias = await Ausencia.findAll({
       where: query,
       include: [
         {
@@ -74,6 +81,10 @@ const ausenciaIdGet = async (req = request, res = response) => {
         {
           model: Permisos,
           as: "permiso",
+        },
+        {
+          model: Dias,
+          as: "dia",
         },
       ],
     });
@@ -88,7 +99,9 @@ const ausenciaIdGet = async (req = request, res = response) => {
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -110,7 +123,7 @@ const ausenciasIdGet = async (req = request, res = response) => {
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
-    const ausencias = await Ausencia.findOne({
+    const ausencias = await Ausencia.findAll({
       where: query,
       include: [
         {
@@ -121,6 +134,10 @@ const ausenciasIdGet = async (req = request, res = response) => {
         {
           model: Permisos,
           as: "permiso",
+        },
+        {
+          model: Dias,
+          as: "dia",
         },
       ],
     });
@@ -135,7 +152,9 @@ const ausenciasIdGet = async (req = request, res = response) => {
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -170,6 +189,8 @@ const ausenciasPost = async (req = request, res = response) => {
         msg: "Ausencia no registrada debido a que el empleado ha checado ese dia",
       });
     }
+    const date = new Date(fecha);
+    let dia = date.getDay() + 1;
 
     // CREA UNA NUEVA PERSONA EN LA BASE DE DATOS.
     const ausencia = await Ausencia.create({
@@ -178,6 +199,7 @@ const ausenciasPost = async (req = request, res = response) => {
       fk_cat_empleado: id_empleado,
       fk_cat_permiso: 1,
       estatus: 0,
+      fk_cat_dia: dia,
     });
 
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
@@ -212,8 +234,6 @@ const ausenciasPut = async (req = request, res = response) => {
     const query = {
       fecha: fecha,
       fk_cat_empleado: id_empleado,
-      fk_cat_permiso: id_permiso,
-      estatus,
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
@@ -228,16 +248,35 @@ const ausenciasPut = async (req = request, res = response) => {
         msg: "Ausencia no registrada debido a que el empleado ha checado ese dia",
       });
     }
+    const date = new Date(fecha);
+    let dia = date.getDay() + 1;
 
     // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
     const ausencia = await Ausencia.findByPk(id, {
-      include: [{ model: Empleado, as: "empleado" }],
+      include: [
+        {
+          model: Empleado,
+          as: "empleado",
+          include: [{ model: Persona, as: "persona" }],
+        },
+        {
+          model: Permisos,
+          as: "permiso",
+        },
+        {
+          model: Dias,
+          as: "dia",
+        },
+      ],
     });
 
     // ACTUALIZA LOS CAMPOS DIRECTOS DEL MODELO EMPLEADO.
     ausencia.fecha = fecha;
     ausencia.descripcion = descripcion;
     ausencia.fk_cat_empleado = id_empleado;
+    ausencia.fk_cat_dia = dia;
+    ausencia.fk_cat_permiso = id_permiso;
+    ausencia.estatus = estatus;
 
     // GUARDA LOS CAMBIOS EN LA BASE DE DATOS.
     await ausencia.save();
@@ -245,15 +284,16 @@ const ausenciasPut = async (req = request, res = response) => {
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTUALIZADO.
     res.status(200).json({
       ok: true,
-      msg: "Ausencia actualizado correctamente",
-      results: ausencia,
+      results: { msg: "Ausencia actualizado correctamente", ausencia },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -280,10 +320,14 @@ const registrarAusencia = async () => {
       });
 
       if (!registros) {
+        const date = new Date(fecha);
+        let dia = date.getDay() + 1;
         const ausencia = await Ausencia.create({
           fecha: fechaActual,
           descripcion: "No ha checado entrada y ya paso de las 10:30:00",
           fk_cat_empleado: empleado[array].id_cat_empleado,
+          fk_cat_dia: dia,
+          fk_cat_permiso: 1,
         });
         console.log(
           `Ausencia registrada para el empleado ${empleado[index].id_cat_empleado}`

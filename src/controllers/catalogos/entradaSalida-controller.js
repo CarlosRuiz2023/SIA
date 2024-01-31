@@ -60,13 +60,7 @@ const reporteEntradasSalidasPost = async (req, res) => {
     const { fecha_inicio, fecha_fin, empleados } = req.body;
     const query = {};
 
-    // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
-    if (fecha_inicio && fecha_fin) {
-      query.fecha = {
-        [Op.gte]: fecha_inicio,
-        [Op.lte]: fecha_fin,
-      };
-    }
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
 
     if (empleados && empleados.length > 0) {
       query.fk_cat_empleado = {
@@ -74,6 +68,38 @@ const reporteEntradasSalidasPost = async (req, res) => {
       };
     }
 
+    const resultado2 = await RegistroChequeo.findAll({
+      include: [
+        {
+          model: Empleado,
+          as: "empleado",
+          include: [{ model: Persona, as: "persona" }],
+        },
+        {
+          model: DetalleDiasEntradaSalida,
+          as: "detalleDiasEntradaSalida",
+          include: [
+            {
+              model: TipoHorario,
+              as: "cat_tipo_horario",
+              attributes: [
+                [pool.literal('"jornada" * 5'), "Horas_semanales"],
+                "jornada",
+              ],
+            },
+          ],
+        },
+      ],
+      where: query,
+    });
+
+    // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
+    if (fecha_inicio && fecha_fin) {
+      query.fecha = {
+        [Op.gte]: fecha_inicio,
+        [Op.lte]: fecha_fin,
+      };
+    }
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
     const resultado = await RegistroChequeo.findAll({
       attributes: [
@@ -114,36 +140,8 @@ const reporteEntradasSalidasPost = async (req, res) => {
           "SR",
         ],
       ],
-      group: [
-        "inicio_semana",
-        "fk_cat_empleado",
-        "detalleDiasEntradaSalida.id_detalle_entrada_salida",
-        "detalleDiasEntradaSalida.cat_tipo_horario.id_cat_tipo_horario",
-        "empleado.id_cat_empleado",
-        "empleado.persona.id_cat_persona",
-      ],
+      group: ["inicio_semana", "fk_cat_empleado"],
       order: [["inicio_semana"]],
-      include: [
-        {
-          model: Empleado,
-          as: "empleado",
-          include: [{ model: Persona, as: "persona" }],
-        },
-        {
-          model: DetalleDiasEntradaSalida,
-          as: "detalleDiasEntradaSalida",
-          include: [
-            {
-              model: TipoHorario,
-              as: "cat_tipo_horario",
-              attributes: [
-                [pool.literal('"jornada" * 5'), "Horas_semanales"],
-                "jornada",
-              ],
-            },
-          ],
-        },
-      ],
       where: query,
     });
 
@@ -159,69 +157,77 @@ const reporteEntradasSalidasPost = async (req, res) => {
           pool.fn(
             "COUNT",
             pool.literal(`
-              CASE WHEN fk_cat_empleado IS NOT NULL THEN 1 ELSE NULL END
+              CASE WHEN fk_cat_dia != 6 THEN 1 ELSE NULL END
             `)
           ),
           "A",
         ],
+        [
+          pool.fn(
+            "COUNT",
+            pool.literal(`
+              CASE WHEN fk_cat_dia = 6 THEN 1 ELSE NULL END
+            `)
+          ),
+          "As",
+        ],
       ],
-      group: [
-        "inicio_semana",
-        "fk_cat_empleado",
-        "empleado.id_cat_empleado",
-        "empleado.persona.id_cat_persona",
-      ],
+      group: ["inicio_semana", "fk_cat_empleado"],
       order: [["inicio_semana"]],
-      include: [
-        {
-          model: Empleado,
-          as: "empleado",
-          include: [{ model: Persona, as: "persona" }],
-        },
-      ],
       where: query,
     });
 
+    // Unir los resultados
     // Mapeamos los resultados para reorganizar la estructura
-    const resultadoFinal = resultado.map((result) => {
-      const horasSemanales = `${result.detalleDiasEntradaSalida.cat_tipo_horario.dataValues.Horas_semanales}:00:00`;
+    const resultadoFinal = resultado.map((resultado) => {
+      const resultadoEmpleados = resultado2.find((resultado2) => {
+        return resultado2.fk_cat_empleado === resultado.fk_cat_empleado;
+      });
+
+      const horasSemanales = `${resultadoEmpleados.detalleDiasEntradaSalida.cat_tipo_horario.dataValues.Horas_semanales}:00:00`;
+
       // Eliminar una comilla simple o doble al principio y al final
-      let totalTiempoExtra = result.dataValues.total_tiempo_extra.replace(
+      let totalTiempoExtra = resultado.dataValues.total_tiempo_extra.replace(
         /^['"]|['"]$/g,
         ""
       );
       // Eliminar una comilla simple o doble al principio y al final
-      let totalTiempoRetardo = result.dataValues.total_tiempo_retardo.replace(
-        /^['"]|['"]$/g,
-        ""
-      );
-      let tiempoTrabajado = sumarHoras(horasSemanales, totalTiempoExtra);
-      tiempoTrabajado = restarHoras(tiempoTrabajado, totalTiempoRetardo);
+      let totalTiempoRetardo =
+        resultado.dataValues.total_tiempo_retardo.replace(/^['"]|['"]$/g, "");
+
+      let tiempoTrabajado = "";
+      if (totalTiempoExtra == totalTiempoRetardo) {
+        tiempoTrabajado = horasSemanales;
+      } else {
+        tiempoTrabajado = sumarHoras(horasSemanales, totalTiempoExtra);
+        tiempoTrabajado = restarHoras(tiempoTrabajado, totalTiempoRetardo);
+      }
 
       return {
         horas_semanales: horasSemanales,
         jornada:
-          result.detalleDiasEntradaSalida.cat_tipo_horario.dataValues.jornada,
-        inicio_semana: result.dataValues.inicio_semana,
+          resultadoEmpleados.detalleDiasEntradaSalida.cat_tipo_horario
+            .dataValues.jornada,
+        inicio_semana: resultado.dataValues.inicio_semana,
         tiempo_trabajado: tiempoTrabajado,
-        fk_cat_empleado: result.fk_cat_empleado,
+        fk_cat_empleado: resultado.fk_cat_empleado,
         total_tiempo_extra: totalTiempoExtra,
         total_tiempo_retardo: totalTiempoRetardo,
-        R: result.dataValues.R,
-        SR: result.dataValues.SR,
+        R: resultado.dataValues.R,
+        SR: resultado.dataValues.SR,
         empleado: {
-          numero_empleado: result.empleado.numero_empleado,
-          sueldo: result.empleado.sueldo,
+          numero_empleado: resultadoEmpleados.empleado.numero_empleado,
+          sueldo: resultadoEmpleados.empleado.sueldo,
           persona: {
-            nombre: result.empleado.persona.nombre,
-            apellido_Paterno: result.empleado.persona.apellido_Paterno,
-            apellido_Materno: result.empleado.persona.apellido_Materno,
+            nombre: resultadoEmpleados.empleado.persona.nombre,
+            apellido_Paterno:
+              resultadoEmpleados.empleado.persona.apellido_Paterno,
+            apellido_Materno:
+              resultadoEmpleados.empleado.persona.apellido_Materno,
           },
         },
       };
     });
-
-    console.log(resultadoFinal);
 
     // Unir los resultados
     const resultadosFinales = resultadoFinal.map((resultadoFinal) => {
@@ -234,25 +240,110 @@ const reporteEntradasSalidasPost = async (req, res) => {
       });
 
       return {
-        Horas_semanales: resultadoFinal.horas_semanales,
+        horas_semanales: resultadoFinal.horas_semanales,
         jornada: resultadoFinal.jornada,
         inicio_semana: resultadoFinal.inicio_semana,
-        tiempo_trabajado: resultadoFinal.tiempo_trabajado,
+        total_tiempo_extra: resultadoFinal.total_tiempo_extra,
+        total_tiempo_retardo: resultadoFinal.total_tiempo_retardo,
+        tiempo_trabajado: resultadoAusencia
+          ? restarHoras(
+              restarHoras(
+                resultadoFinal.tiempo_trabajado,
+                `0${
+                  resultadoAusencia.dataValues.A * resultadoFinal.jornada
+                }:00:00`
+              ),
+              `0${resultadoAusencia.dataValues.As * 5}:00:00`
+            )
+          : resultadoFinal.tiempo_trabajado,
         fk_cat_empleado: resultadoFinal.fk_cat_empleado,
-        total_tiempo_extra: resultadoFinal.totalTiempoExtra,
-        total_tiempo_retardo: resultadoFinal.totalTiempoRetardo,
         R: resultadoFinal.R,
         SR: resultadoFinal.SR,
         A: resultadoAusencia ? resultadoAusencia.dataValues.A : "0",
+        As: resultadoAusencia ? resultadoAusencia.dataValues.As : "0",
         empleado: resultadoFinal.empleado,
-        detalleDiasEntradaSalida: resultadoFinal.detalleDiasEntradaSalida,
       };
+    });
+
+    const totales = {};
+
+    // Itera sobre los resultados y suma los valores
+    resultadosFinales.forEach((resultado) => {
+      const idCatEmpleado = resultado.fk_cat_empleado;
+
+      // Verifica si ya existe una entrada para el empleado en el objeto
+      if (!totales[idCatEmpleado]) {
+        totales[idCatEmpleado] = {
+          sumaHorasSemanal: "00:00:00",
+          sumaHorasTrabajadas: "00:00:00",
+          sumaTiemposExtra: "00:00:00",
+          sumaTiemposReponer: "00:00:00",
+          sumaA: 0,
+          sumaAs: 0,
+          sumaR: 0,
+          sumaSR: 0,
+        };
+      }
+
+      // Suma los valores para el empleado actual
+      totales[idCatEmpleado].sumaHorasSemanal = sumarHoras(
+        totales[idCatEmpleado].sumaHorasSemanal,
+        resultado.horas_semanales
+      );
+
+      totales[idCatEmpleado].sumaHorasTrabajadas = sumarHoras(
+        totales[idCatEmpleado].sumaHorasTrabajadas,
+        resultado.tiempo_trabajado
+      );
+
+      totales[idCatEmpleado].sumaTiemposExtra = sumarHoras(
+        totales[idCatEmpleado].sumaTiemposExtra,
+        resultado.total_tiempo_extra
+      );
+
+      totales[idCatEmpleado].sumaTiemposReponer = sumarHoras(
+        totales[idCatEmpleado].sumaTiemposReponer,
+        resultado.total_tiempo_retardo
+      );
+
+      totales[idCatEmpleado].sumaA += parseInt(resultado.A);
+    });
+
+    // Restar tiempos extras y a reponer
+    Object.keys(totales).forEach((idEmpleado) => {
+      const resultado = resultadosFinales[idEmpleado];
+
+      // Convertir tiempos extras y a reponer a segundos
+      let TotalTiemposReponer = "00:00:00";
+
+      let TotalTiemposExtra = restarHoras(
+        resultado.sumaTiemposExtra,
+        resultado.sumaTiemposReponer
+      );
+
+      if (!timeRegex.test(TotalTiemposExtra)) {
+        TotalTiemposExtra = "00:00:00";
+        TotalTiemposReponer = restarHoras(
+          resultado.sumaTiemposExtra,
+          resultado.sumaTiemposReponer
+        );
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.sumaTiemposExtra = TotalTiemposExtra;
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.sumaTiemposReponer = TotalTiemposReponer;
+      } else {
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.sumaTiemposExtra = TotalTiemposExtra;
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.sumaTiemposReponer = TotalTiemposReponer;
+      }
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
       results: resultadosFinales,
+      totales,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.

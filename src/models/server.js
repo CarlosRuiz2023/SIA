@@ -76,7 +76,11 @@ class Server {
     // MIDDLEWARE PARA MANEJAR CORS
     this.app.use(
       cors({
-        origin: ["http://localhost:4200", "http://192.168.40.1:5985"],
+        origin: [
+          "http://localhost:4200",
+          "http://192.168.40.1:5985",
+          "http://192.168.11.25:63672",
+        ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         preflightContinue: false,
         optionsSuccessStatus: 204,

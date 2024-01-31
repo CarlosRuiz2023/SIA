@@ -75,7 +75,6 @@ router.post(
     }),
     check("evento").custom(existeEventoPorId),
     check("id_empleado").custom(existeEmpleadoPorId),
-    check("dia").custom(existeDiaPorId),
     check("entrada_salida").custom(existeEntradaSalidaPorId),
     validarCampos,
   ],

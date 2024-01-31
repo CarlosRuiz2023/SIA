@@ -433,7 +433,10 @@ const registroChequeoPost = async (req = request, res = response) => {
   try {
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
-    const { fecha, hora, evento, id_empleado, dia, entrada_salida } = req.body;
+    const { fecha, hora, evento, id_empleado, entrada_salida } = req.body;
+
+    const date = new Date(fecha);
+    let dia = date.getDay() + 1;
 
     // BUSCAMOS AL EMPLEADO DENTRO DE LA BASE DE DATOS.
     const empleado = await Empleado.findByPk(id_empleado);

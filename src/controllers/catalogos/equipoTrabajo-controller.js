@@ -275,6 +275,7 @@ const equipoTrabajoPut = async (req = request, res = response) => {
           ],
         },
       ],
+      where: { id_cat_equipo_trabajo: id },
     });
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ACTUALIZACIÓN.
