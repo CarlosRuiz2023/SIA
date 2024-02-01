@@ -23,7 +23,7 @@ const etapasGet = async (req = request, res = response) => {
       include: [
         {
           model: DetalleEtapaActividad,
-          as: "etapa_actividads",
+          as: "etapa_actividades",
           include: [{ model: Actividades, as: "cat_actividade" }],
         },
       ],
@@ -67,7 +67,7 @@ const etapaIdGet = async (req = request, res = response) => {
       include: [
         {
           model: DetalleEtapaActividad,
-          as: "etapa_actividads",
+          as: "etapa_actividades",
           include: [{ model: Actividades, as: "cat_actividade" }],
         },
       ],

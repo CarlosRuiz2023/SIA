@@ -8,6 +8,7 @@
 // IMPORTACIÓN DE LAS BIBLIOTECAS NECESARIAS
 const express = require("express"); // Biblioteca para crear el servidor web
 const cors = require("cors"); // Middleware para manejar CORS (Cross-Origin Resource Sharing)
+const path = require("path");
 
 // IMPORTACIÓN DE LA CONFIGURACIÓN DE LA BASE DE DATOS POSTGRESQL DESDE OTRO ARCHIVO
 const pool = require("../database/config");
@@ -24,6 +25,10 @@ class Server {
   constructor() {
     // CREA UNA INSTANCIA DE EXPRESS PARA MANEJAR EL SERVIDOR
     this.app = express();
+
+    this.app.set("views", path.join(__dirname, "views"));
+    // Indicamos el motor EJS
+    this.app.set("view engine", "ejs");
     // CONFIGURA EL PUERTO DEL SERVIDOR, UTILIZA EL PUERTO ESPECIFICADO EN LAS VARIABLES DE ENTORNO O EL PUERTO 3000 POR DEFECTO
     this.port = process.env.PORT || 3000;
 

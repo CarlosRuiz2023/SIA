@@ -10,11 +10,14 @@ const DetalleActividadTarea = require("../../models/modelos/detalles/detalle_act
 const DetalleProyectoEquipoTrabajo = require("../../models/modelos/detalles/detalle_proyecto_equipo_trabajo");
 const DetalleProyectoEtapa = require("../../models/modelos/detalles/detalle_proyecto_etapa");
 const DetalleEmpleadoEquipoTrabajo = require("../../models/modelos/detalles/detalle_empleado_equipo_trabajo");
+const DetalleClienteProyectos = require("../../models/modelos/detalles/detalle_cliente_proyectos");
 const pool = require("../../database/config");
 const EquipoTrabajo = require("../../models/modelos/catalogos/equipoTrabajo");
 const Proyectos = require("../../models/modelos/catalogos/proyectos");
 const Empleado = require("../../models/modelos/catalogos/empleado");
 const Etapa = require("../../models/modelos/catalogos/etapa");
+const Cliente = require("../../models/modelos/catalogos/cliente");
+const Persona = require("../../models/modelos/catalogos/persona");
 
 /**
  * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
@@ -216,17 +219,34 @@ const reporteActividadesPost = async (req, res) => {
     }
 
     let resultado = {};
+    let empleado = {};
     let equipos = [];
     let empleados = [];
     let proyectos = [];
     let actividades = [];
     let etapas = [];
+    let clientes = [];
     let actividadesIds = [];
     let proyectosIds = [];
     let etapasIds = [];
+    let html = "";
 
     switch (tipo) {
       case 1:
+        empleado = await Empleado.findAll({
+          where: {
+            id_cat_empleado: {
+              [Op.eq]: id,
+            },
+          },
+          include: [
+            {
+              model: Persona,
+              as: "persona",
+            },
+          ],
+        });
+
         resultado = await Empleado.findAll({
           where: {
             id_cat_empleado: {
@@ -271,141 +291,27 @@ const reporteActividadesPost = async (req, res) => {
         }
         proyectosIds = proyectos.map((proyecto) => proyecto.id_proyecto);
 
-        resultado = await DetalleProyectoEtapa.findAll({
+        resultado = await DetalleClienteProyectos.findAll({
           where: { fk_cat_proyecto: { [Op.in]: proyectosIds } },
-          include: [
-            {
-              model: Etapa,
-              as: "cat_etapa",
-            },
-          ],
-        });
-        for (let etapa of resultado) {
-          const etapa1 = etapa.cat_etapa;
-          etapas.push({
-            id_etapa: etapa1.id_cat_etapa,
-            proyecto: etapa.fk_cat_proyecto,
-          });
-        }
-        etapasIds = etapas.map((etapa) => etapa.id_etapa);
-        resultado = await DetalleEtapaActividad.findAll({
-          where: { fk_cat_etapa: { [Op.in]: etapasIds } },
-          include: [
-            {
-              model: Actividades,
-              as: "cat_actividade",
-            },
-          ],
-        });
-        for (let actividad of resultado) {
-          actividades.push({
-            id_actividad: actividad.fk_cat_actividad,
-            etapa: actividad.fk_cat_etapa,
-          });
-        }
-        actividadesIds = actividades.map((actividad) => actividad.id_actividad);
-
-        resultado = await DetalleActividadTarea.findAll({
-          attributes: [
-            "fk_cat_actividad",
-            "fk_cat_empleado",
-            [
-              pool.fn("COUNT", pool.col("id_detalle_actividad_tarea")),
-              "cantidad_tareas",
-            ],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN estatus = 1 THEN 1 ELSE NULL END
-              `)
-              ),
-              "tareas_completadas",
-            ],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_empleado = ${id} THEN 1 ELSE NULL END
-              `)
-              ),
-              "tareas_empleado",
-            ],
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(
-                  pool.fn(
-                    "SUM",
-                    pool.literal(`
-                    CASE WHEN fk_cat_empleado = ${id} THEN "duracion" ELSE '00:00:00' END `)
-                  ),
-                  "interval"
-                ),
-                "'HH24:MI:SS'"
-              ),
-              "tiempo_invertido",
-            ],
-          ],
-          group: ["fk_cat_actividad", "fk_cat_empleado"],
-          where: {
-            fk_cat_actividad: {
-              [Op.in]: actividadesIds,
-            },
-          },
-        });
-        // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
-        res.status(200).json({
-          ok: true,
-          results: {
-            equipos, // Array de equipos obtenidos
-            proyectos, // Array de proyectos obtenidos
-            etapas, // Array de etapas obtenidas
-            actividades, // Array de actividades obtenidas
-            actividadesInformes: resultado, // Resultado final obtenido
-          },
-        });
-        break;
-      case 2:
-        resultado = await EquipoTrabajo.findAll({
-          where: { id_cat_equipo_trabajo: id },
-          include: [
-            {
-              model: DetalleEmpleadoEquipoTrabajo,
-              as: "detalle_empleados",
-              include: [
-                {
-                  model: Empleado,
-                  as: "cat_empleado",
-                },
-              ],
-            },
-          ],
-        });
-        console.log(resultado);
-        for (let equipo_trabajo of resultado) {
-          for (let detalles of equipo_trabajo.detalle_empleados) {
-            empleados.push(detalles.fk_cat_empleado);
-          }
-        } /**Asta aqui llegue */
-        resultado = await DetalleProyectoEquipoTrabajo.findAll({
-          where: { fk_cat_equipo_trabajo: { [Op.in]: equipos } },
           include: [
             {
               model: Proyectos,
               as: "cat_proyecto",
             },
+            {
+              model: Cliente,
+              as: "cat_cliente",
+              include: [{ model: Persona, as: "persona" }],
+            },
           ],
         });
-        for (let equipo_trabajo of resultado) {
-          const proyecto = equipo_trabajo.cat_proyecto;
-          proyectos.push({
-            id_proyecto: proyecto.id_cat_proyecto,
-            nombre: proyecto.proyecto,
-            equipo_trabajo: equipo_trabajo.fk_cat_equipo_trabajo,
+        for (let cliente of resultado) {
+          clientes.push({
+            nombre_cliente: cliente.cat_cliente.persona.nombre,
+            id_proyecto: cliente.fk_cat_proyecto,
           });
         }
-        proyectosIds = proyectos.map((proyecto) => proyecto.id_proyecto);
+        etapasIds = etapas.map((etapa) => etapa.id_etapa);
 
         resultado = await DetalleProyectoEtapa.findAll({
           where: { fk_cat_proyecto: { [Op.in]: proyectosIds } },
@@ -420,7 +326,7 @@ const reporteActividadesPost = async (req, res) => {
           const etapa1 = etapa.cat_etapa;
           etapas.push({
             id_etapa: etapa1.id_cat_etapa,
-            proyecto: etapa.fk_cat_proyecto,
+            id_proyecto: etapa.fk_cat_proyecto,
           });
         }
         etapasIds = etapas.map((etapa) => etapa.id_etapa);
@@ -436,15 +342,15 @@ const reporteActividadesPost = async (req, res) => {
         for (let actividad of resultado) {
           actividades.push({
             id_actividad: actividad.fk_cat_actividad,
+            nombre: actividad.cat_actividade.actividad,
             etapa: actividad.fk_cat_etapa,
+            fecha: actividad.fecha,
           });
         }
         actividadesIds = actividades.map((actividad) => actividad.id_actividad);
-
         resultado = await DetalleActividadTarea.findAll({
           attributes: [
             "fk_cat_actividad",
-            "fk_cat_empleado",
             [
               pool.fn("COUNT", pool.col("id_detalle_actividad_tarea")),
               "cantidad_tareas",
@@ -483,24 +389,97 @@ const reporteActividadesPost = async (req, res) => {
               "tiempo_invertido",
             ],
           ],
-          group: ["fk_cat_actividad", "fk_cat_empleado"],
+          group: ["fk_cat_actividad"],
           where: {
             fk_cat_actividad: {
               [Op.in]: actividadesIds,
             },
           },
         });
+        // Mapeamos los resultados para reorganizar la estructura
+        const proyectosClientes = proyectos.map((proyecto) => {
+          const resultadoClientes = clientes.find((cliente) => {
+            return cliente.id_proyecto === proyecto.id_proyecto;
+          });
+
+          return {
+            id_proyecto: proyecto.id_proyecto,
+            nombre_proyecto: proyecto.nombre,
+            nombre_cliente: resultadoClientes.nombre_cliente,
+          };
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        const etapasProyectos = etapas.map((etapa) => {
+          const resultadoProyectos = proyectosClientes.find((proyecto) => {
+            return proyecto.id_proyecto === etapa.id_proyecto;
+          });
+
+          return {
+            id_proyecto: etapa.id_proyecto,
+            id_etapa: etapa.id_etapa,
+            nombre_proyecto: resultadoProyectos.nombre_proyecto,
+            nombre_cliente: resultadoProyectos.nombre_cliente,
+          };
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        const actividadesEtapas = actividades.map((actividad) => {
+          const resultadoEtapas = etapasProyectos.find((etapas) => {
+            return etapas.id_etapa === actividad.etapa;
+          });
+
+          return {
+            id_proyecto: resultadoEtapas.id_proyecto,
+            id_etapa: resultadoEtapas.id_etapa,
+            id_actividad: actividad.id_actividad,
+            nombre_proyecto: resultadoEtapas.nombre_proyecto,
+            nombre_actividad: actividad.nombre,
+            fecha_actividad: actividad.fecha,
+            nombre_cliente: resultadoEtapas.nombre_cliente,
+          };
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        const informes = resultado.map((tarea) => {
+          const resultadoActividades = actividadesEtapas.find((actividad) => {
+            return actividad.id_actividad === tarea.fk_cat_actividad;
+          });
+
+          return {
+            id_proyecto: resultadoActividades.id_proyecto,
+            id_etapa: resultadoActividades.id_etapa,
+            id_actividad: resultadoActividades.id_actividad,
+            nombre_proyecto: resultadoActividades.nombre_proyecto,
+            nombre_actividad: resultadoActividades.nombre_actividad,
+            fecha_actividad: resultadoActividades.fecha,
+            cantidad_tareas: tarea.dataValues.cantidad_tareas,
+            tareas_completadas: tarea.dataValues.tareas_completadas,
+            tareas_empleado: tarea.dataValues.tareas_empleado,
+            tiempo_invertido: tarea.dataValues.tiempo_invertido,
+            nombre_cliente: resultadoActividades.nombre_cliente,
+          };
+        });
         // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
-        res.status(200).json({
+        /* res.status(200).json({
           ok: true,
           results: {
-            equipos, // Array de equipos obtenidos
-            proyectos, // Array de proyectos obtenidos
-            etapas, // Array de etapas obtenidas
-            actividades, // Array de actividades obtenidas
-            actividadesInformes: resultado, // Resultado final obtenido
+            empleado,
+            actividades: informes,
           },
-        });
+        }); */
+        console.log();
+        res.render(
+          "../../../public/reporte.ejs",
+          {
+            informes,
+            nombre_empleado: `${empleado[0].persona.nombre} ${empleado[0].persona.apellido_Paterno} ${empleado[0].persona.apellido_Materno}`,
+            fecha_inicio,
+            fecha_fin,
+          },
+          (err, html) => {
+            res.send(html);
+          }
+        );
+        break;
+      case 2:
         break;
       case 3:
         break;
