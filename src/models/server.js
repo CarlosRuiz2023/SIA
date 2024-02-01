@@ -79,7 +79,7 @@ class Server {
         origin: [
           "http://localhost:4200",
           "http://192.168.40.1:5985",
-          "http://localhost:55910",
+          "http://localhost:59110",
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         preflightContinue: false,

@@ -12,6 +12,8 @@ const Usuario = require("../../models/modelos/usuario");
 const { transporter } = require("../../helpers/enviar-emails");
 const Persona = require("../../models/modelos/catalogos/persona");
 const Empleado = require("../../models/modelos/catalogos/empleado");
+const PuestoTrabajo = require("../../models/modelos/catalogos/puestoTrabajo");
+const TipoHorario = require("../../models/modelos/catalogos/tipoHorario");
 
 /**
  * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
@@ -29,6 +31,11 @@ const inicioSesion = async (req, res) => {
       include: [
         { model: Usuario, as: "usuario", where: { correo } },
         { model: Persona, as: "persona" },
+        {
+          model: PuestoTrabajo,
+          as: "puesto_trabajo",
+          include: [{ model: TipoHorario, as: "tipo_horario" }],
+        },
       ],
     });
 
@@ -85,90 +92,69 @@ const recuperarContrasenia = async (req, res = response) => {
 
     // Se construye el formulario
     const resetForm = `
-    <form style="
-            max-width: 500px;  
-            margin: 0 auto;
-            border: 2px solid #ccc; 
-            padding: 20px;
-          " 
-          method="GET" 
-          action="${process.env.IP}/api/usuario/cambiarContrasenia/${correo}">
-  
-      <h1 style="text-align: center;">Restablecer contraseña</h1>  
-  
-      <label style="display:block; margin-bottom: 10px;" 
-             for="password">Nueva contraseña:</label>
-             
-      <input style="display: block; 
-                    padding: 10px;
-                    width: 95%;  
-                    border-radius: 4px;           
-                    border: 1px solid #aaa;"
-             type="password" 
-             id="password" 
-             name="password"
-             placeholder="New Password">
-      
-             <label style="display:block; margin-bottom: 10px;" 
-             for="password">Confirma tu contraseña:</label>
-             
-      <input style="display: block; 
-                    padding: 10px;
-                    width: 95%;  
-                    border-radius: 4px;           
-                    border: 1px solid #aaa;"
-             type="password" 
-             id="passwordConfim" 
-             name="passwordConfirm"
-             placeholder="New Password">
-             
-      <button style="display: block;
-                     margin: 20px auto 0;
-                     padding: 10px;                 
-                     background-color: #1565C0; 
-                     color: #fff;
-                     border-radius: 4px;
-                     border: none;" 
-              type="submit">
+    <form style="max-width: 500px; margin: 0 auto; border: 2px solid #ccc; padding: 20px;" method="GET" action="${process.env.IP}/api/usuario/cambiarContrasenia/${correo}">
+      <h2 style="text-align: center;">Restablecer contraseña</h2>
+      <label style="display:block; margin-bottom: 10px; color: #003366;" for="password">Nueva contraseña:</label>
+      <input style="display: block; padding: 10px; width: 95%; border-radius: 4px; border: 2px solid #003366;" type="password" id="password" name="password" placeholder="New Password">
+      <br>
+      <label style="display:block; margin-bottom: 10px; color: #003366;" for="password">Confirma tu contraseña:</label>
+      <input style="display: block; padding: 10px; width: 95%; border-radius: 4px; border: 2px solid #003366;" type="password" id="passwordConfim" name="passwordConfirm" placeholder="New Password">
+      <button style="display: block; margin: 20px auto 0; padding: 10px; background-color: #003366; color: #fff; border-radius: 4px; border: none;" type="submit">
         Cambiar contraseña
-      </button>  
-  
+      </button>
     </form>
   
   `;
 
+    /**
+   * <tr>
+          <td style="text-align: center;">
+            <div style="width: 100%; display: flex;">
+              <div style="width: 50%;">
+                <img src="https://res.cloudinary.com/ddem1jb7m/image/upload/v1706804214/ITSmartS_azul_1_ifgtfb.png">
+              </div>
+              <span style="display: inline-block; border-left: 2px solid #173366; height: 15px; vertical-align: middle;">
+              </span>
+              <div style="width: 50%; position: relative;">
+                <img src="https://res.cloudinary.com/ddem1jb7m/image/upload/v1706804214/Logo_2_1_ocdjvt.png">
+              </div>
+            </div>
+            <div style="width: 100%; height: 1px; background-color: #003366; position: absolute; bottom: 0;"></div>
+          </td>
+        </tr>
+   */
+
     const html = `
-  <div style="">
-    <table width="500" align="center" style="border: 2px solid #ccc;">
-  
-      <tr>
-        <td style="padding: 15px; background-color: #1565C0; color: white; text-align: center;">
-          <h1 style="margin:0;">Cambio de Contraseña</h1>  
-        </td>
-      </tr>
-  
-      <tr>
-        <td style="padding: 20px; line-height: 1.5; ">    
-          <p style="font-size: 18px;">
-          Buen día ${correo}<br>
-            ${mensaje}
-          </p>
-  
-          ${resetForm}
-  
-          <p style="font-size: 18px;">
-  Atentamente,<br>
-  
-  Equipo de Soporte Técnico 
-  ItsMarts<br>
-  support@itsmarts.com.mx
-  
-  </p>
-          
-        </td>
-      </tr>
-  
-    </table>
+    <div>
+      <table width="500" align="center">
+        <tr>
+          <td style="text-align: center">
+            <div style="position: relative">
+              <div style="position: absolute; justify-content: flex-start; align-items: center; gap: 10px; display: inline-flex">
+                <img style="margin-left: 50px;margin-right: 8px;margin-top: 2px;width: 100px; height: 27px" src="https://res.cloudinary.com/ddem1jb7m/image/upload/v1706804214/ITSmartS_azul_1_ifgtfb.png" />
+                <span style="display: inline-block; border-left: 2px solid #173366; height: 28px; vertical-align: middle;">
+                </span>
+                <img style=" margin-left: 10px;margin-top: 7px;width: 45px; height: 17px" src="https://res.cloudinary.com/ddem1jb7m/image/upload/v1706804214/Logo_2_1_ocdjvt.png" />
+              </div>
+            <div style="position: absolute; border: 1px #173366 solid"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 20px;">    
+            <h1 style="display:block; color: #003366;" for="password">Cambio de contraseña</h1>
+            <p style="font-size: 15px;">
+              Buen día ${correo}. ${mensaje}
+            </p>
+            ${resetForm}
+            <p style="font-size: 15px;">
+              Atentamente, equipo de Soporte Técnico ItsMarts<br>
+              support@itsmarts.com.mx
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
   `;
 
     const mailOptions = {
