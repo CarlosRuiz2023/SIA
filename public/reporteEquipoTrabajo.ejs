@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<div style="width: 894px; height: 608px; position: relative">
+  <div style="width: 834px; height: 79px; position: relative">
+    <div
+      style="
+        width: 834px;
+        height: 0px;
+        left: 0px;
+        top: 79px;
+        position: absolute;
+        border: 3px #2b7fe1 solid;
+      "
+    ></div>
+    <div
+      style="
+        left: 10px;
+        top: 0px;
+        position: absolute;
+        color: #707070;
+        font-size: 48px;
+        font-family: Helvetica Neue;
+        font-weight: 500;
+        word-wrap: break-word;
+      "
+    >
+      Reporte de actividades grupal
+    </div>
+  </div>
+  <br />
+  <div
+    style="
+      width: 814px;
+      height: 61px;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 418px;
+      display: inline-flex;
+    "
+  >
+    <div style="width: 335px; height: 53px; position: relative">
+      <div
+        style="
+          left: 0px;
+          top: 0px;
+          position: absolute;
+          color: #707070;
+          font-size: 24px;
+          font-family: Helvetica Neue;
+          font-weight: 400;
+          word-wrap: break-word;
+        "
+      >
+        <%= equipo_trabajo.equipo_trabajo %>
+      </div>
+      <!-- <% empleados.forEach(empleado => { %>
+      <div
+        style="
+          left: 0px;
+          top: 0px;
+          position: absolute;
+          color: #707070;
+          font-size: 24px;
+          font-family: Helvetica Neue;
+          font-weight: 400;
+          word-wrap: break-word;
+        "
+      >
+        <%= empleado %>
+      </div>
+      <% }); %> -->
+      <div
+        style="
+          left: 0px;
+          top: 29px;
+          position: absolute;
+          color: #707070;
+          font-size: 20px;
+          font-family: Helvetica Neue;
+          font-weight: 400;
+          word-wrap: break-word;
+        "
+      >
+        Reporte del: <%= fecha_inicio %> al <%= fecha_fin %>
+      </div>
+    </div>
+    <img
+      style="
+        width: 61px;
+        height: 61px;
+        background: linear-gradient(0deg, #d9d9d9 0%, #d9d9d9 100%);
+        border-radius: 9999px;
+      "
+      src="https://via.placeholder.com/61x61"
+    />
+  </div>
+  <br />
+  <% informes.forEach(informe => { %>
+  <div style="width: 814px; height: 221px; position: relative">
+    <div
+      style="
+        width: 814px;
+        height: 0px;
+        left: 0px;
+        top: 221px;
+        position: absolute;
+        border: 1px #2b7fe1 solid;
+      "
+    ></div>
+    <div
+      style="
+        width: 774px;
+        height: 150px;
+        left: 20px;
+        top: 49px;
+        position: absolute;
+        justify-content: flex-start;
+        align-items: flex-start;
+        gap: 20px;
+        display: inline-flex;
+      "
+    >
+      <div style="width: 150px; height: 150px; position: relative">
+        <div
+          style="
+            width: 150px;
+            height: 150px;
+            left: 0px;
+            top: 0px;
+            position: absolute;
+            border-radius: 10px;
+            border: 1px #2b7fe1 solid;
+          "
+        ></div>
+        <div
+          style="
+            left: 40px;
+            top: 40px;
+            position: absolute;
+            color: #2b7fe1;
+            font-size: 36px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          <%= 100/informe.cantidad_tareas*informe.tareas_empleado %>%
+        </div>
+        <div
+          style="
+            left: 22px;
+            top: 86px;
+            position: absolute;
+            color: #2b7fe1;
+            font-size: 20px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          <% if (informe.cantidad_tareas / informe.tareas_completadas * 100 ===
+          100) { %> Completada <% } else { %> Sin Terminar <% } %>
+        </div>
+        <div
+          style="
+            left: 48px;
+            top: 18px;
+            position: absolute;
+            color: #707070;
+            font-size: 14px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          Progreso
+        </div>
+      </div>
+      <div style="width: 150px; height: 150px; position: relative">
+        <div
+          style="
+            width: 150px;
+            height: 150px;
+            left: 0px;
+            top: 0px;
+            position: absolute;
+            border-radius: 10px;
+            border: 1px #2b7fe1 solid;
+          "
+        ></div>
+        <div
+          style="
+            left: 8px;
+            top: 40px;
+            position: absolute;
+            color: #2b7fe1;
+            font-size: 36px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          <%= informe.tiempo_invertido %>
+        </div>
+        <div
+          style="
+            left: 22px;
+            top: 86px;
+            position: absolute;
+            color: #2b7fe1;
+            font-size: 20px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          <% if (informe.cantidad_tareas / informe.tareas_completadas * 100 ===
+          100) { %> Completada <% } else { %> Sin Terminar <% } %>
+        </div>
+        <div
+          style="
+            left: 48px;
+            top: 18px;
+            position: absolute;
+            color: #707070;
+            font-size: 14px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          Duración
+        </div>
+      </div>
+      <div style="width: 150px; height: 150px; position: relative">
+        <div
+          style="
+            width: 150px;
+            height: 150px;
+            left: 0px;
+            top: 0px;
+            position: absolute;
+            border-radius: 10px;
+            border: 1px #2b7fe1 solid;
+          "
+        ></div>
+        <div
+          style="
+            left: 51px;
+            top: 40px;
+            position: absolute;
+            color: #2b7fe1;
+            font-size: 36px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          <%= informe.tareas_empleado %>/<%= informe.cantidad_tareas %>
+        </div>
+        <div
+          style="
+            left: 27px;
+            top: 86px;
+            position: absolute;
+            color: #2b7fe1;
+            font-size: 20px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          <% if (informe.cantidad_tareas / informe.tareas_completadas * 100 ===
+          100) { %> Completada <% } else { %> Sin Terminar <% } %>
+        </div>
+        <div
+          style="
+            left: 56px;
+            top: 18px;
+            position: absolute;
+            color: #707070;
+            font-size: 14px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          Tareas
+        </div>
+      </div>
+      <div style="width: 264px; height: 150px; position: relative">
+        <div
+          style="
+            width: 264px;
+            height: 150px;
+            left: 0px;
+            top: 0px;
+            position: absolute;
+            border-radius: 10px;
+            border: 1px #2b7fe1 solid;
+          "
+        ></div>
+        <div
+          style="
+            left: 25px;
+            top: 50px;
+            position: absolute;
+            color: #2b7fe1;
+            font-size: 24px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          <%= informe.nombre_proyecto %>
+        </div>
+        <div
+          style="
+            left: 100px;
+            top: 90px;
+            position: absolute;
+            color: #2b7fe1;
+            font-size: 20px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          <%= informe.nombre_cliente %>
+        </div>
+        <div
+          style="
+            left: 105px;
+            top: 18px;
+            position: absolute;
+            color: #707070;
+            font-size: 14px;
+            font-family: Helvetica Neue;
+            font-weight: 300;
+            word-wrap: break-word;
+          "
+        >
+          Proyecto
+        </div>
+      </div>
+    </div>
+    <div
+      style="
+        left: 0px;
+        top: 0px;
+        position: absolute;
+        color: black;
+        font-size: 24px;
+        font-family: Helvetica Neue;
+        font-weight: 400;
+        word-wrap: break-word;
+      "
+    >
+      <%= informe.nombre_actividad %> - #<%= informe.id_actividad %>
+    </div>
+  </div>
+</div>
+<% }); %>

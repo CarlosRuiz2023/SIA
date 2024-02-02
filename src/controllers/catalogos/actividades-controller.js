@@ -219,9 +219,7 @@ const reporteActividadesPost = async (req, res) => {
     }
 
     let resultado = {};
-    let empleado = {};
     let equipos = [];
-    let empleados = [];
     let proyectos = [];
     let actividades = [];
     let etapas = [];
@@ -229,11 +227,14 @@ const reporteActividadesPost = async (req, res) => {
     let actividadesIds = [];
     let proyectosIds = [];
     let etapasIds = [];
-    let html = "";
+    let proyectosClientes = [];
+    let etapasProyectos = [];
+    let actividadesEtapas = [];
+    let informes = [];
 
     switch (tipo) {
       case 1:
-        empleado = await Empleado.findAll({
+        const empleado = await Empleado.findAll({
           where: {
             id_cat_empleado: {
               [Op.eq]: id,
@@ -246,6 +247,16 @@ const reporteActividadesPost = async (req, res) => {
             },
           ],
         });
+
+        if (!empleado) {
+          //RETORNAMOS MENSAJE DE ERROR
+          return res.status(400).json({
+            ok: false,
+            results: {
+              msg: `El empleado con el ID ${id} no existe intente de nuevo`,
+            },
+          });
+        }
 
         resultado = await Empleado.findAll({
           where: {
@@ -311,7 +322,6 @@ const reporteActividadesPost = async (req, res) => {
             id_proyecto: cliente.fk_cat_proyecto,
           });
         }
-        etapasIds = etapas.map((etapa) => etapa.id_etapa);
 
         resultado = await DetalleProyectoEtapa.findAll({
           where: { fk_cat_proyecto: { [Op.in]: proyectosIds } },
@@ -368,7 +378,7 @@ const reporteActividadesPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-                CASE WHEN fk_cat_empleado = ${id} THEN 1 ELSE NULL END
+                CASE WHEN fk_cat_empleado = ${id} AND estatus = 1 THEN 1 ELSE NULL END
               `)
               ),
               "tareas_empleado",
@@ -380,7 +390,7 @@ const reporteActividadesPost = async (req, res) => {
                   pool.fn(
                     "SUM",
                     pool.literal(`
-                    CASE WHEN fk_cat_empleado = ${id} THEN "duracion" ELSE '00:00:00' END `)
+                    CASE WHEN fk_cat_empleado = ${id} AND estatus = 1 THEN "duracion" ELSE '00:00:00' END `)
                   ),
                   "interval"
                 ),
@@ -397,7 +407,7 @@ const reporteActividadesPost = async (req, res) => {
           },
         });
         // Mapeamos los resultados para reorganizar la estructura
-        const proyectosClientes = proyectos.map((proyecto) => {
+        proyectosClientes = proyectos.map((proyecto) => {
           const resultadoClientes = clientes.find((cliente) => {
             return cliente.id_proyecto === proyecto.id_proyecto;
           });
@@ -409,7 +419,7 @@ const reporteActividadesPost = async (req, res) => {
           };
         });
         // Mapeamos los resultados para reorganizar la estructura
-        const etapasProyectos = etapas.map((etapa) => {
+        etapasProyectos = etapas.map((etapa) => {
           const resultadoProyectos = proyectosClientes.find((proyecto) => {
             return proyecto.id_proyecto === etapa.id_proyecto;
           });
@@ -422,7 +432,7 @@ const reporteActividadesPost = async (req, res) => {
           };
         });
         // Mapeamos los resultados para reorganizar la estructura
-        const actividadesEtapas = actividades.map((actividad) => {
+        actividadesEtapas = actividades.map((actividad) => {
           const resultadoEtapas = etapasProyectos.find((etapas) => {
             return etapas.id_etapa === actividad.etapa;
           });
@@ -438,7 +448,7 @@ const reporteActividadesPost = async (req, res) => {
           };
         });
         // Mapeamos los resultados para reorganizar la estructura
-        const informes = resultado.map((tarea) => {
+        informes = resultado.map((tarea) => {
           const resultadoActividades = actividadesEtapas.find((actividad) => {
             return actividad.id_actividad === tarea.fk_cat_actividad;
           });
@@ -458,16 +468,8 @@ const reporteActividadesPost = async (req, res) => {
           };
         });
         // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
-        /* res.status(200).json({
-          ok: true,
-          results: {
-            empleado,
-            actividades: informes,
-          },
-        }); */
-        console.log();
         res.render(
-          "../../../public/reporte.ejs",
+          "../../../public/reporteEmpleado.ejs",
           {
             informes,
             nombre_empleado: `${empleado[0].persona.nombre} ${empleado[0].persona.apellido_Paterno} ${empleado[0].persona.apellido_Materno}`,
@@ -480,10 +482,447 @@ const reporteActividadesPost = async (req, res) => {
         );
         break;
       case 2:
+        // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+        const equipo_trabajo = await EquipoTrabajo.findOne({
+          where: { id_cat_equipo_trabajo: id },
+          include: [
+            {
+              model: DetalleEmpleadoEquipoTrabajo,
+              as: "detalle_empleados",
+              include: [
+                {
+                  model: Empleado,
+                  as: "cat_empleado",
+                  include: [
+                    {
+                      model: Persona,
+                      as: "persona",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        });
+
+        if (!equipo_trabajo) {
+          //RETORNAMOS MENSAJE DE ERROR
+          return res.status(400).json({
+            ok: false,
+            results: {
+              msg: `El equipo_trabajo con el ID ${id} no existe intente de nuevo`,
+            },
+          });
+        }
+
+        const empleadosIds = equipo_trabajo.detalle_empleados.map(
+          (equipo) => equipo.fk_cat_empleado
+        );
+
+        const empleadosNombres = equipo_trabajo.detalle_empleados.map(
+          (equipo) =>
+            `${equipo.cat_empleado.persona.nombre} ${equipo.cat_empleado.persona.apellido_Paterno} ${equipo.cat_empleado.persona.apellido_Materno}`
+        );
+
+        resultado = await DetalleProyectoEquipoTrabajo.findAll({
+          where: {
+            fk_cat_equipo_trabajo: {
+              [Op.eq]: equipo_trabajo.id_cat_equipo_trabajo,
+            },
+          },
+          include: [
+            {
+              model: Proyectos,
+              as: "cat_proyecto",
+            },
+          ],
+        });
+        for (let equipo_trabajo of resultado) {
+          const proyecto = equipo_trabajo.cat_proyecto;
+          proyectos.push({
+            id_proyecto: proyecto.id_cat_proyecto,
+            nombre: proyecto.proyecto,
+            equipo_trabajo: equipo_trabajo.fk_cat_equipo_trabajo,
+          });
+        }
+        proyectosIds = proyectos.map((proyecto) => proyecto.id_proyecto);
+
+        resultado = await DetalleClienteProyectos.findAll({
+          where: { fk_cat_proyecto: { [Op.in]: proyectosIds } },
+          include: [
+            {
+              model: Proyectos,
+              as: "cat_proyecto",
+            },
+            {
+              model: Cliente,
+              as: "cat_cliente",
+              include: [{ model: Persona, as: "persona" }],
+            },
+          ],
+        });
+        for (let cliente of resultado) {
+          clientes.push({
+            nombre_cliente: cliente.cat_cliente.persona.nombre,
+            id_proyecto: cliente.fk_cat_proyecto,
+          });
+        }
+
+        resultado = await DetalleProyectoEtapa.findAll({
+          where: { fk_cat_proyecto: { [Op.in]: proyectosIds } },
+          include: [
+            {
+              model: Etapa,
+              as: "cat_etapa",
+            },
+          ],
+        });
+        for (let etapa of resultado) {
+          const etapa1 = etapa.cat_etapa;
+          etapas.push({
+            id_etapa: etapa1.id_cat_etapa,
+            id_proyecto: etapa.fk_cat_proyecto,
+          });
+        }
+        etapasIds = etapas.map((etapa) => etapa.id_etapa);
+        resultado = await DetalleEtapaActividad.findAll({
+          where: { fk_cat_etapa: { [Op.in]: etapasIds } },
+          include: [
+            {
+              model: Actividades,
+              as: "cat_actividade",
+            },
+          ],
+        });
+        for (let actividad of resultado) {
+          actividades.push({
+            id_actividad: actividad.fk_cat_actividad,
+            nombre: actividad.cat_actividade.actividad,
+            etapa: actividad.fk_cat_etapa,
+            fecha: actividad.fecha,
+          });
+        }
+        actividadesIds = actividades.map((actividad) => actividad.id_actividad);
+        resultado = await DetalleActividadTarea.findAll({
+          attributes: [
+            "fk_cat_actividad",
+            [
+              pool.fn("COUNT", pool.col("id_detalle_actividad_tarea")),
+              "cantidad_tareas",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN estatus = 1 THEN 1 ELSE NULL END
+              `)
+              ),
+              "tareas_completadas",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                  CASE WHEN fk_cat_empleado IN (${empleadosIds.join(",")})
+                       AND estatus = 1 THEN 1
+                       ELSE NULL
+                  END
+                `)
+              ),
+              "tareas_empleado",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn(
+                    "SUM",
+                    pool.literal(`
+                    CASE WHEN fk_cat_empleado IN (${empleadosIds.join(
+                      ","
+                    )}) AND estatus = 1 THEN "duracion" ELSE '00:00:00' END `)
+                  ),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "tiempo_invertido",
+            ],
+          ],
+          group: ["fk_cat_actividad"],
+          where: {
+            fk_cat_actividad: {
+              [Op.in]: actividadesIds,
+            },
+          },
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        proyectosClientes = proyectos.map((proyecto) => {
+          const resultadoClientes = clientes.find((cliente) => {
+            return cliente.id_proyecto === proyecto.id_proyecto;
+          });
+
+          return {
+            id_proyecto: proyecto.id_proyecto,
+            nombre_proyecto: proyecto.nombre,
+            nombre_cliente: resultadoClientes.nombre_cliente,
+          };
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        etapasProyectos = etapas.map((etapa) => {
+          const resultadoProyectos = proyectosClientes.find((proyecto) => {
+            return proyecto.id_proyecto === etapa.id_proyecto;
+          });
+
+          return {
+            id_proyecto: etapa.id_proyecto,
+            id_etapa: etapa.id_etapa,
+            nombre_proyecto: resultadoProyectos.nombre_proyecto,
+            nombre_cliente: resultadoProyectos.nombre_cliente,
+          };
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        actividadesEtapas = actividades.map((actividad) => {
+          const resultadoEtapas = etapasProyectos.find((etapas) => {
+            return etapas.id_etapa === actividad.etapa;
+          });
+
+          return {
+            id_proyecto: resultadoEtapas.id_proyecto,
+            id_etapa: resultadoEtapas.id_etapa,
+            id_actividad: actividad.id_actividad,
+            nombre_proyecto: resultadoEtapas.nombre_proyecto,
+            nombre_actividad: actividad.nombre,
+            fecha_actividad: actividad.fecha,
+            nombre_cliente: resultadoEtapas.nombre_cliente,
+          };
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        informes = resultado.map((tarea) => {
+          const resultadoActividades = actividadesEtapas.find((actividad) => {
+            return actividad.id_actividad === tarea.fk_cat_actividad;
+          });
+
+          return {
+            id_proyecto: resultadoActividades.id_proyecto,
+            id_etapa: resultadoActividades.id_etapa,
+            id_actividad: resultadoActividades.id_actividad,
+            nombre_proyecto: resultadoActividades.nombre_proyecto,
+            nombre_actividad: resultadoActividades.nombre_actividad,
+            fecha_actividad: resultadoActividades.fecha,
+            cantidad_tareas: tarea.dataValues.cantidad_tareas,
+            tareas_completadas: tarea.dataValues.tareas_completadas,
+            tareas_empleado: tarea.dataValues.tareas_empleado,
+            tiempo_invertido: tarea.dataValues.tiempo_invertido,
+            nombre_cliente: resultadoActividades.nombre_cliente,
+          };
+        });
+        // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+        res.render(
+          "../../../public/reporteEquipoTrabajo.ejs",
+          {
+            informes,
+            equipo_trabajo,
+            empleados: empleadosNombres,
+            fecha_inicio,
+            fecha_fin,
+          },
+          (err, html) => {
+            res.send(html);
+          }
+        );
         break;
       case 3:
-        break;
-      default:
+        const proyecto = await Proyectos.findAll({
+          where: {
+            id_cat_proyecto: {
+              [Op.eq]: id,
+            },
+          },
+        });
+
+        if (!proyecto) {
+          //RETORNAMOS MENSAJE DE ERROR
+          return res.status(400).json({
+            ok: false,
+            results: {
+              msg: `El proyecto con el ID ${id} no existe intente de nuevo`,
+            },
+          });
+        }
+
+        resultado = await DetalleClienteProyectos.findAll({
+          where: { fk_cat_proyecto: { [Op.eq]: id } },
+          include: [
+            {
+              model: Proyectos,
+              as: "cat_proyecto",
+            },
+            {
+              model: Cliente,
+              as: "cat_cliente",
+              include: [{ model: Persona, as: "persona" }],
+            },
+          ],
+        });
+        clientes.push({
+          nombre_cliente: resultado[0].cat_cliente.persona.nombre,
+          id_proyecto: resultado[0].fk_cat_proyecto,
+        });
+
+        resultado = await DetalleProyectoEtapa.findAll({
+          where: { fk_cat_proyecto: { [Op.eq]: id } },
+          include: [
+            {
+              model: Etapa,
+              as: "cat_etapa",
+            },
+          ],
+        });
+        for (let etapa of resultado) {
+          const etapa1 = etapa.cat_etapa;
+          etapas.push({
+            id_etapa: etapa1.id_cat_etapa,
+            id_proyecto: etapa.fk_cat_proyecto,
+          });
+        }
+        etapasIds = etapas.map((etapa) => etapa.id_etapa);
+        resultado = await DetalleEtapaActividad.findAll({
+          where: { fk_cat_etapa: { [Op.in]: etapasIds } },
+          include: [
+            {
+              model: Actividades,
+              as: "cat_actividade",
+            },
+          ],
+        });
+        for (let actividad of resultado) {
+          actividades.push({
+            id_actividad: actividad.fk_cat_actividad,
+            nombre: actividad.cat_actividade.actividad,
+            etapa: actividad.fk_cat_etapa,
+            fecha: actividad.fecha,
+          });
+        }
+        actividadesIds = actividades.map((actividad) => actividad.id_actividad);
+        resultado = await DetalleActividadTarea.findAll({
+          attributes: [
+            "fk_cat_actividad",
+            [
+              pool.fn("COUNT", pool.col("id_detalle_actividad_tarea")),
+              "cantidad_tareas",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN estatus = 1 THEN 1 ELSE NULL END
+              `)
+              ),
+              "tareas_completadas",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN fk_cat_empleado IS NOT NULL AND estatus = 1 THEN 1 ELSE NULL END
+              `)
+              ),
+              "tareas_empleado",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn(
+                    "SUM",
+                    pool.literal(`
+                    CASE WHEN fk_cat_empleado IS NOT NULL AND estatus = 1 THEN "duracion" ELSE '00:00:00' END `)
+                  ),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "tiempo_invertido",
+            ],
+          ],
+          group: ["fk_cat_actividad"],
+          where: {
+            fk_cat_actividad: {
+              [Op.in]: actividadesIds,
+            },
+          },
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        proyectosClientes = {
+          id_proyecto: proyecto[0].dataValues.id_cat_proyecto,
+          nombre_proyecto: proyecto[0].dataValues.proyecto,
+          nombre_cliente: clientes[0].nombre_cliente,
+        };
+        // Mapeamos los resultados para reorganizar la estructura
+        etapasProyectos = etapas.map((etapa) => {
+          return {
+            id_proyecto: etapa.id_proyecto,
+            id_etapa: etapa.id_etapa,
+            nombre_proyecto: proyectosClientes.nombre_proyecto,
+            nombre_cliente: proyectosClientes.nombre_cliente,
+          };
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        actividadesEtapas = actividades.map((actividad) => {
+          const resultadoEtapas = etapasProyectos.find((etapas) => {
+            return etapas.id_etapa === actividad.etapa;
+          });
+
+          return {
+            id_proyecto: resultadoEtapas.id_proyecto,
+            id_etapa: resultadoEtapas.id_etapa,
+            id_actividad: actividad.id_actividad,
+            nombre_proyecto: resultadoEtapas.nombre_proyecto,
+            nombre_actividad: actividad.nombre,
+            fecha_actividad: actividad.fecha,
+            nombre_cliente: resultadoEtapas.nombre_cliente,
+          };
+        });
+        // Mapeamos los resultados para reorganizar la estructura
+        informes = resultado.map((tarea) => {
+          const resultadoActividades = actividadesEtapas.find((actividad) => {
+            return actividad.id_actividad === tarea.fk_cat_actividad;
+          });
+
+          return {
+            id_proyecto: resultadoActividades.id_proyecto,
+            id_etapa: resultadoActividades.id_etapa,
+            id_actividad: resultadoActividades.id_actividad,
+            nombre_proyecto: resultadoActividades.nombre_proyecto,
+            nombre_actividad: resultadoActividades.nombre_actividad,
+            fecha_actividad: resultadoActividades.fecha,
+            cantidad_tareas: tarea.dataValues.cantidad_tareas,
+            tareas_completadas: tarea.dataValues.tareas_completadas,
+            tareas_empleado: tarea.dataValues.tareas_empleado,
+            tiempo_invertido: tarea.dataValues.tiempo_invertido,
+            nombre_cliente: resultadoActividades.nombre_cliente,
+          };
+        });
+        // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+        /*res.status(200).json({
+          ok: true,
+          results: {
+            actividades: informes,
+          },
+        }); */
+        res.render(
+          "../../../public/reporteProyecto.ejs",
+          {
+            informes,
+            nombre_proyecto: proyecto[0].dataValues.proyecto,
+            fecha_inicio,
+            fecha_fin,
+          },
+          (err, html) => {
+            res.send(html);
+          }
+        );
         break;
     }
   } catch (error) {
