@@ -96,15 +96,13 @@ const actividadIdGet = async (req = request, res = response) => {
 const actividadesPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
-    const { actividad_nombre, descripcion } = req.body;
-
-    const date = new Date();
-    const fecha_solicitada = date.toISOString().slice(0, 10);
+    const { actividad_nombre, descripcion, equipo_trabajo } = req.body;
 
     // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
     const actividad = await Actividades.create({
       actividad: actividad_nombre,
       descripcion,
+      fk_cat_equipo_trabajo: equipo_trabajo,
       estatus: 1,
     });
 
@@ -136,7 +134,7 @@ const actividadPut = async (req = request, res = response) => {
     const { id } = req.params;
 
     // EXTRAEMOS LOS DATOS DEL CUERPO DE LA SOLICITUD.
-    const { actividad_nombre, descripcion } = req.body;
+    const { actividad_nombre, descripcion, equipo_trabajo } = req.body;
 
     // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
     const actividad = await Actividades.findByPk(id);
@@ -144,9 +142,9 @@ const actividadPut = async (req = request, res = response) => {
     // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
     actividad.actividad = actividad_nombre;
     actividad.descripcion = descripcion;
-
-    // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
-    await actividad.save();
+    (actividad.fk_cat_equipo_trabajo = equipo_trabajo),
+      // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
+      await actividad.save();
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ACTUALIZACIÓN.
     res.status(200).json({
@@ -234,11 +232,12 @@ const reporteActividadesPost = async (req, res) => {
 
     switch (tipo) {
       case 1:
-        const empleado = await Empleado.findAll({
+        const empleado = await Empleado.findOne({
           where: {
             id_cat_empleado: {
               [Op.eq]: id,
             },
+            estatus: 1,
           },
           include: [
             {
@@ -253,7 +252,7 @@ const reporteActividadesPost = async (req, res) => {
           return res.status(400).json({
             ok: false,
             results: {
-              msg: `El empleado con el ID ${id} no existe intente de nuevo`,
+              msg: `El empleado con el ID ${id} no existe o se encuentra desactivado`,
             },
           });
         }
@@ -272,6 +271,7 @@ const reporteActividadesPost = async (req, res) => {
                 {
                   model: EquipoTrabajo,
                   as: "cat_equipo_trabajo",
+                  where: { estatus: 1 },
                 },
               ],
             },
@@ -289,6 +289,7 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Proyectos,
               as: "cat_proyecto",
+              where: { estatus: 1 },
             },
           ],
         });
@@ -308,6 +309,7 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Proyectos,
               as: "cat_proyecto",
+              where: { estatus: 1 },
             },
             {
               model: Cliente,
@@ -329,6 +331,7 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Etapa,
               as: "cat_etapa",
+              where: { estatus: 1 },
             },
           ],
         });
@@ -346,8 +349,10 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Actividades,
               as: "cat_actividade",
+              where: { estatus: 1 },
             },
           ],
+          where: { estatus: { [Op.ne]: 0 } },
         });
         for (let actividad of resultado) {
           actividades.push({
@@ -503,6 +508,7 @@ const reporteActividadesPost = async (req, res) => {
               ],
             },
           ],
+          where: { estatus: 1 },
         });
 
         if (!equipo_trabajo) {
@@ -510,7 +516,7 @@ const reporteActividadesPost = async (req, res) => {
           return res.status(400).json({
             ok: false,
             results: {
-              msg: `El equipo_trabajo con el ID ${id} no existe intente de nuevo`,
+              msg: `El equipo_trabajo con el ID ${id} no existe o se encuentra inactivo`,
             },
           });
         }
@@ -525,17 +531,18 @@ const reporteActividadesPost = async (req, res) => {
         );
 
         resultado = await DetalleProyectoEquipoTrabajo.findAll({
-          where: {
-            fk_cat_equipo_trabajo: {
-              [Op.eq]: equipo_trabajo.id_cat_equipo_trabajo,
-            },
-          },
           include: [
             {
               model: Proyectos,
               as: "cat_proyecto",
+              where: { estatus: 1 },
             },
           ],
+          where: {
+            fk_cat_equipo_trabajo: {
+              [Op.eq]: id,
+            },
+          },
         });
         for (let equipo_trabajo of resultado) {
           const proyecto = equipo_trabajo.cat_proyecto;
@@ -553,6 +560,7 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Proyectos,
               as: "cat_proyecto",
+              where: { estatus: 1 },
             },
             {
               model: Cliente,
@@ -574,6 +582,7 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Etapa,
               as: "cat_etapa",
+              where: { estatus: 1 },
             },
           ],
         });
@@ -591,8 +600,10 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Actividades,
               as: "cat_actividade",
+              where: { estatus: 1 },
             },
           ],
+          where: { estatus: { [Op.ne]: 0 } },
         });
         for (let actividad of resultado) {
           actividades.push({
@@ -733,7 +744,7 @@ const reporteActividadesPost = async (req, res) => {
         );
         break;
       case 3:
-        const proyecto = await Proyectos.findAll({
+        const proyecto = await Proyectos.findOne({
           where: {
             id_cat_proyecto: {
               [Op.eq]: id,
@@ -757,6 +768,7 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Proyectos,
               as: "cat_proyecto",
+              where: { estatus: 1 },
             },
             {
               model: Cliente,
@@ -776,6 +788,7 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Etapa,
               as: "cat_etapa",
+              where: { estatus: 1 },
             },
           ],
         });
@@ -793,8 +806,10 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Actividades,
               as: "cat_actividade",
+              where: { estatus: 1 },
             },
           ],
+          where: { estatus: { [Op.ne]: 0 } },
         });
         for (let actividad of resultado) {
           actividades.push({
@@ -855,8 +870,8 @@ const reporteActividadesPost = async (req, res) => {
         });
         // Mapeamos los resultados para reorganizar la estructura
         proyectosClientes = {
-          id_proyecto: proyecto[0].dataValues.id_cat_proyecto,
-          nombre_proyecto: proyecto[0].dataValues.proyecto,
+          id_proyecto: proyecto.id_cat_proyecto,
+          nombre_proyecto: proyecto.proyecto,
           nombre_cliente: clientes[0].nombre_cliente,
         };
         // Mapeamos los resultados para reorganizar la estructura
@@ -915,7 +930,7 @@ const reporteActividadesPost = async (req, res) => {
           "../../../public/reporteProyecto.ejs",
           {
             informes,
-            nombre_proyecto: proyecto[0].dataValues.proyecto,
+            nombre_proyecto: proyecto.proyecto,
             fecha_inicio,
             fecha_fin,
           },

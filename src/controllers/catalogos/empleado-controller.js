@@ -240,6 +240,12 @@ const empleadoPut = async (req = request, res = response) => {
       roles,
     } = req.body;
 
+    let { contrasenia } = req.body;
+
+    //Encriptar la contraseña
+    const salt = bcryptjs.genSaltSync();
+    const contraseniaEncriptada = bcryptjs.hashSync(contrasenia, salt);
+
     // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
     const empleadoExistente = await Empleado.findByPk(id, {
       include: [
@@ -273,6 +279,8 @@ const empleadoPut = async (req = request, res = response) => {
 
     // ACTUALIZA LOS CAMPOS DEL MODELO USUARIO.
     empleadoExistente.usuario.correo = correo;
+    empleadoExistente.usuario.contrasenia = contraseniaEncriptada;
+    empleadoExistente.usuario.contrasenia1 = contrasenia;
 
     // ELIMINA LOS ROLES ANTIGUOS ASOCIADOS AL USUARIO.
     await DetalleUsuarioRol.destroy({

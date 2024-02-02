@@ -12,7 +12,10 @@ const {
   actividadDelete,
   reporteActividadesPost,
 } = require("../../controllers/catalogos/actividades-controller");
-const { existeActividadPorId } = require("../../helpers/db-validators");
+const {
+  existeActividadPorId,
+  existeEquipoTrabajoPorId,
+} = require("../../helpers/db-validators");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -28,6 +31,7 @@ router.post(
       .not()
       .isEmpty(),
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
+    check("equipo_trabajo").custom(existeEquipoTrabajoPorId),
     validarCampos,
   ],
   actividadesPost
@@ -49,6 +53,7 @@ router.put(
       .not()
       .isEmpty(),
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
+    check("equipo_trabajo").custom(existeEquipoTrabajoPorId),
     validarCampos,
   ],
   actividadPut

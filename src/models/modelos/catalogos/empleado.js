@@ -68,6 +68,9 @@ const Empleado = pool.define(
         key: "id_cat_tolerancia",
       },
     },
+    imagen: {
+      type: Sequelize.STRING,
+    },
   },
   {
     timestamps: false,

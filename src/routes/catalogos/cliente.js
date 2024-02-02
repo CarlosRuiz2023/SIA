@@ -67,6 +67,9 @@ router.put(
       const id = req.params.id; // Obtén el ID de los parámetros de la ruta
       return emailInexiste(correo, id);
     }),
+    check("contrasenia", "El password debe de ser más de 6 letras").isLength({
+      min: 6,
+    }),
     validarCampos,
   ],
   clientePut

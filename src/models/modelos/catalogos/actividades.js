@@ -1,5 +1,6 @@
 const { Sequelize } = require("sequelize");
 const pool = require("../../../database/config");
+const EquipoTrabajo = require("./equipoTrabajo");
 
 const Actividades = pool.define(
   "cat_actividades",
@@ -21,11 +22,23 @@ const Actividades = pool.define(
       type: Sequelize.INTEGER,
       allowNull: false,
     },
+    fk_cat_equipo_trabajo: {
+      type: Sequelize.INTEGER,
+      references: {
+        model: EquipoTrabajo,
+        key: "id_cat_equipo_trabajo",
+      },
+    },
   },
   {
     timestamps: false,
     tableName: "cat_actividades",
   }
 );
+
+Actividades.belongsTo(EquipoTrabajo, {
+  foreignKey: "fk_cat_equipo_trabajo",
+  as: "equipo_trabajo",
+});
 
 module.exports = Actividades;

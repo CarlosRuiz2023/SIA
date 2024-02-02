@@ -173,6 +173,12 @@ const clientePut = async (req = request, res = response) => {
       correo,
     } = req.body;
 
+    let { contrasenia } = req.body;
+
+    //Encriptar la contraseña
+    const salt = bcryptjs.genSaltSync();
+    const contraseniaEncriptada = bcryptjs.hashSync(contrasenia, salt);
+
     // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
     const clienteExiste = await Cliente.findByPk(id, {
       include: [
@@ -188,6 +194,8 @@ const clientePut = async (req = request, res = response) => {
     clienteExiste.persona.apellido_Materno = apellido_Materno;
     clienteExiste.persona.direccion = direccion;
     clienteExiste.usuario.correo = correo;
+    clienteExiste.usuario.contrasenia = contraseniaEncriptada;
+    clienteExiste.usuario.contrasenia1 = contrasenia;
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
     await clienteExiste.persona.save();
