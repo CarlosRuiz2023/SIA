@@ -6,11 +6,11 @@ const { check } = require("express-validator");
 const { validarCampos } = require("../../middlewares/validar-campos");
 const {
   existeEmpleadoPorId,
-  existeDiaPorId,
   existeEntradaSalidaPorId,
   existeEventoPorId,
   emailExistente,
   alMenosUnRol,
+  existenEmpleadosPorId,
 } = require("../../helpers/db-validators");
 const {
   registroChequeoGet,
@@ -39,6 +39,7 @@ router.post(
     check("fecha_fin", "Formato de fecha_fin incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),
+    check("empleados").custom(existenEmpleadosPorId),
     validarCampos,
   ],
   reportePost
@@ -88,12 +89,6 @@ router.post(
 router.post(
   "/",
   [
-    check("fecha", "Formato de fecha incorrecto").custom((value) => {
-      return /\d{4}-\d{2}-\d{2}/.test(value);
-    }),
-    check("hora", "Formato de hora incorrecto").custom((value) => {
-      return /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(value);
-    }),
     check("evento").custom(existeEventoPorId),
     check("id_empleado").custom(existeEmpleadoPorId),
     check("entrada_salida").custom(existeEntradaSalidaPorId),

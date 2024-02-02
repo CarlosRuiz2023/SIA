@@ -38,9 +38,6 @@ router.post(
     check("apellido_Paterno", "El apellido paterno es obligatorio")
       .not()
       .isEmpty(),
-    check("apellido_Materno", "El apellido materno es obligatorio")
-      .not()
-      .isEmpty(),
     check("direccion", "La direccion es obligatoria").not().isEmpty(),
     check("sueldo", "El sueldo debe ser un numero").isNumeric(),
     check(
@@ -83,9 +80,6 @@ router.put(
     check("id").custom(existeEmpleadoPorId),
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
     check("apellido_Paterno", "El apellido paterno es obligatorio")
-      .not()
-      .isEmpty(),
-    check("apellido_Materno", "El apellido materno es obligatorio")
       .not()
       .isEmpty(),
     check("direccion", "La direccion es obligatoria").not().isEmpty(),

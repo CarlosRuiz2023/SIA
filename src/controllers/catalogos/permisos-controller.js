@@ -232,7 +232,9 @@ const permisoPost = async (req = request, res = response) => {
       // Hay permisos existentes en los últimos 3 días hábiles
       return res.status(400).json({
         ok: false,
-        msg: "No se puede completar el permiso. Ya hay permisos en los últimos 3 días hábiles.",
+        results: {
+          msg: "No se puede completar el permiso. Ya hay permisos en los últimos 3 días hábiles.",
+        },
       });
     }
 
@@ -251,15 +253,19 @@ const permisoPost = async (req = request, res = response) => {
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
     res.status(201).json({
       ok: true,
-      msg: "Permiso del empleado registrado correctamente",
-      results: detallePermisosEmpleado,
+      results: {
+        msg: "Permiso del empleado registrado correctamente",
+        detallePermisosEmpleado,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -310,7 +316,9 @@ const permisoPut = async (req = request, res = response) => {
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };

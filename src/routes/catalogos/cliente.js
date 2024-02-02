@@ -32,9 +32,6 @@ router.post(
     check("apellido_Paterno", "El apellido paterno es obligatorio")
       .not()
       .isEmpty(),
-    check("apellido_Materno", "El apellido materno es obligatorio")
-      .not()
-      .isEmpty(),
     check("direccion", "La direccion es obligatoria").not().isEmpty(),
     check("empresa", "La empresa es obligatoria").not().isEmpty(),
     check("correo", "El correo no es válido").isEmail(),
@@ -61,9 +58,6 @@ router.put(
     check("id").custom(existeClientePorId),
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
     check("apellido_Paterno", "El apellido paterno es obligatorio")
-      .not()
-      .isEmpty(),
-    check("apellido_Materno", "El apellido materno es obligatorio")
       .not()
       .isEmpty(),
     check("direccion", "La direccion es obligatoria").not().isEmpty(),

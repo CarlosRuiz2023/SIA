@@ -15,6 +15,8 @@ const {
   restarHoras,
 } = require("../../helpers/operacionesHorarias");
 const Ausencia = require("../../models/modelos/catalogos/ausencias");
+const Eventos = require("../../models/modelos/catalogos/eventos");
+const Dias = require("../../models/modelos/catalogos/dias");
 
 /**
  * OBTIENE LOS DIAS CON ESTATUS ACTIVO.
@@ -24,26 +26,67 @@ const Ausencia = require("../../models/modelos/catalogos/ausencias");
  * @param {response} res - OBJETO DE RESPUESTA HTTP.
  * @returns {Object} RESPUESTA JSON CON LAS TOLERANCIAS ACTIVAS OBTENIDAS.
  */
-const entradaSalidaGet = async (req = request, res = response) => {
+const entradaSalidaPost = async (req = request, res = response) => {
   try {
-    // DEFINE EL CRITERIO DE BÚSQUEDA PARA TOLERANCIAS ACTIVAS.
-    const query = { estatus: 1 };
-    // REALIZA LA CONSULTA A LA BASE DE DATOS PARA OBTENER LAS TOLERANCIAS ACTIVAS.
-    const dias = await EntradaSalida.findAll({
+    // EXTRAEMOS LOS PARÁMETROS DE LA SOLICITUD.
+    const { empleados } = req.body;
+    const query = {};
+
+    const dateActual = new Date();
+
+    const fecha = dateActual.toISOString().slice(0, 10);
+
+    // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
+    query.fecha = fecha;
+    if (empleados && empleados.length > 0) {
+      query.fk_cat_empleado = {
+        [Op.in]: empleados,
+      };
+    }
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
+    const registroChequeo = await RegistroChequeo.findAll({
       where: query,
+      include: [
+        {
+          model: Empleado,
+          as: "empleado",
+          include: [{ model: Persona, as: "persona" }],
+        },
+        { model: Eventos, as: "evento" },
+        {
+          model: DetalleDiasEntradaSalida,
+          as: "detalleDiasEntradaSalida",
+          include: [
+            {
+              model: Dias,
+              as: "cat_dia",
+            },
+            {
+              model: TipoHorario,
+              as: "cat_tipo_horario",
+            },
+            {
+              model: EntradaSalida,
+              as: "cat_entrada_salida",
+            },
+          ],
+        },
+      ],
     });
 
-    // RESPONDE CON UN OBJETO JSON QUE CONTIENE LAS TOLERANCIAS ACTIVAS OBTENIDAS.
+    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      results: dias,
+      results: registroChequeo,
     });
   } catch (error) {
-    // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -363,6 +406,6 @@ const reporteEntradasSalidasPost = async (req, res) => {
 
 // EXPORTA EL MÉTODO PARA SER UTILIZADO EN OTROS ARCHIVOS.
 module.exports = {
-  entradaSalidaGet,
+  entradaSalidaPost,
   reporteEntradasSalidasPost,
 };

@@ -50,7 +50,9 @@ const inicioSesion = async (req, res) => {
       //RETORNAMOS MENSAJE DE ERROR
       return res.status(400).json({
         ok: false,
-        msg: "Usuario o contraseña no son correctos.",
+        results: {
+          msg: "Usuario o contraseña no son correctos.",
+        },
       });
     }
     //Generar el JWT
@@ -71,7 +73,9 @@ const inicioSesion = async (req, res) => {
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
