@@ -19,25 +19,50 @@ const {
   existePermisoEmpleadoPorId,
   existeEmpleadoPorId,
 } = require("../../helpers/db-validators");
+const { validarJWT } = require("../../middlewares/validar-jwt");
+const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS PERMISOS
-router.get("/", permisoGet);
+router.get(
+  "/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    validarCampos,
+  ],
+  permisoGet
+);
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
-router.get("/solicitados", permisosGet);
+router.get(
+  "/solicitados",
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    validarCampos,
+  ],
+  permisosGet
+);
 
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
 router.post(
   "/",
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    tieneRole("FROND END", "BACK END"),
+    //esAdminRole,
     check("fecha_permiso", "Formato de fecha incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),
-    check("tiempo_horas", "El tiempo_horas debe ser un numero.")
+    check("tiempo_horas", "El tiempo_horas debe ser un numero entre 1 y 4")
       .isNumeric()
       .isInt({ min: 1, max: 4 }),
     check("id_cat_empleado").custom(existeEmpleadoPorId),
@@ -52,6 +77,10 @@ router.post(
 router.get(
   "/:id",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    tieneRole("FROND END", "BACK END"),
+    //esAdminRole,
     check("id").custom(existePermisoEmpleadoPorId),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
@@ -63,6 +92,10 @@ router.get(
 router.get(
   "/solicitados/:id",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    tieneRole("FROND END", "BACK END"),
+    //esAdminRole,
     check("id").custom(existeEmpleadoPorId),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
@@ -75,9 +108,12 @@ router.put(
   "/:id",
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
-    check("estatus", "El estatus debe ser un numero entre 0 y 2")
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("estatus", "El estatus debe ser un numero entre 0 y 4")
       .isNumeric()
-      .isInt({ min: 0, max: 2 }),
+      .isInt({ min: 0, max: 4 }),
     check("id_cat_permiso").custom(existePermisoPorId),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,

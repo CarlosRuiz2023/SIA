@@ -210,19 +210,14 @@ const permisoPost = async (req = request, res = response) => {
     const hora_solicitada = date.toTimeString().slice(0, 8);
 
     // Verificar si hay permisos existentes en los últimos 3 días hábiles
-    const tresDiasAntes = new Date(fecha_permiso);
-    tresDiasAntes.setDate(tresDiasAntes.getDate() - 3);
-
-    // Verificar si hay permisos existentes en los últimos 3 días hábiles
     const tresDiasExtras = new Date(fecha_permiso);
     tresDiasExtras.setDate(tresDiasExtras.getDate() + 3);
 
     const existenPermisosAnteriores = await DetallePermisosEmpleado.findOne({
       where: {
         fk_cat_empleado: id_cat_empleado,
-        estatus: 1,
         fecha_permiso: {
-          [Op.gte]: tresDiasAntes,
+          [Op.gte]: fecha_permiso,
           [Op.lte]: tresDiasExtras,
         },
       },
@@ -234,6 +229,23 @@ const permisoPost = async (req = request, res = response) => {
         ok: false,
         results: {
           msg: "No se puede completar el permiso. Ya hay permisos en los últimos 3 días hábiles.",
+        },
+      });
+    }
+
+    const existenPermisosAnteriores1 = await DetallePermisosEmpleado.findOne({
+      where: {
+        fk_cat_empleado: id_cat_empleado,
+        estatus: 3,
+      },
+    });
+
+    if (existenPermisosAnteriores1) {
+      // Hay permisos existentes en los últimos 3 días hábiles
+      return res.status(400).json({
+        ok: false,
+        results: {
+          msg: "No se puede completar el permiso. Debido a que no se ha recuperado un permiso concedido.",
         },
       });
     }

@@ -16,6 +16,8 @@ const {
   existeActividadPorId,
   existeEmpleadoPorId,
 } = require("../../helpers/db-validators");
+const { validarJWT } = require("../../middlewares/validar-jwt");
+const { tieneRole, esAdminRole } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -24,6 +26,10 @@ const router = Router();
 router.post(
   "/",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("id_actividad").custom(existeActividadPorId),
     check("tarea", "La descripcion es obligatoria").not().isEmpty(),
     check("duracion", "Formato de hora incorrecto").custom((value) => {
@@ -37,14 +43,28 @@ router.post(
 // DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
 router.get(
   "/:id",
-  [check("id").custom(existeActividadPorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeActividadPorId),
+    validarCampos,
+  ],
   tareasIdGet
 );
 
 // DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
 router.get(
   "/faltantes/:id",
-  [check("id").custom(existeActividadPorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeActividadPorId),
+    validarCampos,
+  ],
   tareasFaltantesIdGet
 );
 
@@ -52,6 +72,10 @@ router.get(
 router.put(
   "/:id",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("id_actividad").custom(existeActividadPorId),
     check("id_empleado").custom(existeEmpleadoPorId),
     check("tarea", "La descripcion es obligatoria").not().isEmpty(),
@@ -69,7 +93,14 @@ router.put(
 // DEFINICIÓN DE RUTA PARA ELIMINAR UN CLIENTE POR ID
 router.delete(
   "/:id",
-  [check("id").custom(existeTareaPorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeTareaPorId),
+    validarCampos,
+  ],
   tareaDelete
 );
 

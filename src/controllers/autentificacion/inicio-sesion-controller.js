@@ -109,25 +109,6 @@ const recuperarContrasenia = async (req, res = response) => {
     </form>
   
   `;
-
-    /**
-   * <tr>
-          <td style="text-align: center;">
-            <div style="width: 100%; display: flex;">
-              <div style="width: 50%;">
-                <img src="https://res.cloudinary.com/ddem1jb7m/image/upload/v1706804214/ITSmartS_azul_1_ifgtfb.png">
-              </div>
-              <span style="display: inline-block; border-left: 2px solid #173366; height: 15px; vertical-align: middle;">
-              </span>
-              <div style="width: 50%; position: relative;">
-                <img src="https://res.cloudinary.com/ddem1jb7m/image/upload/v1706804214/Logo_2_1_ocdjvt.png">
-              </div>
-            </div>
-            <div style="width: 100%; height: 1px; background-color: #003366; position: absolute; bottom: 0;"></div>
-          </td>
-        </tr>
-   */
-
     const html = `
     <div>
       <table width="500" align="center">
@@ -285,7 +266,7 @@ const cambiarContrasenia = async (req, res = response) => {
   try {
     const { correo } = req.params;
     // obtener datos del body
-    let { password, passwordConfirm } = req.query;
+    const { password, passwordConfirm } = req.query;
 
     if (password !== passwordConfirm) {
       return res.status(400).json({
@@ -296,13 +277,14 @@ const cambiarContrasenia = async (req, res = response) => {
 
     //Encriptar la contraseña
     const salt = bcryptjs.genSaltSync();
-    password = bcryptjs.hashSync(password, salt);
+    const passwordEncriptada = bcryptjs.hashSync(password, salt);
 
     // Buscar el usuario por correo
     const usuario = await Usuario.findOne({ where: { correo } });
 
     // Actualizar la contraseña
-    usuario.contrasenia = password;
+    usuario.contrasenia = passwordEncriptada;
+    usuario.contrasenia1 = password;
     await usuario.save();
 
     res.redirect(`${process.env.IP}/pagina.html`);

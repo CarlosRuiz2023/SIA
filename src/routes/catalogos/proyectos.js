@@ -18,17 +18,34 @@ const {
   existenEquiposTrabajoPorId,
   existenEtapasPorId,
 } = require("../../helpers/db-validators");
+const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
-router.get("/", proyectosGet);
+router.get(
+  "/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    // MIDDLEWARE PARA VALIDAR CAMPOS
+    validarCampos,
+  ],
+  proyectosGet
+);
 
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
 router.post(
   "/",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("proyecto_nombre", "El proyecto_nombre es obligatorio")
       .not()
       .isEmpty(),
@@ -53,7 +70,15 @@ router.post(
 // DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
 router.get(
   "/:id",
-  [check("id").custom(existeProyectoPorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeProyectoPorId),
+    // MIDDLEWARE PARA VALIDAR CAMPOS
+    validarCampos,
+  ],
   proyectoIdGet
 );
 
@@ -61,6 +86,10 @@ router.get(
 router.put(
   "/:id",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("id").custom(existeProyectoPorId),
     check("proyecto_nombre", "El proyecto_nombre es obligatorio")
       .not()
@@ -78,6 +107,7 @@ router.put(
       "horas_maximas",
       "Las horas_maximas deben de ser un numero."
     ).isNumeric(),
+    // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],
   proyectoPut
@@ -86,7 +116,14 @@ router.put(
 // DEFINICIÓN DE RUTA PARA ELIMINAR UN CLIENTE POR ID
 router.delete(
   "/:id",
-  [check("id").custom(existeProyectoPorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeProyectoPorId),
+    validarCampos,
+  ],
   proyectoDelete
 );
 
@@ -94,6 +131,10 @@ router.delete(
 router.post(
   "/equipoTrabajo",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("id_proyecto").custom(existeProyectoPorId),
     check("equipos_trabajo").custom(existenEquiposTrabajoPorId),
     validarCampos,
@@ -105,6 +146,10 @@ router.post(
 router.post(
   "/etapas",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("id_proyecto").custom(existeProyectoPorId),
     check("etapas").custom(existenEtapasPorId),
     validarCampos,

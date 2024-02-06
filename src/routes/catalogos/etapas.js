@@ -17,16 +17,33 @@ const {
   existenActividadesPorId,
 } = require("../../helpers/db-validators");
 
+const { validarJWT } = require("../../middlewares/validar-jwt");
+const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
-router.get("/", etapasGet);
+router.get(
+  "/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    validarCampos,
+  ],
+  etapasGet
+);
 
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
 router.post(
   "/",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("etapa_nombre", "La actividad_nombre es obligatoria").not().isEmpty(),
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
     validarCampos,
@@ -37,7 +54,14 @@ router.post(
 // DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
 router.get(
   "/:id",
-  [check("id").custom(existeEtapaPorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeEtapaPorId),
+    validarCampos,
+  ],
   etapaIdGet
 );
 
@@ -45,6 +69,10 @@ router.get(
 router.put(
   "/:id",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("id").custom(existeEtapaPorId),
     check("etapa_nombre", "La etapa_nombre es obligatoria").not().isEmpty(),
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
@@ -56,7 +84,14 @@ router.put(
 // DEFINICIÓN DE RUTA PARA ELIMINAR UN CLIENTE POR ID
 router.delete(
   "/:id",
-  [check("id").custom(existeEtapaPorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeEtapaPorId),
+    validarCampos,
+  ],
   etapaDelete
 );
 
@@ -64,6 +99,10 @@ router.delete(
 router.post(
   "/actividades",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("id_etapa").custom(existeEtapaPorId),
     check("actividades").custom(existenActividadesPorId),
     validarCampos,

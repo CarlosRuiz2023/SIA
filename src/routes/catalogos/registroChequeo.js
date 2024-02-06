@@ -9,7 +9,6 @@ const {
   existeEntradaSalidaPorId,
   existeEventoPorId,
   emailExistente,
-  alMenosUnRol,
   existenEmpleadosPorId,
 } = require("../../helpers/db-validators");
 const {
@@ -20,17 +19,32 @@ const {
   reporteEventosYTiempoPost,
   reporteEventosEmpleadoPost,
 } = require("../../controllers/catalogos/registroChequeo-controller");
+const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
-router.get("/", registroChequeoGet);
+router.get(
+  "/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    validarCampos,
+  ],
+  registroChequeoGet
+);
 
 // DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
 router.post(
   "/datos",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    esAdminRole,
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
       (value) => {
         return /\d{4}-\d{2}-\d{2}/.test(value);
@@ -49,6 +63,10 @@ router.post(
 router.post(
   "/reporte",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
       (value) => {
         return /\d{4}-\d{2}-\d{2}/.test(value);
@@ -68,20 +86,14 @@ router.post(
 // DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
 router.post(
   "/reporteEmpleado",
-  /* [
-    check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
-      (value) => {
-        return /\d{4}-\d{2}-\d{2}/.test(value);
-      }
-    ),
-    check("fecha_fin", "Formato de fecha_fin incorrecto").custom((value) => {
-      return /\d{4}-\d{2}-\d{2}/.test(value);
-    }),
-    check("tipo", "El tipo debe ser un numero entre 1 y 4")
-      .isNumeric()
-      .isInt({ min: 1, max: 4 }),
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id_empleado").custom(existeEmpleadoPorId),
     validarCampos,
-  ], */
+  ],
   reporteEventosEmpleadoPost
 );
 
@@ -89,6 +101,10 @@ router.post(
 router.post(
   "/",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("evento").custom(existeEventoPorId),
     check("id_empleado").custom(existeEmpleadoPorId),
     check("entrada_salida").custom(existeEntradaSalidaPorId),
@@ -101,6 +117,10 @@ router.post(
 router.post(
   "/notificar",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    tieneRole("FROND END", "BACK END"),
+    //esAdminRole,
     // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
     check("correo", "El correo es obligatorio").isEmail(),
     check("correo").custom(emailExistente),

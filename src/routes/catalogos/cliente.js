@@ -17,17 +17,33 @@ const {
   emailExiste,
   emailInexiste,
 } = require("../../helpers/db-validators");
+const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
-router.get("/", clientesGet);
+router.get(
+  "/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    validarCampos,
+  ],
+  clientesGet
+);
 
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
 router.post(
   "/",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
     check("apellido_Paterno", "El apellido paterno es obligatorio")
       .not()
@@ -47,7 +63,14 @@ router.post(
 // DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
 router.get(
   "/:id",
-  [check("id").custom(existeClientePorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeClientePorId),
+    validarCampos,
+  ],
   clienteIdGet
 );
 
@@ -55,6 +78,10 @@ router.get(
 router.put(
   "/:id",
   [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
     check("id").custom(existeClientePorId),
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
     check("apellido_Paterno", "El apellido paterno es obligatorio")
@@ -78,14 +105,28 @@ router.put(
 // DEFINICIÓN DE RUTA PARA ELIMINAR UN CLIENTE POR ID
 router.delete(
   "/:id",
-  [check("id").custom(existeClientePorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeClientePorId),
+    validarCampos,
+  ],
   clienteDelete
 );
 
 // DEFINICIÓN DE RUTA PARA ACTIVAR UN CLIENTE POR ID
 router.put(
   "/activar/:id",
-  [check("id").custom(existeClientePorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    //tieneRole("FROND END", "BACK END"),
+    esAdminRole,
+    check("id").custom(existeClientePorId),
+    validarCampos,
+  ],
   clienteActivarPut
 );
 

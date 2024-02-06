@@ -25,6 +25,7 @@ const {
   restarHoras,
 } = require("../../helpers/operacionesHorarias");
 const Ausencia = require("../../models/modelos/catalogos/ausencias");
+const DetallePermisosEmpleado = require("../../models/modelos/detalles/detalle_permisos_empleado");
 
 /**
  * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
@@ -174,6 +175,32 @@ const reporteEventosYTiempoPost = async (req, res) => {
         [Op.in]: empleados,
       };
     }
+
+    const permisos = await DetallePermisosEmpleado.findAll({
+      attributes: [
+        [
+          pool.fn(
+            "COUNT",
+            pool.literal(`
+            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+          `)
+          ),
+          "P",
+        ],
+        [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+      ],
+      group: ["fk_cat_empleado"],
+      where: {
+        fk_cat_empleado: {
+          [Op.in]: empleados,
+        },
+        fecha_permiso: {
+          [Op.gte]: fecha_inicio,
+          [Op.lte]: fecha_fin,
+        },
+        estatus: 3,
+      },
+    });
 
     let resultado = {};
     const totales = {};
@@ -428,7 +455,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
           R: 0,
           SR: 0,
           total_tiempo_extra: "00:00:00",
-          total_tiempo_retardo: "00:00:00",
+          total_tiempo_retardo: `${permisos[0].dataValues.total_tiempo_horas}:00:00`,
         };
       }
 
@@ -469,11 +496,13 @@ const reporteEventosYTiempoPost = async (req, res) => {
         resultado.total_tiempo_extra = TotalTiemposExtra;
         // Actualizar la propiedad con la nueva suma de horas trabajadas
         resultado.total_tiempo_retardo = TotalTiemposReponer;
+        resultado.P = parseInt(permisos[0].dataValues.P);
       } else {
         // Actualizar la propiedad con la nueva suma de horas trabajadas
         resultado.total_tiempo_extra = TotalTiemposExtra;
         // Actualizar la propiedad con la nueva suma de horas trabajadas
         resultado.total_tiempo_retardo = TotalTiemposReponer;
+        resultado.P += parseInt(permisos[0].dataValues.P);
       }
     });
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
