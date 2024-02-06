@@ -9,6 +9,7 @@
 const express = require("express"); // Biblioteca para crear el servidor web
 const cors = require("cors"); // Middleware para manejar CORS (Cross-Origin Resource Sharing)
 const path = require("path");
+const fileUpload = require("express-fileupload");
 
 // IMPORTACIÓN DE LA CONFIGURACIÓN DE LA BASE DE DATOS POSTGRESQL DESDE OTRO ARCHIVO
 const pool = require("../database/config");
@@ -59,6 +60,7 @@ class Server {
       catalogoProyectos: "/api/proyectos",
       catalogoEtapas: "/api/etapa",
       catalogoTarea: "/api/tarea",
+      uploads: "/api/uploads",
     };
 
     // CONEXIÓN A LA BASE DE DATOS DE POSTGRESQL
@@ -97,6 +99,14 @@ class Server {
 
     // MIDDLEWARE PARA SERVIR ARCHIVOS ESTÁTICOS DESDE LA CARPETA 'public'
     this.app.use(express.static("public"));
+    // Fileupload - Carga de archivos
+    this.app.use(
+      fileUpload({
+        useTempFiles: true,
+        tempFileDir: "/tmp/",
+        createParentPath: true,
+      })
+    );
   }
 
   // CONFIGURACIÓN DE LAS RUTAS DEL SISTEMA
@@ -189,6 +199,7 @@ class Server {
       this.catalogosPath.catalogoTarea,
       require("../routes/catalogos/tarea")
     );
+    this.app.use(this.catalogosPath.uploads, require("../routes/uploads"));
   }
 
   // FUNCIÓN PARA INICIAR EL SERVIDOR Y ESCUCHAR EN EL PUERTO ESPECIFICADO
