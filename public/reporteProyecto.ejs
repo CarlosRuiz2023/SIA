@@ -67,15 +67,6 @@
         Reporte del: <%= fecha_inicio %> al <%= fecha_fin %>
       </div>
     </div>
-    <img
-      style="
-        width: 61px;
-        height: 61px;
-        background: linear-gradient(0deg, #d9d9d9 0%, #d9d9d9 100%);
-        border-radius: 9999px;
-      "
-      src="https://via.placeholder.com/61x61"
-    />
   </div>
   <br />
   <% informes.forEach(informe => { %>
@@ -276,8 +267,6 @@
           style="
             width: 264px;
             height: 150px;
-            left: 0px;
-            top: 0px;
             position: absolute;
             border-radius: 10px;
             border: 1px #2b7fe1 solid;
@@ -285,35 +274,41 @@
         ></div>
         <div
           style="
-            left: 25px;
-            top: 50px;
+            width: 5rem;
+            height: 5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
             position: absolute;
-            color: #2b7fe1;
-            font-size: 24px;
-            font-family: Helvetica Neue;
-            font-weight: 300;
-            word-wrap: break-word;
+            top: 43%;
+            left: 50%;
+            transform: translate(-50%, -50%);
           "
         >
-          <%= informe.nombre_proyecto %>
+          <img
+            style="max-width: 100%; max-height: 100%; border-radius: 50%"
+            src="http://192.168.40.1:5985/WSSIA/api/uploads/equipo/<%= informe.id_equipo %>"
+          />
         </div>
         <div
           style="
-            left: 100px;
-            top: 90px;
+            left: 65px;
+            top: 95px;
             position: absolute;
             color: #2b7fe1;
             font-size: 20px;
             font-family: Helvetica Neue;
             font-weight: 300;
             word-wrap: break-word;
+            text-align: center; /* Alinea el texto horizontalmente */
           "
         >
-          <%= informe.nombre_cliente %>
+          <%= informe.equipo %>
         </div>
         <div
           style="
-            left: 105px;
+            left: 77px;
             top: 18px;
             position: absolute;
             color: #707070;
@@ -323,7 +318,7 @@
             word-wrap: break-word;
           "
         >
-          Proyecto
+          Equipo encargado
         </div>
       </div>
     </div>

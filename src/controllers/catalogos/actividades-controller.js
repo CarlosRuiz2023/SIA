@@ -349,7 +349,10 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Actividades,
               as: "cat_actividade",
-              where: { estatus: 1 },
+              where: {
+                fk_cat_equipo_trabajo: { [Op.in]: equipos },
+                estatus: 1,
+              },
             },
           ],
           where: { estatus: { [Op.ne]: 0 } },
@@ -477,7 +480,8 @@ const reporteActividadesPost = async (req, res) => {
           "../../../public/reporteEmpleado.ejs",
           {
             informes,
-            nombre_empleado: `${empleado[0].persona.nombre} ${empleado[0].persona.apellido_Paterno} ${empleado[0].persona.apellido_Materno}`,
+            nombre_empleado: `${empleado.persona.nombre} ${empleado.persona.apellido_Paterno} ${empleado.persona.apellido_Materno}`,
+            id_empleado: id,
             fecha_inicio,
             fecha_fin,
           },
@@ -600,7 +604,10 @@ const reporteActividadesPost = async (req, res) => {
             {
               model: Actividades,
               as: "cat_actividade",
-              where: { estatus: 1 },
+              where: {
+                fk_cat_equipo_trabajo: { [Op.eq]: id },
+                estatus: 1,
+              },
             },
           ],
           where: { estatus: { [Op.ne]: 0 } },
@@ -735,6 +742,7 @@ const reporteActividadesPost = async (req, res) => {
             informes,
             equipo_trabajo,
             empleados: empleadosNombres,
+            id_equipo: id,
             fecha_inicio,
             fecha_fin,
           },
@@ -762,7 +770,7 @@ const reporteActividadesPost = async (req, res) => {
           });
         }
 
-        resultado = await DetalleClienteProyectos.findAll({
+        resultado = await DetalleClienteProyectos.findOne({
           where: { fk_cat_proyecto: { [Op.eq]: id } },
           include: [
             {
@@ -778,12 +786,12 @@ const reporteActividadesPost = async (req, res) => {
           ],
         });
         clientes.push({
-          nombre_cliente: resultado[0].cat_cliente.persona.nombre,
-          id_proyecto: resultado[0].fk_cat_proyecto,
+          nombre_cliente: resultado.cat_cliente.persona.nombre,
+          id_proyecto: resultado.fk_cat_proyecto,
         });
 
         resultado = await DetalleProyectoEtapa.findAll({
-          where: { fk_cat_proyecto: { [Op.eq]: id } },
+          where: { fk_cat_proyecto: id },
           include: [
             {
               model: Etapa,
@@ -801,15 +809,18 @@ const reporteActividadesPost = async (req, res) => {
         }
         etapasIds = etapas.map((etapa) => etapa.id_etapa);
         resultado = await DetalleEtapaActividad.findAll({
-          where: { fk_cat_etapa: { [Op.in]: etapasIds } },
           include: [
             {
               model: Actividades,
               as: "cat_actividade",
               where: { estatus: 1 },
+              include: [{ model: EquipoTrabajo, as: "equipo_trabajo" }],
             },
           ],
-          where: { estatus: { [Op.ne]: 0 } },
+          where: {
+            fk_cat_etapa: { [Op.in]: etapasIds },
+            estatus: { [Op.ne]: 0 },
+          },
         });
         for (let actividad of resultado) {
           actividades.push({
@@ -817,6 +828,8 @@ const reporteActividadesPost = async (req, res) => {
             nombre: actividad.cat_actividade.actividad,
             etapa: actividad.fk_cat_etapa,
             fecha: actividad.fecha,
+            id_equipo: actividad.cat_actividade.fk_cat_equipo_trabajo,
+            equipo: actividad.cat_actividade.equipo_trabajo.equipo_trabajo,
           });
         }
         actividadesIds = actividades.map((actividad) => actividad.id_actividad);
@@ -893,9 +906,11 @@ const reporteActividadesPost = async (req, res) => {
             id_proyecto: resultadoEtapas.id_proyecto,
             id_etapa: resultadoEtapas.id_etapa,
             id_actividad: actividad.id_actividad,
+            id_equipo: actividad.id_equipo,
+            equipo: actividad.equipo,
             nombre_proyecto: resultadoEtapas.nombre_proyecto,
             nombre_actividad: actividad.nombre,
-            fecha_actividad: actividad.fecha,
+            fecha: actividad.fecha,
             nombre_cliente: resultadoEtapas.nombre_cliente,
           };
         });
@@ -909,6 +924,8 @@ const reporteActividadesPost = async (req, res) => {
             id_proyecto: resultadoActividades.id_proyecto,
             id_etapa: resultadoActividades.id_etapa,
             id_actividad: resultadoActividades.id_actividad,
+            id_equipo: resultadoActividades.id_equipo,
+            equipo: resultadoActividades.equipo,
             nombre_proyecto: resultadoActividades.nombre_proyecto,
             nombre_actividad: resultadoActividades.nombre_actividad,
             fecha_actividad: resultadoActividades.fecha,
