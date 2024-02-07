@@ -8,10 +8,12 @@ const {
 } = require("../../controllers/catalogos/permiso-controller");
 const { validarCampos } = require("../../middlewares/validar-campos");
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Roles y permisos";
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS PERMISOS
 router.get(
@@ -19,8 +21,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   permisosGet
@@ -32,8 +33,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   permisoSubModuloGet

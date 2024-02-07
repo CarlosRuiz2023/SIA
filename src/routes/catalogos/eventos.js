@@ -5,7 +5,6 @@ const {
 } = require("../../controllers/catalogos/eventos-controller");
 const { validarCampos } = require("../../middlewares/validar-campos");
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
 
 // IMPORTACIÓN DEL CONTROLADOR NECESARIO
 
@@ -18,8 +17,6 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
     validarCampos,
   ],
   eventosGet

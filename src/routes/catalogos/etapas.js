@@ -18,10 +18,12 @@ const {
 } = require("../../helpers/db-validators");
 
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Reportes de actividades";
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
 router.get(
@@ -29,8 +31,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   etapasGet
@@ -42,8 +43,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Escribir", sub_modulo),
     check("etapa_nombre", "La actividad_nombre es obligatoria").not().isEmpty(),
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
     validarCampos,
@@ -57,8 +57,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existeEtapaPorId),
     validarCampos,
   ],
@@ -71,8 +70,7 @@ router.put(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeEtapaPorId),
     check("etapa_nombre", "La etapa_nombre es obligatoria").not().isEmpty(),
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
@@ -87,8 +85,7 @@ router.delete(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeEtapaPorId),
     validarCampos,
   ],
@@ -101,8 +98,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("id_etapa").custom(existeEtapaPorId),
     check("actividades").custom(existenActividadesPorId),
     validarCampos,

@@ -17,10 +17,12 @@ const {
   existeEmpleadoPorId,
 } = require("../../helpers/db-validators");
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { tieneRole, esAdminRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Reportes de actividades";
 
 // DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
 router.post(
@@ -28,8 +30,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Escribir", sub_modulo),
     check("id_actividad").custom(existeActividadPorId),
     check("tarea", "La descripcion es obligatoria").not().isEmpty(),
     check("duracion", "Formato de hora incorrecto").custom((value) => {
@@ -46,8 +47,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existeActividadPorId),
     validarCampos,
   ],
@@ -60,8 +60,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existeActividadPorId),
     validarCampos,
   ],
@@ -74,8 +73,7 @@ router.put(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("id_actividad").custom(existeActividadPorId),
     check("id_empleado").custom(existeEmpleadoPorId),
     check("tarea", "La descripcion es obligatoria").not().isEmpty(),
@@ -96,8 +94,7 @@ router.delete(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeTareaPorId),
     validarCampos,
   ],

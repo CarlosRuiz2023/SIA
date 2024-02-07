@@ -19,11 +19,13 @@ const {
   reporteEventosYTiempoPost,
   reporteEventosEmpleadoPost,
 } = require("../../controllers/catalogos/registroChequeo-controller");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Entradas y salidas";
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
 router.get(
@@ -31,8 +33,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   registroChequeoGet
@@ -44,7 +45,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
       (value) => {
         return /\d{4}-\d{2}-\d{2}/.test(value);
@@ -65,8 +66,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
       (value) => {
         return /\d{4}-\d{2}-\d{2}/.test(value);
@@ -89,8 +89,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("id_empleado").custom(existeEmpleadoPorId),
     validarCampos,
   ],
@@ -103,8 +102,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Escribir", sub_modulo),
     check("evento").custom(existeEventoPorId),
     check("id_empleado").custom(existeEmpleadoPorId),
     check("entrada_salida").custom(existeEntradaSalidaPorId),
@@ -119,8 +117,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    tieneRole("FROND END", "BACK END"),
-    //esAdminRole,
+    tienePermiso("Escribir", sub_modulo),
     // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
     check("correo", "El correo es obligatorio").isEmail(),
     check("correo").custom(emailExistente),

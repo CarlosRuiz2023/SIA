@@ -20,8 +20,8 @@ const {
 // CREA UNA INSTANCIA DE LA CLASE SERVER
 const server = new Server();
 
-// INICIA EL SERVIDOR, HACIENDO QUE ESCUCHE EN EL PUERTO ESPECIFICADO
-server.listen();
-
 // Programar la tarea para que se ejecute todos los días a las 10:30
 schedule.scheduleJob("30 10 * * *", registrarAusencia);
+
+// INICIA EL SERVIDOR, HACIENDO QUE ESCUCHE EN EL PUERTO ESPECIFICADO
+server.listen();

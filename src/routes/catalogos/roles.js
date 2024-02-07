@@ -14,11 +14,13 @@ const { validarCampos } = require("../../middlewares/validar-campos");
 const {
   existeDetalleRolSubModuloPorId,
 } = require("../../helpers/db-validators");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Roles y permisos";
 
 // DEFINICIÓN DE RUTA PARA OBTENER ROLES CON PERMISOS
 router.get(
@@ -26,8 +28,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   rolesGet
@@ -39,8 +40,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
   ],
   rolesTodosGet
 );
@@ -51,8 +51,7 @@ router.put(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("id_detalle_rol_sub_modulo").custom(existeDetalleRolSubModuloPorId),
     check("estatus", "El estatus debe ser un numero entre 0 y 1")
       .isNumeric()

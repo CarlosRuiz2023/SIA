@@ -17,10 +17,12 @@ const {
   existenEmpleadosPorId,
 } = require("../../helpers/db-validators");
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Equipos de trabajo";
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
 router.get(
@@ -28,8 +30,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   equipoTrabajoGet
@@ -41,8 +42,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Escribir", sub_modulo),
     check("equipo_trabajo", "El Equipo Trabajo es obligatorio").not().isEmpty(),
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
     validarCampos,
@@ -56,8 +56,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existeEquipoTrabajoPorId),
     validarCampos,
   ],
@@ -70,8 +69,7 @@ router.put(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("equipo_trabajo", "El Equipo Trabajo es obligatorio").not().isEmpty(),
     check("descripcion", "La descripcion es obligatoria").not().isEmpty(),
     check("empleados").custom(existenEmpleadosPorId),
@@ -86,8 +84,7 @@ router.delete(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeEquipoTrabajoPorId),
     validarCampos,
   ],
@@ -100,8 +97,7 @@ router.put(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeEquipoTrabajoPorId),
     validarCampos,
   ],

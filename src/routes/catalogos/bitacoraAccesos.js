@@ -12,10 +12,12 @@ const {
 } = require("../../controllers/catalogos/bitacoraAccesos-controller");
 const { existeEmpleadoPorId } = require("../../helpers/db-validators");
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Bitacora de accesos";
 
 // DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
 router.post(
@@ -23,8 +25,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   bitacoraAccesoGet
@@ -36,8 +37,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    tieneRole("FROND END", "BACK END"),
-    //esAdminRole,
+    tienePermiso("Escribir", sub_modulo),
     check("fecha_inicio", "Formato de fecha incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),

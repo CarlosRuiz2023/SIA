@@ -7,6 +7,7 @@ const pool = require("../../database/config");
 const EntradaSalida = require("../../models/modelos/catalogos/entradaSalida");
 const RegistroChequeo = require("../../models/modelos/catalogos/registroChequeo");
 const DetalleDiasEntradaSalida = require("../../models/modelos/detalles/detalle_dias_entrada_salida");
+const DetallePermisosEmpleado = require("../../models/modelos/detalles/detalle_permisos_empleado");
 const TipoHorario = require("../../models/modelos/catalogos/tipoHorario");
 const Empleado = require("../../models/modelos/catalogos/empleado");
 const Persona = require("../../models/modelos/catalogos/persona");
@@ -102,6 +103,8 @@ const reporteEntradasSalidasPost = async (req, res) => {
     // EXTRAEMOS LOS PARÁMETROS DE LA SOLICITUD.
     const { fecha_inicio, fecha_fin, empleados } = req.body;
     const query = {};
+    const query1 = {};
+    const totales = {};
 
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
 
@@ -188,9 +191,45 @@ const reporteEntradasSalidasPost = async (req, res) => {
       where: query,
     });
 
-    query.estatus = {
-      [Op.eq]: 0,
-    };
+    if (empleados && empleados.length > 0) {
+      query1.fk_cat_empleado = {
+        [Op.in]: empleados,
+      };
+    }
+
+    if (fecha_inicio && fecha_fin) {
+      query1.fecha_permiso = {
+        [Op.gte]: fecha_inicio,
+        [Op.lte]: fecha_fin,
+      };
+    }
+
+    query1.estatus = 3;
+
+    const permisos = await DetallePermisosEmpleado.findAll({
+      attributes: [
+        "fk_cat_empleado",
+        [
+          pool.fn("DATE_TRUNC", "week", pool.col("fecha_permiso")),
+          "inicio_semana",
+        ],
+        [
+          pool.fn(
+            "COUNT",
+            pool.literal(`
+            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+          `)
+          ),
+          "P",
+        ],
+        [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+      ],
+      group: ["inicio_semana", "fk_cat_empleado"],
+      order: [["inicio_semana"]],
+      where: query1,
+    });
+
+    query.estatus = 0;
 
     const resultado1 = await Ausencia.findAll({
       attributes: [
@@ -273,7 +312,7 @@ const reporteEntradasSalidasPost = async (req, res) => {
     });
 
     // Unir los resultados
-    const resultadosFinales = resultadoFinal.map((resultadoFinal) => {
+    const accesosAusencias = resultadoFinal.map((resultadoFinal) => {
       const resultadoAusencia = resultado1.find((resultado1) => {
         return (
           resultado1.fk_cat_empleado === resultadoFinal.fk_cat_empleado &&
@@ -308,7 +347,48 @@ const reporteEntradasSalidasPost = async (req, res) => {
       };
     });
 
-    const totales = {};
+    // Unir los resultados
+    const resultadosFinales = accesosAusencias.map((resultadoFinal) => {
+      const resultadoPermiso = permisos.find((permiso) => {
+        return (
+          permiso.fk_cat_empleado === resultadoFinal.fk_cat_empleado &&
+          new Date(permiso.dataValues.inicio_semana).toISOString() ===
+            new Date(resultadoFinal.inicio_semana).toISOString()
+        );
+      });
+
+      return {
+        horas_semanales: resultadoFinal.horas_semanales,
+        jornada: resultadoFinal.jornada,
+        inicio_semana: resultadoFinal.inicio_semana,
+        total_tiempo_extra: resultadoFinal.total_tiempo_extra,
+        total_tiempo_retardo: resultadoPermiso
+          ? sumarHoras(
+              resultadoFinal.total_tiempo_retardo,
+              `0${
+                resultadoPermiso.dataValues.P *
+                resultadoPermiso.dataValues.total_tiempo_horas
+              }:00:00`
+            )
+          : resultadoFinal.total_tiempo_retardo,
+        tiempo_trabajado: resultadoPermiso
+          ? restarHoras(
+              resultadoFinal.tiempo_trabajado,
+              `0${
+                resultadoPermiso.dataValues.P *
+                resultadoPermiso.dataValues.tiempo_horas
+              }:00:00`
+            )
+          : resultadoFinal.tiempo_trabajado,
+        fk_cat_empleado: resultadoFinal.fk_cat_empleado,
+        R: resultadoFinal.R,
+        SR: resultadoFinal.SR,
+        A: resultadoFinal.A,
+        As: resultadoFinal.As,
+        P: resultadoPermiso ? resultadoPermiso.dataValues.P : "0",
+        empleado: resultadoFinal.empleado,
+      };
+    });
 
     // Itera sobre los resultados y suma los valores
     resultadosFinales.forEach((resultado) => {
@@ -325,6 +405,7 @@ const reporteEntradasSalidasPost = async (req, res) => {
           sumaAs: 0,
           sumaR: 0,
           sumaSR: 0,
+          sumaP: 0,
         };
       }
 
@@ -356,6 +437,8 @@ const reporteEntradasSalidasPost = async (req, res) => {
       totales[idCatEmpleado].sumaR += parseInt(resultado.R);
 
       totales[idCatEmpleado].sumaSR += parseInt(resultado.SR);
+
+      totales[idCatEmpleado].sumaP += parseInt(resultado.P);
     });
 
     // Restar tiempos extras y a reponer

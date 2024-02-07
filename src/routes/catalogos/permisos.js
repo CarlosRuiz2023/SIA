@@ -20,10 +20,12 @@ const {
   existeEmpleadoPorId,
 } = require("../../helpers/db-validators");
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Permisos";
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS PERMISOS
 router.get(
@@ -31,8 +33,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   permisoGet
@@ -44,8 +45,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   permisosGet
@@ -57,8 +57,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    tieneRole("FROND END", "BACK END"),
-    //esAdminRole,
+    tienePermiso("Escribir", sub_modulo),
     check("fecha_permiso", "Formato de fecha incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),
@@ -79,8 +78,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    tieneRole("FROND END", "BACK END"),
-    //esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existePermisoEmpleadoPorId),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
@@ -94,8 +92,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    tieneRole("FROND END", "BACK END"),
-    //esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existeEmpleadoPorId),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
@@ -109,8 +106,7 @@ router.put(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("estatus", "El estatus debe ser un numero entre 0 y 4")
       .isNumeric()
       .isInt({ min: 0, max: 4 }),

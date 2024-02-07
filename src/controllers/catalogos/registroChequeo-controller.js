@@ -149,380 +149,6 @@ const reportePost = async (req, res) => {
 };
 
 /**
- * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
- * @param {Object} req - Objeto de solicitud de Express.
- * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
- */
-const reporteEventosYTiempoPost = async (req, res) => {
-  try {
-    // EXTRAEMOS LOS PARÁMETROS DE LA SOLICITUD.
-    const { fecha_inicio, fecha_fin, tipo = 1, empleados } = req.body;
-    const query = {};
-
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
-
-    // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
-    if (fecha_inicio && fecha_fin) {
-      query.fecha = {
-        [Op.gte]: fecha_inicio,
-        [Op.lte]: fecha_fin,
-      };
-    }
-
-    if (empleados && empleados.length > 0) {
-      query.fk_cat_empleado = {
-        [Op.in]: empleados,
-      };
-    }
-
-    const permisos = await DetallePermisosEmpleado.findAll({
-      attributes: [
-        [
-          pool.fn(
-            "COUNT",
-            pool.literal(`
-            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
-          `)
-          ),
-          "P",
-        ],
-        [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
-      ],
-      group: ["fk_cat_empleado"],
-      where: {
-        fk_cat_empleado: {
-          [Op.in]: empleados,
-        },
-        fecha_permiso: {
-          [Op.gte]: fecha_inicio,
-          [Op.lte]: fecha_fin,
-        },
-        estatus: 3,
-      },
-    });
-
-    let resultado = {};
-    const totales = {};
-
-    switch (tipo) {
-      case 1:
-        resultado = await RegistroChequeo.findAll({
-          attributes: [
-            [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "fecha_dia"],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
-              `)
-              ),
-              "R",
-            ],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
-              `)
-              ),
-              "SR",
-            ],
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_extra",
-            ],
-
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(
-                  pool.fn("SUM", pool.col("tiempo_retardo")),
-                  "interval"
-                ),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_retardo",
-            ],
-          ],
-          group: ["fecha_dia", "id_cat_empleado", "id_cat_persona"],
-          order: [["fecha_dia"]],
-          where: query,
-          include: [
-            {
-              model: Empleado,
-              as: "empleado",
-              include: [{ model: Persona, as: "persona" }],
-            },
-          ],
-        });
-        break;
-      case 2:
-        resultado = await RegistroChequeo.findAll({
-          attributes: [
-            [pool.fn("DATE_TRUNC", "week", pool.col("fecha")), "inicio_semana"],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
-              `)
-              ),
-              "R",
-            ],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
-              `)
-              ),
-              "SR",
-            ],
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_extra",
-            ],
-
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(
-                  pool.fn("SUM", pool.col("tiempo_retardo")),
-                  "interval"
-                ),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_retardo",
-            ],
-          ],
-          group: ["inicio_semana", "id_cat_empleado", "id_cat_persona"],
-          order: [["inicio_semana"]],
-          where: query,
-          include: [
-            {
-              model: Empleado,
-              as: "empleado",
-              include: [{ model: Persona, as: "persona" }],
-            },
-          ],
-        });
-        break;
-      case 3:
-        resultado = await RegistroChequeo.findAll({
-          attributes: [
-            [
-              pool.literal(`
-                CASE
-                  WHEN EXTRACT(DAY FROM fecha) <= 15 THEN DATE_TRUNC('MONTH', fecha)
-                  ELSE DATE_TRUNC('MONTH', fecha) + INTERVAL '15 days'
-                END
-              `),
-              "inicio_quincena",
-            ],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
-              `)
-              ),
-              "R",
-            ],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
-              `)
-              ),
-              "SR",
-            ],
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_extra",
-            ],
-
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(
-                  pool.fn("SUM", pool.col("tiempo_retardo")),
-                  "interval"
-                ),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_retardo",
-            ],
-          ],
-          group: ["inicio_quincena", "id_cat_empleado", "id_cat_persona"],
-          order: [["inicio_quincena"]],
-          where: query,
-          include: [
-            {
-              model: Empleado,
-              as: "empleado",
-              include: [{ model: Persona, as: "persona" }],
-            },
-          ],
-        });
-        break;
-      case 4:
-        resultado = await RegistroChequeo.findAll({
-          attributes: [
-            [pool.fn("DATE_TRUNC", "MONTH", pool.col("fecha")), "inicio_mes"],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
-              `)
-              ),
-              "R",
-            ],
-            [
-              pool.fn(
-                "COUNT",
-                pool.literal(`
-                CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
-              `)
-              ),
-              "SR",
-            ],
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_extra",
-            ],
-
-            [
-              pool.fn(
-                "TO_CHAR",
-                pool.cast(
-                  pool.fn("SUM", pool.col("tiempo_retardo")),
-                  "interval"
-                ),
-                "'HH24:MI:SS'"
-              ),
-              "total_tiempo_retardo",
-            ],
-          ],
-          group: ["inicio_mes", "id_cat_empleado", "id_cat_persona"],
-          order: [["inicio_mes"]],
-          where: query,
-          include: [
-            {
-              model: Empleado,
-              as: "empleado",
-              include: [{ model: Persona, as: "persona" }],
-            },
-          ],
-        });
-        break;
-    }
-    // Itera sobre los resultados y suma los valores
-    resultado.forEach((resultado) => {
-      const idCatEmpleado = resultado.empleado.id_cat_empleado;
-
-      // Eliminar una comilla simple o doble al principio y al final
-      let totalTiempoExtra = resultado.dataValues.total_tiempo_extra.replace(
-        /^['"]|['"]$/g,
-        ""
-      );
-
-      // Eliminar una comilla simple o doble al principio y al final
-      let totalTiempoRetardo =
-        resultado.dataValues.total_tiempo_retardo.replace(/^['"]|['"]$/g, "");
-
-      // Verifica si ya existe una entrada para el empleado en el objeto
-      if (!totales[idCatEmpleado]) {
-        totales[idCatEmpleado] = {
-          R: 0,
-          SR: 0,
-          total_tiempo_extra: "00:00:00",
-          total_tiempo_retardo: `${permisos[0].dataValues.total_tiempo_horas}:00:00`,
-        };
-      }
-
-      // Suma los valores para el empleado actual
-      totales[idCatEmpleado].total_tiempo_extra = sumarHoras(
-        totales[idCatEmpleado].total_tiempo_extra,
-        totalTiempoExtra
-      );
-
-      totales[idCatEmpleado].total_tiempo_retardo = sumarHoras(
-        totales[idCatEmpleado].total_tiempo_retardo,
-        totalTiempoRetardo
-      );
-
-      totales[idCatEmpleado].R += parseInt(resultado.dataValues.R);
-
-      totales[idCatEmpleado].SR += parseInt(resultado.dataValues.SR);
-    });
-    // Restar tiempos extras y a reponer
-    Object.keys(totales).forEach((idEmpleado) => {
-      const resultado = totales[idEmpleado];
-
-      // Convertir tiempos extras y a reponer a segundos
-      let TotalTiemposReponer = "00:00:00";
-
-      let TotalTiemposExtra = restarHoras(
-        resultado.total_tiempo_extra,
-        resultado.total_tiempo_retardo
-      );
-
-      if (!timeRegex.test(TotalTiemposExtra)) {
-        TotalTiemposExtra = "00:00:00";
-        TotalTiemposReponer = restarHoras(
-          resultado.total_tiempo_retardo,
-          resultado.total_tiempo_extra
-        );
-        // Actualizar la propiedad con la nueva suma de horas trabajadas
-        resultado.total_tiempo_extra = TotalTiemposExtra;
-        // Actualizar la propiedad con la nueva suma de horas trabajadas
-        resultado.total_tiempo_retardo = TotalTiemposReponer;
-        resultado.P = parseInt(permisos[0].dataValues.P);
-      } else {
-        // Actualizar la propiedad con la nueva suma de horas trabajadas
-        resultado.total_tiempo_extra = TotalTiemposExtra;
-        // Actualizar la propiedad con la nueva suma de horas trabajadas
-        resultado.total_tiempo_retardo = TotalTiemposReponer;
-        resultado.P += parseInt(permisos[0].dataValues.P);
-      }
-    });
-    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
-    res.status(200).json({
-      ok: true,
-      results: { resultado, totales },
-    });
-  } catch (error) {
-    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
-    console.log(error);
-    res.status(500).json({
-      ok: false,
-      results: {
-        msg: "Ha ocurrido un error, hable con el Administrador.",
-      },
-    });
-  }
-};
-
-/**
  * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
@@ -971,6 +597,750 @@ const reporteEventosEmpleadoPost = async (req, res) => {
       results: {
         msg: "Ha ocurrido un error, hable con el Administrador.",
       },
+    });
+  }
+};
+
+/**
+ * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express.
+ * @returns {Object} - Respuesta con estado y datos JSON.
+ */
+const reporteEventosYTiempoPost = async (req, res) => {
+  try {
+    // EXTRAEMOS LOS PARÁMETROS DE LA SOLICITUD.
+    const { fecha_inicio, fecha_fin, tipo = 1, empleados } = req.body;
+    const query = {};
+    const query1 = {};
+    let totales = {};
+    let permisos = [];
+    let chequeos = [];
+
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+
+    if (empleados && empleados.length > 0) {
+      query.fk_cat_empleado = {
+        [Op.in]: empleados,
+      };
+    }
+
+    const empleado = await RegistroChequeo.findAll({
+      include: [
+        {
+          model: Empleado,
+          as: "empleado",
+          include: [{ model: Persona, as: "persona" }],
+        },
+        {
+          model: DetalleDiasEntradaSalida,
+          as: "detalleDiasEntradaSalida",
+          include: [
+            {
+              model: TipoHorario,
+              as: "cat_tipo_horario",
+              attributes: [
+                [pool.literal('"jornada" * 5'), "Horas_semanales"],
+                "jornada",
+              ],
+            },
+          ],
+        },
+      ],
+      where: query,
+    });
+
+    // AGREGAMOS CONDICIONES A LA CONSULTA DE ACUERDO A LOS PARÁMETROS RECIBIDOS.
+    if (fecha_inicio && fecha_fin) {
+      query.fecha = {
+        [Op.gte]: fecha_inicio,
+        [Op.lte]: fecha_fin,
+      };
+    }
+
+    if (empleados && empleados.length > 0) {
+      query1.fk_cat_empleado = {
+        [Op.in]: empleados,
+      };
+    }
+
+    if (fecha_inicio && fecha_fin) {
+      query1.fecha_permiso = {
+        [Op.gte]: fecha_inicio,
+        [Op.lte]: fecha_fin,
+      };
+    }
+
+    switch (tipo) {
+      case 1:
+        // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
+        chequeos = await RegistroChequeo.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "inicio_semana"],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_extra",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn("SUM", pool.col("tiempo_retardo")),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_retardo",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
+          `)
+              ),
+              "R",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
+          `)
+              ),
+              "SR",
+            ],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query,
+        });
+
+        query1.estatus = 3;
+
+        permisos = await DetallePermisosEmpleado.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.fn("DATE_TRUNC", "DAY", pool.col("fecha_permiso")),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+          `)
+              ),
+              "P",
+            ],
+            [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query1,
+        });
+
+        query.estatus = 0;
+
+        ausencias = await Ausencia.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [pool.fn("DATE_TRUNC", "DAY", pool.col("fecha")), "inicio_semana"],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+              CASE WHEN fk_cat_dia != 6 THEN 1 ELSE NULL END
+            `)
+              ),
+              "A",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+              CASE WHEN fk_cat_dia = 6 THEN 1 ELSE NULL END
+            `)
+              ),
+              "As",
+            ],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query,
+        });
+        break;
+      case 2:
+        // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
+        chequeos = await RegistroChequeo.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [pool.fn("DATE_TRUNC", "week", pool.col("fecha")), "inicio_semana"],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_extra",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn("SUM", pool.col("tiempo_retardo")),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_retardo",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
+          `)
+              ),
+              "R",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
+          `)
+              ),
+              "SR",
+            ],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query,
+        });
+
+        query1.estatus = 3;
+
+        permisos = await DetallePermisosEmpleado.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.fn("DATE_TRUNC", "week", pool.col("fecha_permiso")),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+          `)
+              ),
+              "P",
+            ],
+            [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query1,
+        });
+
+        query.estatus = 0;
+
+        ausencias = await Ausencia.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [pool.fn("DATE_TRUNC", "week", pool.col("fecha")), "inicio_semana"],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+              CASE WHEN fk_cat_dia != 6 THEN 1 ELSE NULL END
+            `)
+              ),
+              "A",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+              CASE WHEN fk_cat_dia = 6 THEN 1 ELSE NULL END
+            `)
+              ),
+              "As",
+            ],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query,
+        });
+        break;
+      case 3:
+        // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
+        chequeos = await RegistroChequeo.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.literal(`
+                CASE
+                  WHEN EXTRACT(DAY FROM fecha) <= 15 THEN DATE_TRUNC('MONTH', fecha)
+                  ELSE DATE_TRUNC('MONTH', fecha) + INTERVAL '15 days'
+                END
+              `),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_extra",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn("SUM", pool.col("tiempo_retardo")),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_retardo",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
+          `)
+              ),
+              "R",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
+          `)
+              ),
+              "SR",
+            ],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query,
+        });
+
+        query1.estatus = 3;
+
+        permisos = await DetallePermisosEmpleado.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.literal(`
+                CASE
+                  WHEN EXTRACT(DAY FROM fecha_permiso) <= 15 THEN DATE_TRUNC('MONTH', fecha_permiso)
+                  ELSE DATE_TRUNC('MONTH', fecha_permiso) + INTERVAL '15 days'
+                END
+              `),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+          `)
+              ),
+              "P",
+            ],
+            [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query1,
+        });
+
+        query.estatus = 0;
+
+        ausencias = await Ausencia.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.literal(`
+                CASE
+                  WHEN EXTRACT(DAY FROM fecha) <= 15 THEN DATE_TRUNC('MONTH', fecha)
+                  ELSE DATE_TRUNC('MONTH', fecha) + INTERVAL '15 days'
+                END
+              `),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+              CASE WHEN fk_cat_dia != 6 THEN 1 ELSE NULL END
+            `)
+              ),
+              "A",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+              CASE WHEN fk_cat_dia = 6 THEN 1 ELSE NULL END
+            `)
+              ),
+              "As",
+            ],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query,
+        });
+        break;
+      case 4:
+        // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
+        chequeos = await RegistroChequeo.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.fn("DATE_TRUNC", "MONTH", pool.col("fecha")),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(pool.fn("SUM", pool.col("tiempo_extra")), "interval"),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_extra",
+            ],
+            [
+              pool.fn(
+                "TO_CHAR",
+                pool.cast(
+                  pool.fn("SUM", pool.col("tiempo_retardo")),
+                  "interval"
+                ),
+                "'HH24:MI:SS'"
+              ),
+              "total_tiempo_retardo",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN fk_cat_eventos = 3 THEN 1 ELSE NULL END
+          `)
+              ),
+              "R",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN fk_cat_eventos = 2 THEN 1 ELSE NULL END
+          `)
+              ),
+              "SR",
+            ],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query,
+        });
+
+        query1.estatus = 3;
+
+        permisos = await DetallePermisosEmpleado.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.fn("DATE_TRUNC", "MONTH", pool.col("fecha_permiso")),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+          `)
+              ),
+              "P",
+            ],
+            [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query1,
+        });
+
+        query.estatus = 0;
+
+        ausencias = await Ausencia.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.fn("DATE_TRUNC", "MONTH", pool.col("fecha")),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+              CASE WHEN fk_cat_dia != 6 THEN 1 ELSE NULL END
+            `)
+              ),
+              "A",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+              CASE WHEN fk_cat_dia = 6 THEN 1 ELSE NULL END
+            `)
+              ),
+              "As",
+            ],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query,
+        });
+        break;
+    }
+
+    // Unir los resultados
+    // Mapeamos los resultados para reorganizar la estructura
+    const chequeosEmpleado = chequeos.map((chequeo) => {
+      const resultadoEmpleados = empleado.find((empleado) => {
+        return empleado.fk_cat_empleado === chequeo.fk_cat_empleado;
+      });
+
+      const horasSemanales = `${resultadoEmpleados.detalleDiasEntradaSalida.cat_tipo_horario.dataValues.Horas_semanales}:00:00`;
+
+      // Eliminar una comilla simple o doble al principio y al final
+      let totalTiempoExtra = chequeo.dataValues.total_tiempo_extra.replace(
+        /^['"]|['"]$/g,
+        ""
+      );
+      // Eliminar una comilla simple o doble al principio y al final
+      let totalTiempoRetardo = chequeo.dataValues.total_tiempo_retardo.replace(
+        /^['"]|['"]$/g,
+        ""
+      );
+
+      let tiempoTrabajado = "";
+      if (totalTiempoExtra == totalTiempoRetardo) {
+        tiempoTrabajado = horasSemanales;
+      } else {
+        tiempoTrabajado = sumarHoras(horasSemanales, totalTiempoExtra);
+        tiempoTrabajado = restarHoras(tiempoTrabajado, totalTiempoRetardo);
+      }
+
+      return {
+        horas_semanales: horasSemanales,
+        jornada:
+          resultadoEmpleados.detalleDiasEntradaSalida.cat_tipo_horario
+            .dataValues.jornada,
+        inicio_semana: chequeo.dataValues.inicio_semana,
+        tiempo_trabajado: tiempoTrabajado,
+        fk_cat_empleado: chequeo.fk_cat_empleado,
+        total_tiempo_extra: totalTiempoExtra,
+        total_tiempo_retardo: totalTiempoRetardo,
+        R: chequeo.dataValues.R,
+        SR: chequeo.dataValues.SR,
+        empleado: {
+          numero_empleado: resultadoEmpleados.empleado.numero_empleado,
+          sueldo: resultadoEmpleados.empleado.sueldo,
+          persona: {
+            nombre: resultadoEmpleados.empleado.persona.nombre,
+            apellido_Paterno:
+              resultadoEmpleados.empleado.persona.apellido_Paterno,
+            apellido_Materno:
+              resultadoEmpleados.empleado.persona.apellido_Materno,
+          },
+        },
+      };
+    });
+
+    // Unir los resultados
+    const accesosAusencias = chequeosEmpleado.map((chequeos) => {
+      const resultadoAusencia = ausencias.find((ausencia) => {
+        return (
+          ausencia.fk_cat_empleado === chequeos.fk_cat_empleado &&
+          new Date(ausencia.dataValues.inicio_semana).toISOString() ===
+            new Date(chequeos.inicio_semana).toISOString()
+        );
+      });
+
+      return {
+        horas_semanales: chequeos.horas_semanales,
+        jornada: chequeos.jornada,
+        inicio_semana: chequeos.inicio_semana,
+        total_tiempo_extra: chequeos.total_tiempo_extra,
+        total_tiempo_retardo: chequeos.total_tiempo_retardo,
+        tiempo_trabajado: resultadoAusencia
+          ? restarHoras(
+              restarHoras(
+                chequeos.tiempo_trabajado,
+                `0${resultadoAusencia.dataValues.A * chequeos.jornada}:00:00`
+              ),
+              `0${resultadoAusencia.dataValues.As * 5}:00:00`
+            )
+          : chequeos.tiempo_trabajado,
+        fk_cat_empleado: chequeos.fk_cat_empleado,
+        R: chequeos.R,
+        SR: chequeos.SR,
+        A: resultadoAusencia ? resultadoAusencia.dataValues.A : "0",
+        As: resultadoAusencia ? resultadoAusencia.dataValues.As : "0",
+        empleado: chequeos.empleado,
+      };
+    });
+
+    // Unir los resultados
+    const resultadosFinales = accesosAusencias.map((resultadoFinal) => {
+      const resultadoPermiso = permisos.find((permiso) => {
+        return (
+          permiso.fk_cat_empleado === resultadoFinal.fk_cat_empleado &&
+          new Date(permiso.dataValues.inicio_semana).toISOString() ===
+            new Date(resultadoFinal.inicio_semana).toISOString()
+        );
+      });
+
+      return {
+        horas_semanales: resultadoFinal.horas_semanales,
+        jornada: resultadoFinal.jornada,
+        fecha: resultadoFinal.inicio_semana,
+        total_tiempo_extra: resultadoFinal.total_tiempo_extra,
+        total_tiempo_retardo: resultadoPermiso
+          ? sumarHoras(
+              resultadoFinal.total_tiempo_retardo,
+              `0${
+                resultadoPermiso.dataValues.P *
+                resultadoPermiso.dataValues.total_tiempo_horas
+              }:00:00`
+            )
+          : resultadoFinal.total_tiempo_retardo,
+        tiempo_trabajado: resultadoPermiso
+          ? restarHoras(
+              resultadoFinal.tiempo_trabajado,
+              `0${
+                resultadoPermiso.dataValues.P *
+                resultadoPermiso.dataValues.tiempo_horas
+              }:00:00`
+            )
+          : resultadoFinal.tiempo_trabajado,
+        fk_cat_empleado: resultadoFinal.fk_cat_empleado,
+        R: resultadoFinal.R,
+        SR: resultadoFinal.SR,
+        A: resultadoFinal.A,
+        As: resultadoFinal.As,
+        P: resultadoPermiso ? resultadoPermiso.dataValues.P : "0",
+        empleado: resultadoFinal.empleado,
+      };
+    });
+
+    // Itera sobre los resultados y suma los valores
+    resultadosFinales.forEach((resultado) => {
+      const idCatEmpleado = resultado.fk_cat_empleado;
+
+      // Verifica si ya existe una entrada para el empleado en el objeto
+      if (!totales[idCatEmpleado]) {
+        totales[idCatEmpleado] = {
+          sumaHorasSemanal: "00:00:00",
+          sumaHorasTrabajadas: "00:00:00",
+          sumaTiemposExtra: "00:00:00",
+          sumaTiemposReponer: "00:00:00",
+          sumaA: 0,
+          sumaAs: 0,
+          sumaR: 0,
+          sumaSR: 0,
+          sumaP: 0,
+        };
+      }
+
+      // Suma los valores para el empleado actual
+      totales[idCatEmpleado].sumaHorasSemanal = sumarHoras(
+        totales[idCatEmpleado].sumaHorasSemanal,
+        resultado.horas_semanales
+      );
+
+      totales[idCatEmpleado].sumaHorasTrabajadas = sumarHoras(
+        totales[idCatEmpleado].sumaHorasTrabajadas,
+        resultado.tiempo_trabajado
+      );
+
+      totales[idCatEmpleado].sumaTiemposExtra = sumarHoras(
+        totales[idCatEmpleado].sumaTiemposExtra,
+        resultado.total_tiempo_extra
+      );
+
+      totales[idCatEmpleado].sumaTiemposReponer = sumarHoras(
+        totales[idCatEmpleado].sumaTiemposReponer,
+        resultado.total_tiempo_retardo
+      );
+
+      totales[idCatEmpleado].sumaA += parseInt(resultado.A);
+
+      totales[idCatEmpleado].sumaAs += parseInt(resultado.As);
+
+      totales[idCatEmpleado].sumaR += parseInt(resultado.R);
+
+      totales[idCatEmpleado].sumaSR += parseInt(resultado.SR);
+
+      totales[idCatEmpleado].sumaP += parseInt(resultado.P);
+    });
+
+    // Restar tiempos extras y a reponer
+    Object.keys(totales).forEach((idEmpleado) => {
+      const resultado = totales[idEmpleado];
+
+      // Convertir tiempos extras y a reponer a segundos
+      let TotalTiemposReponer = "00:00:00";
+
+      let TotalTiemposExtra = restarHoras(
+        resultado.sumaTiemposExtra,
+        resultado.sumaTiemposReponer
+      );
+
+      if (!timeRegex.test(TotalTiemposExtra)) {
+        TotalTiemposExtra = "00:00:00";
+        TotalTiemposReponer = restarHoras(
+          resultado.sumaTiemposReponer,
+          resultado.sumaTiemposExtra
+        );
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.sumaTiemposExtra = TotalTiemposExtra;
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.sumaTiemposReponer = TotalTiemposReponer;
+      } else {
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.sumaTiemposExtra = TotalTiemposExtra;
+        // Actualizar la propiedad con la nueva suma de horas trabajadas
+        resultado.sumaTiemposReponer = TotalTiemposReponer;
+      }
+    });
+
+    // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+    res.status(200).json({
+      ok: true,
+      results: resultadosFinales,
+      totales,
+    });
+  } catch (error) {
+    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
 };

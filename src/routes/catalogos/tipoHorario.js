@@ -6,10 +6,12 @@ const {
   tipoHorarioGet,
 } = require("../../controllers/catalogos/tipoHorario-controller");
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Horarios";
 
 // DEFINICIÓN DE RUTA PARA OBTENER LAS TOLERANCIAS
 router.get(
@@ -17,8 +19,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
   ],
   tipoHorarioGet
 );

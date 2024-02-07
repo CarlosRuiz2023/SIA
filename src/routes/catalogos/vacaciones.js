@@ -6,7 +6,6 @@ const {
   vacacionesGet,
 } = require("../../controllers/catalogos/vacaciones-controller");
 const { validarJWT } = require("../../middlewares/validar-jwt");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -17,8 +16,6 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
   ],
   vacacionesGet
 );

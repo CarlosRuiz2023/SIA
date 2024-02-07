@@ -16,6 +16,8 @@ const {
   emailExistente,
   usuarioActivo,
 } = require("../../helpers/db-validators");
+const { esAdminRole } = require("../../middlewares/validar-roles");
+const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
@@ -65,7 +67,9 @@ router.post(
 router.post(
   "/activarUsuario",
   [
-    // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    esAdminRole,
     check("correo", "El correo es obligatorio").isEmail(),
     check("correo").custom(emailExistente),
     // MIDDLEWARE PARA VALIDAR CAMPOS
@@ -95,7 +99,8 @@ router.get(
 router.post(
   "/cerrarSesion",
   [
-    // VALIDACIONES PARA LOS DATOS DE CERRAR DE SESIÓN
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
     check("correo", "El correo es obligatorio").isEmail(),
     check("correo").custom(emailExistente),
     // MIDDLEWARE PARA VALIDAR CAMPOS

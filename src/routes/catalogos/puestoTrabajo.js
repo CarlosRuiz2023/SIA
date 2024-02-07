@@ -6,7 +6,6 @@ const {
   puestoTrabajoGet,
 } = require("../../controllers/catalogos/puestoTrabajo-controller");
 const { validarCampos } = require("../../middlewares/validar-campos");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
 const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
@@ -18,8 +17,6 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
     validarCampos,
   ],
   puestoTrabajoGet

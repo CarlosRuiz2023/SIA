@@ -10,19 +10,21 @@ const {
   proyectoIdGet,
   proyectoPut,
   proyectoDelete,
-  proyectoEquipoTrabajoPost,
   proyectoEtapaPost,
+  proyectoEquipoTrabajoPost,
 } = require("../../controllers/catalogos/proyectos-controller");
 const {
   existeProyectoPorId,
   existenEquiposTrabajoPorId,
   existenEtapasPorId,
 } = require("../../helpers/db-validators");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+
+const sub_modulo = "Reportes de actividades";
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
 router.get(
@@ -30,8 +32,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],
@@ -44,8 +45,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Escribir", sub_modulo),
     check("proyecto_nombre", "El proyecto_nombre es obligatorio")
       .not()
       .isEmpty(),
@@ -73,8 +73,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existeProyectoPorId),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
@@ -88,8 +87,7 @@ router.put(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeProyectoPorId),
     check("proyecto_nombre", "El proyecto_nombre es obligatorio")
       .not()
@@ -119,8 +117,7 @@ router.delete(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeProyectoPorId),
     validarCampos,
   ],
@@ -133,8 +130,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("id_proyecto").custom(existeProyectoPorId),
     check("equipos_trabajo").custom(existenEquiposTrabajoPorId),
     validarCampos,
@@ -148,8 +144,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("id_proyecto").custom(existeProyectoPorId),
     check("etapas").custom(existenEtapasPorId),
     validarCampos,

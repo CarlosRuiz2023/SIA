@@ -16,11 +16,12 @@ const {
   existeActividadPorId,
   existeEquipoTrabajoPorId,
 } = require("../../helpers/db-validators");
-const { esAdminRole, tieneRole } = require("../../middlewares/validar-roles");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
+const sub_modulo = "Reportes de actividades";
 
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
 router.get(
@@ -28,8 +29,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    tieneRole("FROND END", "BACK END"),
-    //esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     validarCampos,
   ],
   actividadesGet
@@ -41,8 +41,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Escribir", sub_modulo),
     check("actividad_nombre", "La actividad_nombre es obligatoria")
       .not()
       .isEmpty(),
@@ -59,8 +58,7 @@ router.get(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    tieneRole("FROND END", "BACK END"),
-    //esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existeActividadPorId),
     validarCampos,
   ],
@@ -73,8 +71,7 @@ router.put(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    tieneRole("FROND END", "BACK END"),
-    //esAdminRole,
+    tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeActividadPorId),
     check("actividad_nombre", "La actividad_nombre es obligatoria")
       .not()
@@ -92,8 +89,7 @@ router.delete(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeActividadPorId),
     validarCampos,
   ],
@@ -106,8 +102,7 @@ router.post(
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     validarJWT,
-    //tieneRole("FROND END", "BACK END"),
-    esAdminRole,
+    tienePermiso("Leer", sub_modulo),
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
       (value) => {
         return /\d{4}-\d{2}-\d{2}/.test(value);
