@@ -2,18 +2,17 @@
 const { response } = require("express");
 // IMPORTACIÓN DEL MÓDULO 'BCRYPTJS' PARA EL MANEJO DE CONTRASEÑAS HASH.
 const bcryptjs = require("bcryptjs");
-// IMPORTACIÓN DEL MÓDULO 'NODEMAILER' PARA EL ENVIO DE CORREOS.
-const nodemailer = require("nodemailer");
 // IMPORTACIÓN DEL MÓDULO 'GENERAR-JWT' PARA LA CREACION DE TOKENS.
 const { generarJWT } = require("../../helpers/generar-jwt");
-// IMPORTACIÓN DEL MODELO 'USUARIO' DESDE LA RUTA CORRESPONDIENTE.
-const Usuario = require("../../models/modelos/usuario");
 // IMPORTACIÓN DEL MODELO 'TRANSPORTER' DESDE LA RUTA CORRESPONDIENTE.
 const { transporter } = require("../../helpers/enviar-emails");
+// IMPORTACIÓN DE LOS MODELOS NECESARIOS.
+const Usuario = require("../../models/modelos/usuario");
 const Persona = require("../../models/modelos/catalogos/persona");
 const Empleado = require("../../models/modelos/catalogos/empleado");
 const PuestoTrabajo = require("../../models/modelos/catalogos/puestoTrabajo");
 const TipoHorario = require("../../models/modelos/catalogos/tipoHorario");
+const Cliente = require("../../models/modelos/catalogos/cliente");
 
 /**
  * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
@@ -39,6 +38,45 @@ const inicioSesion = async (req, res) => {
       ],
     });
 
+    if (!empleado) {
+      const cliente = await Cliente.findOne({
+        include: [
+          { model: Usuario, as: "usuario", where: { correo } },
+          { model: Persona, as: "persona" },
+        ],
+      });
+
+      // VERIFICAMOS SI LA CONTRASEÑA PROPORCIONADA ES CORRECTA.
+      const validarContrasenia = await bcryptjs.compare(
+        contrasenia,
+        cliente.usuario.contrasenia
+      );
+
+      //VERIFICA LA CONTRASÑA
+      if (!validarContrasenia) {
+        //RETORNAMOS MENSAJE DE ERROR
+        return res.status(400).json({
+          ok: false,
+          results: {
+            msg: "Usuario o contraseña no son correctos.",
+          },
+        });
+      }
+      //GENERAMOS SU RESPECTIVO TOKEN MEDIANTE JWT
+      const token = await generarJWT(cliente.usuario.id_cat_usuario);
+
+      cliente.usuario.token = token;
+
+      // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
+      await cliente.usuario.save();
+
+      // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
+      return res.status(200).json({
+        ok: true,
+        results: { msg: "Sesion iniciada con exito.", cliente },
+      });
+    }
+
     // VERIFICAMOS SI LA CONTRASEÑA PROPORCIONADA ES CORRECTA.
     const validarContrasenia = await bcryptjs.compare(
       contrasenia,
@@ -55,7 +93,7 @@ const inicioSesion = async (req, res) => {
         },
       });
     }
-    //Generar el JWT
+    //GENERAMOS SU RESPECTIVO TOKEN MEDIANTE JWT
     const token = await generarJWT(empleado.usuario.id_cat_usuario);
 
     empleado.usuario.token = token;
@@ -66,7 +104,7 @@ const inicioSesion = async (req, res) => {
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      results: empleado,
+      results: { msg: "Sesion iniciada con exito.", empleado },
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
@@ -88,13 +126,14 @@ const inicioSesion = async (req, res) => {
  */
 const recuperarContrasenia = async (req, res = response) => {
   try {
+    // EXTRAE EL CORREO, ASUNTO Y MENSAJE DEL CUERPO DE LA SOLICITUD.
     const { correo, asunto = "Solicitud de cambio de contraseña" } = req.body;
 
     let {
       mensaje = `Usted ha solicitado restablecer su contraseña. <br> Por favor ingresa y confirma tu nueva contraseña en el siguiente formulario:`,
     } = req.body;
 
-    // Se construye el formulario
+    // CONSTRUIMOS EL FORMULARIO
     const resetForm = `
     <form style="max-width: 500px; margin: 0 auto; border: 2px solid #ccc; padding: 20px;" method="GET" action="${process.env.IP}/api/usuario/cambiarContrasenia/${correo}">
       <h2 style="text-align: center;">Restablecer contraseña</h2>
@@ -109,6 +148,7 @@ const recuperarContrasenia = async (req, res = response) => {
     </form>
   
   `;
+    // CREAMOS EL CUERPO DEL MENSAJE
     const html = `
     <div>
       <table width="500" align="center">
@@ -142,6 +182,7 @@ const recuperarContrasenia = async (req, res = response) => {
     </div>
   `;
 
+    // ESPECIFICAMOS VALORES NECESARIOS PARA EL ENVIO DEL CORREO.
     const mailOptions = {
       from: '"Soporte" <soporte@midominio.com>',
       to: correo,
@@ -149,11 +190,14 @@ const recuperarContrasenia = async (req, res = response) => {
       html: html,
     };
 
+    // MANDAMOS EL CORREO MEDIANTE EL 'TRANSPORTER'
     await transporter.sendMail(mailOptions);
 
+    // CREAMOS NUEVO CUERPO DEL 2DO MENSAJE A ENVIAR.
     mensaje = `Ha solicitado restablecer su contraseña.`;
     mensaje = `<div style="background-color:#e0e0e0; padding: 20px; border-radius: 5px;"> <h3 style="color: #808080;">El usuario: ${correo},</h3> <p style="line-height: 1.5;">${mensaje}</p> </div>`;
 
+    // ESPECIFICAMOS VALORES NECESARIOS PARA EL ENVIO DEL 2DO CORREO.
     const mailOptions1 = {
       from: '"Soporte" <soporte@midominio.com>',
       to: "juancarlosruizgomez2000@gmail.com",
@@ -161,15 +205,19 @@ const recuperarContrasenia = async (req, res = response) => {
       html: mensaje,
     };
 
+    // MANDAMOS EL 2DO CORREO MEDIANTE EL 'TRANSPORTER'
     await transporter.sendMail(mailOptions1);
 
-    res.json({ ok: true, msg: "Email sent successfully" });
+    // RESPONDEMOS DE FORMA POSITIVA
+    res.json({ ok: true, results: { msg: "Email sent successfully" } });
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
+      results: {
+        msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
+      },
     });
   }
 };
@@ -186,15 +234,18 @@ const bloquearUsuario = async (req, res) => {
     // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
     const usuario = await Usuario.findOne({ where: { correo } });
 
-    // VERIFICA SI EL USUARIO ESTÁ ACTIVO.
+    // VERIFICA SI EL USUARIO YA ESTÁ BLOQUEADO.
     if (usuario.estatus == 2) {
       //RETORNAMOS MENSAJE DE ERROR
       return res.status(400).json({
         ok: false,
-        msg: "Usuario ya bloqueado",
+        results: {
+          msg: "Usuario ya bloqueado",
+        },
       });
     }
 
+    // ACTUALIZAMOS EL ESTADO DEL USUARIO A BLOQUEADO.
     usuario.estatus = 2;
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
@@ -203,14 +254,16 @@ const bloquearUsuario = async (req, res) => {
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      results: usuario,
+      results: { msg: "Usuario bloqueado con exito.", usuario },
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -236,6 +289,7 @@ const usuarioActivar = async (req, res) => {
       });
     }
 
+    // ACTUALIZAMOS EL ESTADO DEL USUARIO A ACTIVO.
     usuario.estatus = 1;
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
@@ -244,14 +298,16 @@ const usuarioActivar = async (req, res) => {
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      results: usuario,
+      results: { msg: "Usuario activado con exito.", usuario },
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
@@ -264,36 +320,44 @@ const usuarioActivar = async (req, res) => {
  */
 const cambiarContrasenia = async (req, res = response) => {
   try {
+    // EXTRAE EL CORREO, PASSWORD Y PASSWORDCONFIRM DE LA SOLICITUD.
     const { correo } = req.params;
-    // obtener datos del body
     const { password, passwordConfirm } = req.query;
 
+    // VERIFICAMOS SI SON IGUALES AMBAS VARIABLES
     if (password !== passwordConfirm) {
       return res.status(400).json({
         ok: false,
-        msg: "Error passwords diferentes intente de nuevo",
+        results: {
+          msg: "Error passwords diferentes intente de nuevo",
+        },
       });
     }
 
-    //Encriptar la contraseña
+    // ENCRIPTAMOS LA CONTRASEÑA.
     const salt = bcryptjs.genSaltSync();
     const passwordEncriptada = bcryptjs.hashSync(password, salt);
 
-    // Buscar el usuario por correo
+    // BUSCAMOS EL USUARIO POR CORREO.
     const usuario = await Usuario.findOne({ where: { correo } });
 
-    // Actualizar la contraseña
+    // ACTUALIZAMOS LA CONTRASEÑA.
     usuario.contrasenia = passwordEncriptada;
     usuario.contrasenia1 = password;
+
+    // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
     await usuario.save();
 
+    // REDIRIGIMOS A LA PAGINA DE CAMBIO CONTRASEÑA.
     res.redirect(`${process.env.IP}/pagina.html`);
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
+      results: {
+        msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
+      },
     });
   }
 };
@@ -312,6 +376,7 @@ const cerrarSesion = async (req, res) => {
     // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
     const usuario = await Usuario.findOne({ where: { correo } });
 
+    // RESETEAMOS EL TOKEN.
     usuario.token = "";
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
@@ -320,14 +385,19 @@ const cerrarSesion = async (req, res) => {
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      results: usuario,
+      results: {
+        msg: "Sesion cerrada con exito.",
+        usuario,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
       ok: false,
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };

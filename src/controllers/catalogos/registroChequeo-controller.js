@@ -433,7 +433,7 @@ const registroChequeoPost = async (req = request, res = response) => {
     }
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
-    res.status(201).json({
+    res.status(200).json({
       ok: true,
       results: { registroChequeo, msg: "Chequeo guardado correctamente" },
     });
@@ -613,9 +613,12 @@ const reporteEventosYTiempoPost = async (req, res) => {
     const { fecha_inicio, fecha_fin, tipo = 1, empleados } = req.body;
     const query = {};
     const query1 = {};
+    const query2 = {};
     let totales = {};
-    let permisos = [];
+    let permisosPendientes = [];
+    let permisosRepuestos = [];
     let chequeos = [];
+    let ausencias = [];
 
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
 
@@ -671,6 +674,21 @@ const reporteEventosYTiempoPost = async (req, res) => {
       };
     }
 
+    if (empleados && empleados.length > 0) {
+      query2.fk_cat_empleado = {
+        [Op.in]: empleados,
+      };
+    }
+
+    if (fecha_inicio && fecha_fin) {
+      query2.fecha_reposicion = {
+        [Op.gte]: fecha_inicio,
+        [Op.lte]: fecha_fin,
+      };
+    }
+
+    query2.estatus = 4;
+
     switch (tipo) {
       case 1:
         // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
@@ -723,7 +741,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
 
         query1.estatus = 3;
 
-        permisos = await DetallePermisosEmpleado.findAll({
+        permisosPendientes = await DetallePermisosEmpleado.findAll({
           attributes: [
             "fk_cat_empleado",
             [
@@ -734,16 +752,39 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+            CASE WHEN estatus = 3 THEN 1 ELSE NULL END
           `)
               ),
-              "P",
+              "Pp",
             ],
             [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
           ],
           group: ["inicio_semana", "fk_cat_empleado"],
           order: [["inicio_semana"]],
           where: query1,
+        });
+
+        permisosRepuestos = await DetallePermisosEmpleado.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.fn("DATE_TRUNC", "DAY", pool.col("fecha_reposicion")),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN estatus = 4 THEN 1 ELSE NULL END
+              `)
+              ),
+              "Pr",
+            ],
+            [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query2,
         });
 
         query.estatus = 0;
@@ -827,7 +868,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
 
         query1.estatus = 3;
 
-        permisos = await DetallePermisosEmpleado.findAll({
+        permisosPendientes = await DetallePermisosEmpleado.findAll({
           attributes: [
             "fk_cat_empleado",
             [
@@ -838,16 +879,39 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+            CASE WHEN estatus = 3 THEN 1 ELSE NULL END
           `)
               ),
-              "P",
+              "Pp",
             ],
             [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
           ],
           group: ["inicio_semana", "fk_cat_empleado"],
           order: [["inicio_semana"]],
           where: query1,
+        });
+
+        permisosRepuestos = await DetallePermisosEmpleado.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.fn("DATE_TRUNC", "WEEK", pool.col("fecha_reposicion")),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN estatus = 4 THEN 1 ELSE NULL END
+              `)
+              ),
+              "Pr",
+            ],
+            [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query2,
         });
 
         query.estatus = 0;
@@ -939,7 +1003,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
 
         query1.estatus = 3;
 
-        permisos = await DetallePermisosEmpleado.findAll({
+        permisosPendientes = await DetallePermisosEmpleado.findAll({
           attributes: [
             "fk_cat_empleado",
             [
@@ -955,16 +1019,39 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+            CASE WHEN estatus = 3 THEN 1 ELSE NULL END
           `)
               ),
-              "P",
+              "Pp",
             ],
             [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
           ],
           group: ["inicio_semana", "fk_cat_empleado"],
           order: [["inicio_semana"]],
           where: query1,
+        });
+
+        permisosRepuestos = await DetallePermisosEmpleado.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.fn("DATE_TRUNC", "DAY", pool.col("fecha_reposicion")),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN estatus = 4 THEN 1 ELSE NULL END
+              `)
+              ),
+              "Pr",
+            ],
+            [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query2,
         });
 
         query.estatus = 0;
@@ -1059,7 +1146,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
 
         query1.estatus = 3;
 
-        permisos = await DetallePermisosEmpleado.findAll({
+        permisosPendientes = await DetallePermisosEmpleado.findAll({
           attributes: [
             "fk_cat_empleado",
             [
@@ -1070,16 +1157,39 @@ const reporteEventosYTiempoPost = async (req, res) => {
               pool.fn(
                 "COUNT",
                 pool.literal(`
-            CASE WHEN estatus IS NOT NULL THEN 1 ELSE NULL END
+            CASE WHEN estatus = 3 THEN 1 ELSE NULL END
           `)
               ),
-              "P",
+              "Pp",
             ],
             [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
           ],
           group: ["inicio_semana", "fk_cat_empleado"],
           order: [["inicio_semana"]],
           where: query1,
+        });
+
+        permisosRepuestos = await DetallePermisosEmpleado.findAll({
+          attributes: [
+            "fk_cat_empleado",
+            [
+              pool.fn("DATE_TRUNC", "MONTH", pool.col("fecha_reposicion")),
+              "inicio_semana",
+            ],
+            [
+              pool.fn(
+                "COUNT",
+                pool.literal(`
+                CASE WHEN estatus = 4 THEN 1 ELSE NULL END
+              `)
+              ),
+              "Pr",
+            ],
+            [pool.fn("SUM", pool.col("tiempo_horas")), "total_tiempo_horas"],
+          ],
+          group: ["inicio_semana", "fk_cat_empleado"],
+          order: [["inicio_semana"]],
+          where: query2,
         });
 
         query.estatus = 0;
@@ -1206,8 +1316,8 @@ const reporteEventosYTiempoPost = async (req, res) => {
     });
 
     // Unir los resultados
-    const resultadosFinales = accesosAusencias.map((resultadoFinal) => {
-      const resultadoPermiso = permisos.find((permiso) => {
+    const chequeosPermisos = accesosAusencias.map((resultadoFinal) => {
+      const resultadoPermiso = permisosPendientes.find((permiso) => {
         return (
           permiso.fk_cat_empleado === resultadoFinal.fk_cat_empleado &&
           new Date(permiso.dataValues.inicio_semana).toISOString() ===
@@ -1218,13 +1328,13 @@ const reporteEventosYTiempoPost = async (req, res) => {
       return {
         horas_semanales: resultadoFinal.horas_semanales,
         jornada: resultadoFinal.jornada,
-        fecha: resultadoFinal.inicio_semana,
+        inicio_semana: resultadoFinal.inicio_semana,
         total_tiempo_extra: resultadoFinal.total_tiempo_extra,
         total_tiempo_retardo: resultadoPermiso
           ? sumarHoras(
               resultadoFinal.total_tiempo_retardo,
               `0${
-                resultadoPermiso.dataValues.P *
+                resultadoPermiso.dataValues.Pp *
                 resultadoPermiso.dataValues.total_tiempo_horas
               }:00:00`
             )
@@ -1233,7 +1343,7 @@ const reporteEventosYTiempoPost = async (req, res) => {
           ? restarHoras(
               resultadoFinal.tiempo_trabajado,
               `0${
-                resultadoPermiso.dataValues.P *
+                resultadoPermiso.dataValues.Pp *
                 resultadoPermiso.dataValues.tiempo_horas
               }:00:00`
             )
@@ -1243,7 +1353,51 @@ const reporteEventosYTiempoPost = async (req, res) => {
         SR: resultadoFinal.SR,
         A: resultadoFinal.A,
         As: resultadoFinal.As,
-        P: resultadoPermiso ? resultadoPermiso.dataValues.P : "0",
+        Pp: resultadoPermiso ? resultadoPermiso.dataValues.Pp : "0",
+        empleado: resultadoFinal.empleado,
+      };
+    });
+
+    // Unir los resultados
+    const resultadosFinales = chequeosPermisos.map((resultadoFinal) => {
+      const resultadoPermiso = permisosRepuestos.find((permiso) => {
+        return (
+          permiso.fk_cat_empleado === resultadoFinal.fk_cat_empleado &&
+          new Date(permiso.dataValues.inicio_semana).toISOString() ===
+            new Date(resultadoFinal.inicio_semana).toISOString()
+        );
+      });
+
+      return {
+        horas_semanales: resultadoFinal.horas_semanales,
+        jornada: resultadoFinal.jornada,
+        inicio_semana: resultadoFinal.inicio_semana,
+        total_tiempo_extra: resultadoPermiso
+          ? restarHoras(
+              resultadoFinal.total_tiempo_extra,
+              `0${
+                resultadoPermiso.dataValues.Pr *
+                resultadoPermiso.dataValues.total_tiempo_horas
+              }:00:00`
+            )
+          : resultadoFinal.total_tiempo_extra,
+        total_tiempo_retardo: resultadoFinal.total_tiempo_extra,
+        tiempo_trabajado: resultadoPermiso
+          ? sumarHoras(
+              resultadoFinal.tiempo_trabajado,
+              `0${
+                resultadoPermiso.dataValues.Pr *
+                resultadoPermiso.dataValues.tiempo_horas
+              }:00:00`
+            )
+          : resultadoFinal.tiempo_trabajado,
+        fk_cat_empleado: resultadoFinal.fk_cat_empleado,
+        R: resultadoFinal.R,
+        SR: resultadoFinal.SR,
+        A: resultadoFinal.A,
+        As: resultadoFinal.As,
+        Pp: resultadoFinal.Pp,
+        Pr: resultadoPermiso ? resultadoPermiso.dataValues.Pr : "0",
         empleado: resultadoFinal.empleado,
       };
     });
@@ -1263,7 +1417,8 @@ const reporteEventosYTiempoPost = async (req, res) => {
           sumaAs: 0,
           sumaR: 0,
           sumaSR: 0,
-          sumaP: 0,
+          sumaPp: 0,
+          sumaPr: 0,
         };
       }
 
@@ -1296,7 +1451,9 @@ const reporteEventosYTiempoPost = async (req, res) => {
 
       totales[idCatEmpleado].sumaSR += parseInt(resultado.SR);
 
-      totales[idCatEmpleado].sumaP += parseInt(resultado.P);
+      totales[idCatEmpleado].sumaPp += parseInt(resultado.Pp);
+
+      totales[idCatEmpleado].sumaPr += parseInt(resultado.Pr);
     });
 
     // Restar tiempos extras y a reponer

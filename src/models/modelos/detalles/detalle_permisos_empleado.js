@@ -45,6 +45,9 @@ const DetallePermisosEmpleado = pool.define(
     hora_solicitada: {
       type: Sequelize.STRING,
     },
+    fecha_reposicion: {
+      type: Sequelize.DATE,
+    },
   },
   {
     timestamps: false,

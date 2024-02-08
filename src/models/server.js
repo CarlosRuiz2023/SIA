@@ -6,19 +6,48 @@
 */
 
 // IMPORTACIÓN DE LAS BIBLIOTECAS NECESARIAS
-const express = require("express"); // Biblioteca para crear el servidor web
-const cors = require("cors"); // Middleware para manejar CORS (Cross-Origin Resource Sharing)
+const express = require("express");
 const path = require("path");
 const fileUpload = require("express-fileupload");
+
+// IMPORTA LA CLASE SCHEDULE
+const schedule = require("node-schedule");
+const {
+  registrarAusencia,
+} = require("../controllers/catalogos/ausencias-controller");
+
+// MIDDLEWARE PARA MANEJAR CORS (Cross-Origin Resource Sharing)
+const cors = require("cors");
 
 // IMPORTACIÓN DE LA CONFIGURACIÓN DE LA BASE DE DATOS POSTGRESQL DESDE OTRO ARCHIVO
 const pool = require("../database/config");
 
 // IMPORTACIÓN DE LAS RUTAS RELACIONADAS CON LA AUTENTICACIÓN
-const { InicioSesionRuta } = require("../routes/autenticacion/inicio-sesion");
+const InicioSesionRuta = require("../routes/autenticacion/inicio-sesion");
 
 // IMPORTACIÓN DE LAS RUTAS RELACIONADAS CON LOS CATÁLOGOS
-const { EmpleadosRuta } = require("../routes/catalogos/empleado");
+const EmpleadosRuta = require("../routes/catalogos/empleado");
+const ActividadesRuta = require("../routes/catalogos/actividades");
+const AusenciasRuta = require("../routes/catalogos/ausencias");
+const BitacoraAccesosRuta = require("../routes/catalogos/bitacoraAccesos");
+const ClientesRuta = require("../routes/catalogos/cliente");
+const DiasRuta = require("../routes/catalogos/dias");
+const EntradaSalidasRuta = require("../routes/catalogos/entradaSalida");
+const EquipoTrabajoRuta = require("../routes/catalogos/equipoTrabajo");
+const EtapasRuta = require("../routes/catalogos/etapas");
+const EventosRuta = require("../routes/catalogos/eventos");
+const ModulosRuta = require("../routes/catalogos/modulo");
+const PermisoRuta = require("../routes/catalogos/permiso");
+const PermisosRuta = require("../routes/catalogos/permisos");
+const ProyectosRuta = require("../routes/catalogos/proyectos");
+const PuestoTrabajoRuta = require("../routes/catalogos/puestoTrabajo");
+const RegistroChequeoRuta = require("../routes/catalogos/registroChequeo");
+const RolesRuta = require("../routes/catalogos/roles");
+const TareasRuta = require("../routes/catalogos/tarea");
+const TipoHorarioRuta = require("../routes/catalogos/tipoHorario");
+const ToleranciaRuta = require("../routes/catalogos/tolerancia");
+const VacacionesRuta = require("../routes/catalogos/vacaciones");
+const UploadsRuta = require("../routes/uploads");
 
 // CLASE QUE REPRESENTA EL SERVIDOR
 class Server {
@@ -28,7 +57,7 @@ class Server {
     this.app = express();
 
     this.app.set("views", path.join(__dirname, "views"));
-    // Indicamos el motor EJS
+    // INDICAMOS EL MOTOR EJS
     this.app.set("view engine", "ejs");
     // CONFIGURA EL PUERTO DEL SERVIDOR, UTILIZA EL PUERTO ESPECIFICADO EN LAS VARIABLES DE ENTORNO O EL PUERTO 3000 POR DEFECTO
     this.port = process.env.PORT || 3000;
@@ -99,7 +128,7 @@ class Server {
 
     // MIDDLEWARE PARA SERVIR ARCHIVOS ESTÁTICOS DESDE LA CARPETA 'public'
     this.app.use(express.static("public"));
-    // Fileupload - Carga de archivos
+    // FILEUPLOAD - CARGA DE ARCHIVOS
     this.app.use(
       fileUpload({
         useTempFiles: true,
@@ -113,97 +142,42 @@ class Server {
   routes() {
     this.app.use(
       this.autenticacionPath.catalogoAutenticacion,
-      require("../routes/autenticacion/inicio-sesion")
+      InicioSesionRuta
     );
-    this.app.use(
-      this.catalogosPath.catalogoEmpleado,
-      require("../routes/catalogos/empleado")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoCliente,
-      require("../routes/catalogos/cliente")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoPuestoTrabajo,
-      require("../routes/catalogos/puestoTrabajo")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoVacaciones,
-      require("../routes/catalogos/vacaciones")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoTolerancia,
-      require("../routes/catalogos/tolerancia")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoRoles,
-      require("../routes/catalogos/roles")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoPermiso,
-      require("../routes/catalogos/permiso")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoModulo,
-      require("../routes/catalogos/modulo")
-    );
+    this.app.use(this.catalogosPath.catalogoEmpleado, EmpleadosRuta);
+    this.app.use(this.catalogosPath.catalogoCliente, ClientesRuta);
+    this.app.use(this.catalogosPath.catalogoPuestoTrabajo, PuestoTrabajoRuta);
+    this.app.use(this.catalogosPath.catalogoVacaciones, VacacionesRuta);
+    this.app.use(this.catalogosPath.catalogoTolerancia, ToleranciaRuta);
+    this.app.use(this.catalogosPath.catalogoRoles, RolesRuta);
+    this.app.use(this.catalogosPath.catalogoPermiso, PermisoRuta);
+    this.app.use(this.catalogosPath.catalogoModulo, ModulosRuta);
     this.app.use(
       this.catalogosPath.catalogoBitacoraAcceso,
-      require("../routes/catalogos/bitacoraAccesos")
+      BitacoraAccesosRuta
     );
-    this.app.use(
-      this.catalogosPath.catalogoDias,
-      require("../routes/catalogos/dias")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoEntradaSalida,
-      require("../routes/catalogos/entradaSalida")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoTipoHorario,
-      require("../routes/catalogos/tipoHorario")
-    );
+    this.app.use(this.catalogosPath.catalogoDias, DiasRuta);
+    this.app.use(this.catalogosPath.catalogoEntradaSalida, EntradaSalidasRuta);
+    this.app.use(this.catalogosPath.catalogoTipoHorario, TipoHorarioRuta);
     this.app.use(
       this.catalogosPath.catalogoRegistroChequeo,
-      require("../routes/catalogos/registroChequeo")
+      RegistroChequeoRuta
     );
-    this.app.use(
-      this.catalogosPath.catalogoEventos,
-      require("../routes/catalogos/eventos")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoPermisos,
-      require("../routes/catalogos/permisos")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoAusencias,
-      require("../routes/catalogos/ausencias")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoEquipoTrabajo,
-      require("../routes/catalogos/equipoTrabajo")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoActividades,
-      require("../routes/catalogos/actividades")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoProyectos,
-      require("../routes/catalogos/proyectos")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoEtapas,
-      require("../routes/catalogos/etapas")
-    );
-    this.app.use(
-      this.catalogosPath.catalogoTarea,
-      require("../routes/catalogos/tarea")
-    );
-    this.app.use(this.catalogosPath.uploads, require("../routes/uploads"));
+    this.app.use(this.catalogosPath.catalogoEventos, EventosRuta);
+    this.app.use(this.catalogosPath.catalogoPermisos, PermisosRuta);
+    this.app.use(this.catalogosPath.catalogoAusencias, AusenciasRuta);
+    this.app.use(this.catalogosPath.catalogoEquipoTrabajo, EquipoTrabajoRuta);
+    this.app.use(this.catalogosPath.catalogoActividades, ActividadesRuta);
+    this.app.use(this.catalogosPath.catalogoProyectos, ProyectosRuta);
+    this.app.use(this.catalogosPath.catalogoEtapas, EtapasRuta);
+    this.app.use(this.catalogosPath.catalogoTarea, TareasRuta);
+    this.app.use(this.catalogosPath.uploads, UploadsRuta);
   }
 
   // FUNCIÓN PARA INICIAR EL SERVIDOR Y ESCUCHAR EN EL PUERTO ESPECIFICADO
   listen() {
+    // PROGRAMAR LA TAREA PARA QUE SE EJECUTE TODOS LOS DIAS A LAS 10:30
+    schedule.scheduleJob("30 10 * * *", registrarAusencia);
     this.app.listen(this.port, () => {
       console.log("Servidor corriendo en puerto ", this.port);
     });
