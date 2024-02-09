@@ -13,6 +13,8 @@ const Empleado = require("../../models/modelos/catalogos/empleado");
 const PuestoTrabajo = require("../../models/modelos/catalogos/puestoTrabajo");
 const TipoHorario = require("../../models/modelos/catalogos/tipoHorario");
 const Cliente = require("../../models/modelos/catalogos/cliente");
+const Roles = require("../../models/modelos/catalogos/roles");
+const DetalleUsuarioRol = require("../../models/modelos/detalles/detalle_usuario_rol");
 
 /**
  * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
@@ -28,7 +30,18 @@ const inicioSesion = async (req, res) => {
     // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
     const empleado = await Empleado.findOne({
       include: [
-        { model: Usuario, as: "usuario", where: { correo } },
+        {
+          model: Usuario,
+          as: "usuario",
+          where: { correo },
+          include: [
+            {
+              model: DetalleUsuarioRol,
+              as: "detalle_usuario_rols",
+              include: [{ model: Roles, as: "cat_role" }],
+            },
+          ],
+        },
         { model: Persona, as: "persona" },
         {
           model: PuestoTrabajo,
@@ -104,7 +117,8 @@ const inicioSesion = async (req, res) => {
     // EN CASO DE ÉXITO, SE ENVÍA UNA RESPUESTA POSITIVA JUNTO CON LA INFORMACIÓN DEL USUARIO.
     res.status(200).json({
       ok: true,
-      results: { msg: "Sesion iniciada con exito.", empleado },
+      msg: "Sesion iniciada con exito.",
+      results: empleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, SE IMPRIME EL ERROR EN LA CONSOLA Y SE ENVÍA UNA RESPUESTA DE ERROR AL CLIENTE.

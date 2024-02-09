@@ -11,6 +11,7 @@ const {
   actividadPut,
   actividadDelete,
   reporteActividadesPost,
+  reporteActividadesPdfPost,
 } = require("../../controllers/catalogos/actividades-controller");
 const {
   existeActividadPorId,
@@ -118,6 +119,30 @@ router.post(
     validarCampos,
   ],
   reporteActividadesPost
+);
+
+// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+router.post(
+  "/reportePdf/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
+      (value) => {
+        return /\d{4}-\d{2}-\d{2}/.test(value);
+      }
+    ),
+    check("fecha_fin", "Formato de fecha_fin incorrecto").custom((value) => {
+      return /\d{4}-\d{2}-\d{2}/.test(value);
+    }),
+    check("id", "El tipo debe ser un numero").isNumeric(),
+    check("tipo", "El tipo debe ser un numero entre 1 y 3")
+      .isNumeric()
+      .isInt({ min: 1, max: 3 }),
+    validarCampos,
+  ],
+  reporteActividadesPdfPost
 );
 
 // EXPORTACIÓN DEL ENRUTADOR

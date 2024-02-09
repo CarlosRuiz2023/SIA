@@ -311,7 +311,7 @@ const registrarAusencia = async () => {
       // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO Y ACTIVO.
       const query = {
         fecha: fechaActual,
-        fk_cat_empleado: empleado[array].id_cat_empleado,
+        fk_cat_empleado: empleado.id_cat_empleado,
       };
 
       // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
@@ -320,17 +320,18 @@ const registrarAusencia = async () => {
       });
 
       if (!registros) {
-        const date = new Date(fecha);
+        const date = new Date(fechaActual);
         let dia = date.getDay() + 1;
         const ausencia = await Ausencia.create({
           fecha: fechaActual,
           descripcion: "No ha checado entrada y ya paso de las 10:30:00",
-          fk_cat_empleado: empleado[array].id_cat_empleado,
+          fk_cat_empleado: empleado.id_cat_empleado,
           fk_cat_dia: dia,
           fk_cat_permiso: 1,
+          estatus: 0,
         });
         console.log(
-          `Ausencia registrada para el empleado ${empleado[index].id_cat_empleado}`
+          `Ausencia registrada para el empleado ${empleado.id_cat_empleado}`
         );
       }
     }

@@ -102,7 +102,6 @@ const reportePost = async (req, res) => {
     }
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS.
     const registroChequeo = await RegistroChequeo.findAll({
-      where: query,
       include: [
         {
           model: Empleado,
@@ -129,6 +128,8 @@ const reportePost = async (req, res) => {
           ],
         },
       ],
+      where: query,
+      order: [["fecha", "DESC"]],
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.

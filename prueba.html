@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Servicios SIA</title>
+  </head>
+  <body>
+    <h1>Servicios del sistema de administración (SIA)</h1>
+    <script>
+      const datos = {
+        fecha_inicio: "2024-01-01",
+        fecha_fin: "2024-05-01",
+        id: 3,
+        tipo: 3,
+      };
+
+      axios({
+        method: "post",
+        url: "http://localhost:8080/api/actividades/reporte",
+        headers: {
+          "x-token":
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIyLCJpYXQiOjE3MDc0OTI1NzUsImV4cCI6MTcwNzUwNjk3NX0.gHHqm3h_n32Yh0aNIXhKmNVixI6lrD7RBmPbJdyngr4",
+        },
+        data: datos,
+        responseType: "arraybuffer",
+      }).then((response) => {
+        const pdfBuffer = response.data;
+        const fileURL = URL.createObjectURL(new Blob([pdfBuffer]));
+        //window.open(fileURL);
+        const link = document.createElement("a");
+        link.href = fileURL;
+        link.download = "reporte.pdf";
+        document.body.appendChild(link);
+        link.click();
+      });
+    </script>
+  </body>
+</html>

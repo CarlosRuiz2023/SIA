@@ -309,6 +309,16 @@ const permisoPut = async (req = request, res = response) => {
       });
     }
 
+    const date = new Date();
+
+    const fecha_reposicion = date.toISOString().slice(0, 10);
+
+    if (estatus === 4) {
+      detallePermisosEmpleado.fecha_reposicion = fecha_reposicion;
+    } else {
+      detallePermisosEmpleado.fecha_reposicion = null;
+    }
+
     // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
     detallePermisosEmpleado.estatus = estatus;
     detallePermisosEmpleado.fk_cat_permiso = id_cat_permiso;

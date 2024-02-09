@@ -46,8 +46,8 @@ router.get(
   "/:coleccion/:id",
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
-    validarJWT,
-    tienePermiso("Leer", sub_modulo),
+    //validarJWT,
+    //tienePermiso("Leer", sub_modulo),
     check("coleccion").custom((c) =>
       coleccionesPermitidas(c, ["empleado", "equipo"])
     ),
