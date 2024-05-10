@@ -21,6 +21,9 @@ const EquipoTrabajo = pool.define(
       type: Sequelize.INTEGER,
       allowNull: false,
     },
+    imagen: {
+      type: Sequelize.STRING,
+    },
   },
   {
     timestamps: false,

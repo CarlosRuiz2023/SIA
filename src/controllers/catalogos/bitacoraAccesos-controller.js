@@ -49,12 +49,13 @@ const bitacoraAccesoGet = async (req, res) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      bitacoraAcceso,
+      results: bitacoraAcceso,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -94,12 +95,13 @@ const bitacoraAccesosPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Bitacora de acceso guardado correctamente",
-      bitacoraAcceso,
+      results: bitacoraAcceso,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }

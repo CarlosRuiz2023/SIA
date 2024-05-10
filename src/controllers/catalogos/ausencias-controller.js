@@ -7,9 +7,10 @@ const Ausencia = require("../../models/modelos/catalogos/ausencias");
 const RegistroChequeo = require("../../models/modelos/catalogos/registroChequeo");
 const Persona = require("../../models/modelos/catalogos/persona");
 const Permisos = require("../../models/modelos/catalogos/permisos");
+const Dias = require("../../models/modelos/catalogos/dias");
 
 /**
- * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * OBTIENE TODAS LAS AUSENCIAS DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
@@ -28,25 +29,32 @@ const ausenciasGet = async (req = request, res = response) => {
           model: Permisos,
           as: "permiso",
         },
+        {
+          model: Dias,
+          as: "dia",
+        },
       ],
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      ausencias,
+      results: ausencias,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      ok: false,
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
 
 /**
- * OBTIENE UN EMPLEADO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * OBTIENE UNA AUSENCIA EN ESPECÍFICO POR SU ID.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
@@ -62,7 +70,7 @@ const ausenciaIdGet = async (req = request, res = response) => {
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
-    const ausencias = await Ausencia.findOne({
+    const ausencias = await Ausencia.findAll({
       where: query,
       include: [
         {
@@ -74,25 +82,32 @@ const ausenciaIdGet = async (req = request, res = response) => {
           model: Permisos,
           as: "permiso",
         },
+        {
+          model: Dias,
+          as: "dia",
+        },
       ],
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      ausencias,
+      results: ausencias,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      ok: false,
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
 
 /**
- * OBTIENE UN EMPLEADO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * OBTIENE AUSENCIAS POR ID_EMPLEADO.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
@@ -108,7 +123,7 @@ const ausenciasIdGet = async (req = request, res = response) => {
     };
 
     // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
-    const ausencias = await Ausencia.findOne({
+    const ausencias = await Ausencia.findAll({
       where: query,
       include: [
         {
@@ -120,141 +135,170 @@ const ausenciasIdGet = async (req = request, res = response) => {
           model: Permisos,
           as: "permiso",
         },
+        {
+          model: Dias,
+          as: "dia",
+        },
       ],
     });
 
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      ausencias,
+      results: ausencias,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      ok: false,
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
 
 /**
- * OBTIENE UN EMPLEADO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * REGISTRAMOS UNA AUSENCIA EN LA BD.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
-// REGISTRA UN NUEVO EMPLEADO EN LA BASE DE DATOS.
+// REGISTRA UNA NUEVA AUSENCIA EN LA BASE DE DATOS.
 const ausenciasPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
     const { fecha, descripcion, id_empleado, id_permiso } = req.body;
 
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO Y ACTIVO.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER CHEQUEOS DE CIERTA FECHA.
     const query = {
       fecha: fecha,
       fk_cat_empleado: id_empleado,
     };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO REGISTROS PREVIOS DE LA FECHA SOLICITADA.
     const registros = await RegistroChequeo.findOne({
       where: query,
     });
 
     if (registros) {
-      // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
+      // RETORNA LA RESPUESTA CON EL MENSAJE DE QUE SE ENCONTRARON CHEQUEOS ESE DIA Y POR ENDE NO ES POSIBLE LA AUSENCIA.
       return res.status(400).json({
-        ok: true,
+        ok: false,
         msg: "Ausencia no registrada debido a que el empleado ha checado ese dia",
       });
     }
+    const date = new Date(fecha);
+    let dia = date.getDay() + 1;
 
-    // CREA UNA NUEVA PERSONA EN LA BASE DE DATOS.
+    // CREA UNA NUEVA AUSENCIA EN LA BASE DE DATOS.
     const ausencia = await Ausencia.create({
       fecha,
       descripcion,
       fk_cat_empleado: id_empleado,
-      fk_cat_permiso: id_permiso,
+      fk_cat_permiso: 1,
       estatus: 0,
+      fk_cat_dia: dia,
     });
 
-    // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
+    // RETORNA LA RESPUESTA CON LOS DATOS DE LA AUSENCIA CREADA.
     res.status(201).json({
       ok: true,
-      msg: "Ausencia registrada correctamente",
-      ausencia,
+      results: { msg: "Ausencia registrada correctamente", ausencia },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      ok: false,
+      results: { msg: "Ha ocurrido un error, hable con el Administrador." },
     });
   }
 };
 
 /**
- * OBTIENE UN EMPLEADO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * ACTUALIZAMOS UNA AUSENCIA EN ESPECIFICO.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
-// ACTUALIZA LA INFORMACIÓN DE UN EMPLEADO EXISTENTE EN LA BASE DE DATOS.
+// ACTUALIZA LA INFORMACIÓN DE UNA AUSENCIA EXISTENTE EN LA BASE DE DATOS.
 const ausenciasPut = async (req = request, res = response) => {
   try {
-    // OBTIENE EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA Y LOS DATOS ACTUALIZADOS DESDE EL CUERPO DE LA SOLICITUD.
+    // OBTIENE EL ID DE LA AUSENCIA DESDE LOS PARÁMETROS DE RUTA Y LOS DATOS ACTUALIZADOS DESDE EL CUERPO DE LA SOLICITUD.
     const { id } = req.params;
     const { fecha, descripcion, id_empleado, id_permiso, estatus } = req.body;
 
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO Y ACTIVO.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER CHEQUEOS DE CIERTA FECHA.
     const query = {
       fecha: fecha,
       fk_cat_empleado: id_empleado,
-      fk_cat_permiso: id_permiso,
-      estatus,
     };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO REGISTROS PREVIOS DE LA FECHA SOLICITADA.
     const registros = await RegistroChequeo.findOne({
       where: query,
     });
 
     if (registros) {
-      // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO CREADO.
+      // RETORNA LA RESPUESTA CON EL MENSAJE DE QUE SE ENCONTRARON CHEQUEOS ESE DIA Y POR ENDE NO ES POSIBLE LA AUSENCIA.
       return res.status(400).json({
-        ok: true,
+        ok: false,
         msg: "Ausencia no registrada debido a que el empleado ha checado ese dia",
       });
     }
+    const date = new Date(fecha);
+    let dia = date.getDay() + 1;
 
-    // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
+    // VERIFICA SI LA AUSENCIA EXISTE EN LA BASE DE DATOS.
     const ausencia = await Ausencia.findByPk(id, {
-      include: [{ model: Empleado, as: "empleado" }],
+      include: [
+        {
+          model: Empleado,
+          as: "empleado",
+          include: [{ model: Persona, as: "persona" }],
+        },
+        {
+          model: Permisos,
+          as: "permiso",
+        },
+        {
+          model: Dias,
+          as: "dia",
+        },
+      ],
     });
 
-    // ACTUALIZA LOS CAMPOS DIRECTOS DEL MODELO EMPLEADO.
+    // ACTUALIZA LOS CAMPOS DIRECTOS DEL MODELO AUSENCIA.
     ausencia.fecha = fecha;
     ausencia.descripcion = descripcion;
     ausencia.fk_cat_empleado = id_empleado;
+    ausencia.fk_cat_dia = dia;
+    ausencia.fk_cat_permiso = id_permiso;
+    ausencia.estatus = estatus;
 
     // GUARDA LOS CAMBIOS EN LA BASE DE DATOS.
     await ausencia.save();
 
-    // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTUALIZADO.
+    // RETORNA LA RESPUESTA CON LOS DATOS DE LA AUSENCIA ACTUALIZADA.
     res.status(200).json({
       ok: true,
-      msg: "Ausencia actualizado correctamente",
-      ausencia,
+      results: { msg: "Ausencia actualizado correctamente", ausencia },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      ok: false,
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
 
-// Función para registrar la ausencia
+// Función para registrar la ausencia de forma general y de acorde a la fecha del sistema.
 const registrarAusencia = async () => {
   try {
     const fechaActual = new Date().toISOString().slice(0, 10);
@@ -264,25 +308,30 @@ const registrarAusencia = async () => {
     for (let index = 0; index < empleados.length; index++) {
       const empleado = empleados[index];
 
-      // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO Y ACTIVO.
+      // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER CHEQUEOS DE CIERTA FECHA.
       const query = {
         fecha: fechaActual,
-        fk_cat_empleado: empleado[array].id_cat_empleado,
+        fk_cat_empleado: empleado.id_cat_empleado,
       };
 
-      // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EMPLEADO Y SUS RELACIONES.
+      // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO REGISTROS PREVIOS DE LA FECHA SOLICITADA.
       const registros = await RegistroChequeo.findOne({
         where: query,
       });
 
       if (!registros) {
+        const date = new Date(fechaActual);
+        let dia = date.getDay() + 1;
         const ausencia = await Ausencia.create({
           fecha: fechaActual,
           descripcion: "No ha checado entrada y ya paso de las 10:30:00",
-          fk_cat_empleado: empleado[array].id_cat_empleado,
+          fk_cat_empleado: empleado.id_cat_empleado,
+          fk_cat_dia: dia,
+          fk_cat_permiso: 1,
+          estatus: 0,
         });
         console.log(
-          `Ausencia registrada para el empleado ${empleado[index].id_cat_empleado}`
+          `Ausencia registrada para el empleado ${empleado.id_cat_empleado}`
         );
       }
     }

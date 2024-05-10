@@ -6,11 +6,10 @@ const { check } = require("express-validator");
 const { validarCampos } = require("../../middlewares/validar-campos");
 const {
   existeEmpleadoPorId,
-  existeDiaPorId,
   existeEntradaSalidaPorId,
   existeEventoPorId,
   emailExistente,
-  alMenosUnRol,
+  existenEmpleadosPorId,
 } = require("../../helpers/db-validators");
 const {
   registroChequeoGet,
@@ -18,18 +17,35 @@ const {
   notificarNoChequeoPost,
   reportePost,
   reporteEventosYTiempoPost,
+  reporteEventosEmpleadoPost,
 } = require("../../controllers/catalogos/registroChequeo-controller");
+const { tienePermiso } = require("../../middlewares/validar-roles");
+const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
-router.get("/", registroChequeoGet);
+const sub_modulo = "Entradas y salidas";
 
-// DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
+// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CHEQUEOS
+router.get(
+  "/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    validarCampos,
+  ],
+  registroChequeoGet
+);
+
+// DEFINICIÓN DE RUTA PARA GENERAR UN REPORTE DE CHEQUEOS POR EMPLEADO
 router.post(
   "/datos",
   [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
       (value) => {
         return /\d{4}-\d{2}-\d{2}/.test(value);
@@ -38,15 +54,19 @@ router.post(
     check("fecha_fin", "Formato de fecha_fin incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),
+    check("empleados").custom(existenEmpleadosPorId),
     validarCampos,
   ],
   reportePost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
+// DEFINICIÓN DE RUTA PARA GENERAR UN REPORTE DE CHEQUEOS SEGUN EL TIPO ESPECIFICADO
 router.post(
   "/reporte",
   [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
       (value) => {
         return /\d{4}-\d{2}-\d{2}/.test(value);
@@ -63,29 +83,41 @@ router.post(
   reporteEventosYTiempoPost
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA GENERAR EL REPORTE DE EVENTOS POR EMPLEADO
+router.post(
+  "/reporteEmpleado",
+  [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    check("id_empleado").custom(existeEmpleadoPorId),
+    validarCampos,
+  ],
+  reporteEventosEmpleadoPost
+);
+
+// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CHEQUEO
 router.post(
   "/",
   [
-    check("fecha", "Formato de fecha incorrecto").custom((value) => {
-      return /\d{4}-\d{2}-\d{2}/.test(value);
-    }),
-    check("hora", "Formato de hora incorrecto").custom((value) => {
-      return /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(value);
-    }),
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN CHEQUEO
+    validarJWT,
+    tienePermiso("Escribir", sub_modulo),
     check("evento").custom(existeEventoPorId),
     check("id_empleado").custom(existeEmpleadoPorId),
-    check("dia").custom(existeDiaPorId),
     check("entrada_salida").custom(existeEntradaSalidaPorId),
     validarCampos,
   ],
   registroChequeoPost
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA NOTIFICAR AL USUARIO LA FALTA DE CHEQUEO PREVIO
 router.post(
   "/notificar",
   [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Escribir", sub_modulo),
     // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
     check("correo", "El correo es obligatorio").isEmail(),
     check("correo").custom(emailExistente),

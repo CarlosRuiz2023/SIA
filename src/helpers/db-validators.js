@@ -69,11 +69,32 @@ const emailInexiste = async (correo = "", id_cat_usuario = 0) => {
       correo: correo,
     },
   });
+  console.log(usuario);
   if (usuario) {
-    if (usuario.dataValues.id_cat_usuario != `${id_cat_usuario}`) {
-      throw new Error(
-        `El correo ${correo} ya está registrado con otro usuario`
-      );
+    //Verificar si es un empleado o un cliente
+    const empleado = await Empleado.findOne({
+      where: {
+        fk_cat_usuario: usuario.dataValues.id_cat_usuario,
+      },
+    });
+    if (!empleado) {
+      //Verificar si es un empleado o un cliente
+      const cliente = await Cliente.findOne({
+        where: {
+          fk_cat_usuario: usuario.dataValues.id_cat_usuario,
+        },
+      });
+      if (cliente.dataValues.id_cat_cliente != `${id_cat_usuario}`) {
+        throw new Error(
+          `El correo ${correo} ya está registrado con otro usuario`
+        );
+      }
+    } else {
+      if (empleado.dataValues.id_cat_empleado != `${id_cat_usuario}`) {
+        throw new Error(
+          `El correo ${correo} ya está registrado con otro usuario`
+        );
+      }
     }
   }
 };
@@ -203,11 +224,6 @@ const existeEquipoTrabajoPorId = async (id_cat_equipo_trabajo) => {
       `El Equipo de Trabajo con ID ${id_cat_equipo_trabajo} no existe`
     );
   }
-  if (!equipo_trabajo.estatus) {
-    throw new Error(
-      `El Equipo de Trabajo con ID ${id_cat_actividad} fue eliminado`
-    );
-  }
 };
 
 const existeActividadPorId = async (id_cat_actividad) => {
@@ -231,7 +247,7 @@ const existeProyectoPorId = async (id_cat_proyecto) => {
 
 const existeEtapaPorId = async (id_cat_etapa) => {
   // Verificar si la visita existe por su ID
-  const etapa = await Tarea.findByPk(id_cat_etapa);
+  const etapa = await Etapa.findByPk(id_cat_etapa);
   if (!etapa) {
     throw new Error(`La Etapa con ID ${id_cat_etapa} no existe`);
   }
@@ -314,6 +330,35 @@ const existenRolesPorId = async (roles) => {
   }
 };
 
+const existenActividadesPorId = async (actividades) => {
+  let validador = true;
+  let identificador = 0;
+  for (let index = 0; index < actividades.length; index++) {
+    // Verificar si la visita existe por su ID
+    const actividad_encontrada = await Actividades.findByPk(actividades[index]);
+    if (!actividad_encontrada) {
+      identificador = actividades[index];
+      validador = false;
+    }
+  }
+  if (!validador) {
+    throw new Error(`La actividad con ID ${identificador} no existe`);
+  }
+};
+
+/**
+ * Validar colecciones permitidas
+ */
+const coleccionesPermitidas = (coleccion = "", colecciones = []) => {
+  const incluida = colecciones.includes(coleccion);
+  if (!incluida) {
+    throw new Error(
+      `La coleccion ${coleccion} no es permitida, ${colecciones}`
+    );
+  }
+  return true;
+};
+
 module.exports = {
   emailInexiste,
   emailExiste,
@@ -340,4 +385,6 @@ module.exports = {
   existenEtapasPorId,
   existenEmpleadosPorId,
   existenRolesPorId,
+  existenActividadesPorId,
+  coleccionesPermitidas,
 };

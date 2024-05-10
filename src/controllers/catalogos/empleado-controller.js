@@ -47,12 +47,13 @@ const empleadosGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      empleados,
+      results: empleados,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -99,12 +100,13 @@ const empleadoIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      empleado,
+      results: empleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
@@ -114,7 +116,7 @@ const empleadoIdGet = async (req = request, res = response) => {
  * OBTIENE UN EMPLEADO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con empleados tipo JSON.
  */
 // REGISTRA UN NUEVO EMPLEADO EN LA BASE DE DATOS.
 const empleadoPost = async (req = request, res = response) => {
@@ -133,13 +135,12 @@ const empleadoPost = async (req = request, res = response) => {
       fk_cat_tolerancia,
       correo,
       roles,
+      contrasenia,
     } = req.body;
-
-    let { contrasenia } = req.body;
 
     //Encriptar la contraseña
     const salt = bcryptjs.genSaltSync();
-    contrasenia = bcryptjs.hashSync(contrasenia, salt);
+    const contraseniaEncriptada = bcryptjs.hashSync(contrasenia, salt);
 
     // CREA UNA NUEVA PERSONA EN LA BASE DE DATOS.
     const persona = await Persona.create({
@@ -153,13 +154,19 @@ const empleadoPost = async (req = request, res = response) => {
     // CREA UN NUEVO USUARIO EN LA BASE DE DATOS.
     const usuario = await Usuario.create({
       correo,
-      contrasenia,
+      contrasenia: contraseniaEncriptada,
       token: "",
       estatus: 1,
+      contrasenia1: contrasenia,
     });
 
     // LLAMADA A LA FUNCIÓN PARA GENERAR EL NÚMERO DE EMPLEADO.
-    const numeroEmpleado = generarNumeroEmpleado();
+    const numeroEmpleado = generarNumeroEmpleado(
+      nombre,
+      apellido_Paterno,
+      apellido_Materno,
+      fecha_contratacion
+    );
 
     // CREA EL EMPLEADO ASOCIANDO LA PERSONA Y EL USUARIO.
     const empleado = await Empleado.create({
@@ -167,7 +174,7 @@ const empleadoPost = async (req = request, res = response) => {
       sueldo,
       fecha_nacimiento,
       fecha_contratacion,
-      fecha_Retiro: null,
+      fecha_retiro: null,
       estatus: 1,
       fk_cat_persona: persona.id_cat_persona,
       fk_cat_usuario: usuario.id_cat_usuario,
@@ -181,7 +188,7 @@ const empleadoPost = async (req = request, res = response) => {
       roles.map(async (rol) => {
         await DetalleUsuarioRol.create({
           fk_cat_usuario: usuario.id_cat_usuario,
-          fk_cat_rol: rol.id_cat_role,
+          fk_cat_rol: rol,
         });
       })
     );
@@ -190,25 +197,28 @@ const empleadoPost = async (req = request, res = response) => {
     res.status(201).json({
       ok: true,
       msg: "Empleado guardado correctamente",
-      persona,
-      empleado,
-      usuario,
-      roles: roles,
+      results: {
+        persona,
+        empleado,
+        usuario,
+        roles,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
 };
 
 /**
- * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * ACTUALIZA A UN EMPLEADO EN ESPECIFICO Y ACTIVO.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con empleado actualizado JSON.
  */
 // ACTUALIZA LA INFORMACIÓN DE UN EMPLEADO EXISTENTE EN LA BASE DE DATOS.
 const empleadoPut = async (req = request, res = response) => {
@@ -230,6 +240,12 @@ const empleadoPut = async (req = request, res = response) => {
       roles,
     } = req.body;
 
+    let { contrasenia } = req.body;
+
+    //Encriptar la contraseña
+    const salt = bcryptjs.genSaltSync();
+    const contraseniaEncriptada = bcryptjs.hashSync(contrasenia, salt);
+
     // VERIFICA SI EL EMPLEADO EXISTE EN LA BASE DE DATOS.
     const empleadoExistente = await Empleado.findByPk(id, {
       include: [
@@ -238,8 +254,17 @@ const empleadoPut = async (req = request, res = response) => {
       ],
     });
 
+    // LLAMADA A LA FUNCIÓN PARA GENERAR EL NÚMERO DE EMPLEADO.
+    const numeroEmpleado = generarNumeroEmpleado(
+      nombre,
+      apellido_Paterno,
+      apellido_Materno,
+      fecha_contratacion
+    );
+
     // ACTUALIZA LOS CAMPOS DIRECTOS DEL MODELO EMPLEADO.
     empleadoExistente.sueldo = sueldo;
+    empleadoExistente.numero_empleado = numeroEmpleado;
     empleadoExistente.fecha_nacimiento = fecha_nacimiento;
     empleadoExistente.fecha_Contratacion = fecha_contratacion;
     empleadoExistente.fk_cat_puesto_trabajo = fk_cat_puesto_trabajo;
@@ -254,6 +279,8 @@ const empleadoPut = async (req = request, res = response) => {
 
     // ACTUALIZA LOS CAMPOS DEL MODELO USUARIO.
     empleadoExistente.usuario.correo = correo;
+    empleadoExistente.usuario.contrasenia = contraseniaEncriptada;
+    empleadoExistente.usuario.contrasenia1 = contrasenia;
 
     // ELIMINA LOS ROLES ANTIGUOS ASOCIADOS AL USUARIO.
     await DetalleUsuarioRol.destroy({
@@ -265,40 +292,41 @@ const empleadoPut = async (req = request, res = response) => {
       roles.map(async (rol) => {
         await DetalleUsuarioRol.create({
           fk_cat_usuario: empleadoExistente.usuario.id_cat_usuario,
-          fk_cat_rol: rol.id_cat_role,
+          fk_cat_rol: rol,
         });
       })
     );
 
-    // GUARDA LOS CAMBIOS EN LA BASE DE DATOS.
     // GUARDA LOS CAMBIOS EN EL MODELO PERSONA.
     await empleadoExistente.persona.save();
 
     // GUARDA LOS CAMBIOS EN EL MODELO USUARIO.
     await empleadoExistente.usuario.save();
 
+    // GUARDA LOS CAMBIOS EN LA BASE DE DATOS.
     await empleadoExistente.save();
 
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTUALIZADO.
     res.status(200).json({
       ok: true,
       msg: "Empleado actualizado correctamente",
-      empleado: empleadoExistente,
+      results: empleadoExistente,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
 };
 
 /**
- * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * ELIMINACION LOGICA DE UN EMPLEADO DENTRO DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta empleado actualizado JSON.
  */
 // ELIMINA LÓGICAMENTE UN EMPLEADO ESTABLECIENDO SU ESTATUS A 0.
 const empleadoDelete = async (req = request, res = response) => {
@@ -315,26 +343,41 @@ const empleadoDelete = async (req = request, res = response) => {
     // GUARDA EL CAMBIO EN LA BASE DE DATOS.
     await empleadoExistente.save();
 
+    //Verificar si es un empleado o un cliente
+    const usuario = await Usuario.findOne({
+      where: {
+        id_cat_usuario: empleadoExistente.fk_cat_usuario,
+      },
+    });
+
+    // CAMBIAMOS EL ESTATUS DEL USUARIO A 0 PARA ELIMINARLO LÓGICAMENTE.
+    usuario.estatus = 0;
+    await usuario.save();
+
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ELIMINADO.
     res.status(200).json({
       ok: true,
-      msg: "Empleado eliminado correctamente",
-      empleado: empleadoExistente,
+      results: {
+        msg: "Empleado eliminado correctamente",
+        empleadoExistente,
+        usuario,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
 };
 
 /**
- * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * ACTIVACION DE UN EMPLEADO DENTRO DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta empleado actualizado tipo JSON.
  */
 // ACTUALIZA EL ESTATUS DE UN EMPLEADO A 1 PARA "ACTIVARLO".
 const empleadoActivarPut = async (req = request, res = response) => {
@@ -351,16 +394,31 @@ const empleadoActivarPut = async (req = request, res = response) => {
     // GUARDA EL CAMBIO EN LA BASE DE DATOS.
     await empleadoExistente.save();
 
+    //Verificar si es un empleado o un cliente
+    const usuario = await Usuario.findOne({
+      where: {
+        id_cat_usuario: empleadoExistente.fk_cat_usuario,
+      },
+    });
+
+    // CAMBIAMOS EL ESTATUS DEL EMPLADO A 0 PARA ELIMINARLO LÓGICAMENTE.
+    usuario.estatus = 1;
+    await usuario.save();
+
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTIVADO.
     res.status(200).json({
       ok: true,
-      msg: "Empleado activado correctamente",
-      empleado: empleadoExistente,
+      results: {
+        msg: "Empleado activado correctamente",
+        empleadoExistente,
+        usuario,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }

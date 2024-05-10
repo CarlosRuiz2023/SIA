@@ -11,18 +11,33 @@ const {
   bitacoraAccesosPost,
 } = require("../../controllers/catalogos/bitacoraAccesos-controller");
 const { existeEmpleadoPorId } = require("../../helpers/db-validators");
+const { validarJWT } = require("../../middlewares/validar-jwt");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
+const sub_modulo = "Bitacora de accesos";
+
 // DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
-router.post("/datos", bitacoraAccesoGet);
+router.post(
+  "/datos",
+  [
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    validarCampos,
+  ],
+  bitacoraAccesoGet
+);
 
 // DEFINICIÓN DE RUTA PARA AGREGAR DATOS A LA BITÁCORA DE ACCESO
 router.post(
   "/",
   [
     // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    validarJWT,
+    tienePermiso("Escribir", sub_modulo),
     check("fecha_inicio", "Formato de fecha incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),

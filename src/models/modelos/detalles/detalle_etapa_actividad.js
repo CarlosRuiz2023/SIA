@@ -4,7 +4,7 @@ const Etapa = require("../catalogos/etapa");
 const Actividades = require("../catalogos/actividades");
 
 const DetalleEtapaActividad = pool.define(
-  "etapa_actividads",
+  "etapa_actividades",
   {
     id_detalle_etapa_actividad: {
       type: DataTypes.INTEGER,
@@ -26,6 +26,10 @@ const DetalleEtapaActividad = pool.define(
       },
     },
     fecha: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    estatus: {
       type: Sequelize.STRING,
       allowNull: false,
     },

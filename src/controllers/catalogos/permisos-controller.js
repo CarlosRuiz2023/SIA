@@ -1,5 +1,7 @@
 // IMPORTACIÓN DE OBJETOS 'RESPONSE' Y 'REQUEST' DE LA BIBLIOTECA 'EXPRESS'.
 const { response, request } = require("express");
+// IMPORTACIÓN DEL OPERADOR 'Op' DE SEQUELIZE PARA REALIZAR OPERACIONES COMPLEJAS.
+const { Op } = require("sequelize");
 // IMPORTACIÓN DE LOS MODELOS DE BASE DE DATOS.
 const Permisos = require("../../models/modelos/catalogos/permisos");
 const DetallePermisosEmpleado = require("../../models/modelos/detalles/detalle_permisos_empleado");
@@ -30,27 +32,27 @@ const permisoGet = async (req = request, res = response) => {
     // RESPONDE CON UN OBJETO JSON QUE CONTIENE LOS PERMISOS OBTENIDOS.
     res.status(200).json({
       ok: true,
-      permisos,
+      results: permisos,
     });
   } catch (error) {
     // MANEJO DE ERRORES: IMPRIME EL ERROR EN LA CONSOLA Y RESPONDE CON UN ERROR HTTP 500.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "HA OCURRIDO UN ERROR, HABLE CON EL ADMINISTRADOR.",
-      err: error,
     });
   }
 };
 
 /**
- * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
+ * OBTIENE TODOS LOS PERMISOS ACTIVOS DE LA BASE DE DATOS POR EMPLEADO.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con permisos por empleado tipo JSON.
  */
 const permisosGet = async (req = request, res = response) => {
   try {
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO PERMISOS CON SU RESPECTIVO EMPLEADO.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findAll({
       include: [
         {
@@ -78,34 +80,35 @@ const permisosGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      detallePermisosEmpleado,
+      results: detallePermisosEmpleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
 };
 
 /**
- * OBTIENE UN CLIENTE ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * OBTIENE UN PERMISO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con permiso tipo JSON.
  */
 const permisoIdGet = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DEL DETALLE_PERMISO_EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN PERMISO ESPECÍFICO Y ACTIVO.
     const query = {
       id_detalle_permisos_empleado: id,
     };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN PERMISO Y SUS RELACIONES.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findAll({
       where: query,
       include: [
@@ -114,7 +117,7 @@ const permisoIdGet = async (req = request, res = response) => {
       ],
     });
 
-    // SI NO SE ENCUENTRA EL CLIENTE, SE RETORNA UNA RESPUESTA DE ERROR.
+    // SI NO SE ENCUENTRA PERMISO ALGUNO, SE RETORNA UNA RESPUESTA DE ERROR.
     if (!detallePermisosEmpleado) {
       return res.status(404).json({
         ok: false,
@@ -125,34 +128,35 @@ const permisoIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      detallePermisosEmpleado,
+      results: detallePermisosEmpleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
 };
 
 /**
- * OBTIENE UN CLIENTE ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * OBTIENE UN PERMISO ESPECÍFICO POR SU ID DEL EMPLEADO.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
 const permisosIdGet = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO.
     const query = {
       fk_cat_empleado: id,
     };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO DETALLE_PERMISO_EMPLEADO.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findAll({
       include: [
         { model: Empleado, as: "empleado" },
@@ -160,7 +164,7 @@ const permisosIdGet = async (req = request, res = response) => {
       ],
     });
 
-    // SI NO SE ENCUENTRA EL CLIENTE, SE RETORNA UNA RESPUESTA DE ERROR.
+    // SI NO SE ENCUENTRA DETALLE_PERMISO_EMPLEADO ALGUNO, SE RETORNA UNA RESPUESTA DE ERROR.
     if (!detallePermisosEmpleado) {
       return res.status(404).json({
         ok: false,
@@ -171,32 +175,32 @@ const permisosIdGet = async (req = request, res = response) => {
     // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
     res.status(200).json({
       ok: true,
-      detallePermisosEmpleado,
+      results: detallePermisosEmpleado,
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
+      ok: false,
       msg: "Ha ocurrido un error, hable con el Administrador.",
     });
   }
 };
 
 /**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
+ * REGISTRA UN NUEVO PERMISO EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con permiso tipo JSON.
  */
 const permisoPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
     const {
-      fecha_inicio,
+      fecha_permiso,
       tiempo_horas,
       id_cat_empleado,
       id_cat_permiso,
-      fecha_fin,
       detalle = "",
     } = req.body;
 
@@ -205,14 +209,54 @@ const permisoPost = async (req = request, res = response) => {
     const fecha_solicitada = date.toISOString().slice(0, 10);
     const hora_solicitada = date.toTimeString().slice(0, 8);
 
-    // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+    // Verificar si hay permisos existentes en los últimos 3 días hábiles
+    const tresDiasExtras = new Date(fecha_permiso);
+    tresDiasExtras.setDate(tresDiasExtras.getDate() + 3);
+
+    const existenPermisosAnteriores = await DetallePermisosEmpleado.findOne({
+      where: {
+        fk_cat_empleado: id_cat_empleado,
+        fecha_permiso: {
+          [Op.gte]: fecha_permiso,
+          [Op.lte]: tresDiasExtras,
+        },
+      },
+    });
+
+    if (existenPermisosAnteriores) {
+      // Hay permisos existentes en los últimos 3 días hábiles
+      return res.status(400).json({
+        ok: false,
+        results: {
+          msg: "No se puede completar el permiso. Ya hay permisos en los últimos 3 días hábiles.",
+        },
+      });
+    }
+
+    const existenPermisosAnteriores1 = await DetallePermisosEmpleado.findOne({
+      where: {
+        fk_cat_empleado: id_cat_empleado,
+        estatus: 3,
+      },
+    });
+
+    if (existenPermisosAnteriores1) {
+      // Hay permisos existentes en los últimos 3 días hábiles que no han sido recuperados.
+      return res.status(400).json({
+        ok: false,
+        results: {
+          msg: "No se puede completar el permiso. Debido a que no se ha recuperado un permiso concedido.",
+        },
+      });
+    }
+
+    // CREAMOS UNA NUEVO DETALLE_PERMISO_EMPLEADO EN LA BASE DE DATOS.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.create({
-      fecha_inicio,
+      fecha_permiso,
       tiempo_horas,
       estatus: 1,
       fk_cat_empleado: id_cat_empleado,
       fk_cat_permiso: id_cat_permiso,
-      fecha_fin,
       detalle,
       fecha_solicitada: fecha_solicitada,
       hora_solicitada: hora_solicitada,
@@ -221,56 +265,63 @@ const permisoPost = async (req = request, res = response) => {
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DEL REGISTRO.
     res.status(201).json({
       ok: true,
-      msg: "Permiso del empleado registrado correctamente",
-      detallePermisosEmpleado,
+      results: {
+        msg: "Permiso del empleado registrado correctamente",
+        detallePermisosEmpleado,
+      },
     });
   } catch (error) {
     // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      ok: false,
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };
 
 /**
- * ACTUALIZA LA INFORMACIÓN DE UN CLIENTE EXISTENTE EN LA BASE DE DATOS.
+ * ACTUALIZA LA INFORMACIÓN DE UN PERMISO EXISTENTE EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta y cuerpo.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con permiso tipo JSON.
  */
 const permisoPut = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DEL PERMISO DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // EXTRAEMOS LOS DATOS DEL CUERPO DE LA SOLICITUD.
-    const {
-      fecha_inicio,
-      tiempo_horas,
-      estatus,
-      id_cat_permiso,
-      fecha_fin,
-      detalle = "",
-    } = req.body;
+    const { estatus, id_cat_permiso, detalle = "" } = req.body;
 
-    // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
+    // OBTENEMOS EL DETALLE_PERMISO_EMPLEADO EXISTENTE Y SUS RELACIONES.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findByPk(id);
 
-    // SI NO SE ENCUENTRA EL CLIENTE, SE RETORNA UNA RESPUESTA DE ERROR.
+    // SI NO SE ENCUENTRA EL DETALLE_PERMISO_EMPLEADO, SE RETORNA UNA RESPUESTA DE ERROR.
     if (!detallePermisosEmpleado) {
       return res.status(404).json({
         ok: false,
-        msg: "Permiso no encontrado",
+        results: {
+          msg: "Permiso no encontrado",
+        },
       });
     }
 
-    // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
-    detallePermisosEmpleado.fecha_inicio = fecha_inicio;
-    detallePermisosEmpleado.tiempo_horas = tiempo_horas;
+    const date = new Date();
+
+    const fecha_reposicion = date.toISOString().slice(0, 10);
+
+    if (estatus === 4) {
+      detallePermisosEmpleado.fecha_reposicion = fecha_reposicion;
+    } else {
+      detallePermisosEmpleado.fecha_reposicion = null;
+    }
+
+    // ACTUALIZAMOS LA INFORMACIÓN DEL DETALLE_PERMISO_EMPLEADO.
     detallePermisosEmpleado.estatus = estatus;
     detallePermisosEmpleado.fk_cat_permiso = id_cat_permiso;
-    detallePermisosEmpleado.fecha_fin = fecha_fin;
     detallePermisosEmpleado.detalle = detalle;
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
@@ -280,13 +331,16 @@ const permisoPut = async (req = request, res = response) => {
     res.status(200).json({
       ok: true,
       msg: "Permiso del empleado actualizado correctamente",
-      detallePermisosEmpleado,
+      results: detallePermisosEmpleado,
     });
   } catch (error) {
-    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    // MANEJO s ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
-      msg: "Ha ocurrido un error, hable con el Administrador.",
+      ok: false,
+      results: {
+        msg: "Ha ocurrido un error, hable con el Administrador.",
+      },
     });
   }
 };

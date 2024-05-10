@@ -1,16 +1,46 @@
 // IMPORTACIÓN DEL OBJETO 'ROUTER' DE LA BIBLIOTECA 'EXPRESS'
 const { Router } = require("express");
+const { check } = require("express-validator");
 
 // IMPORTACIÓN DEL CONTROLADOR NECESARIO
 const {
-  entradaSalidaGet,
+  reporteEntradasSalidasPost,
+  entradaSalidaPost,
 } = require("../../controllers/catalogos/entradaSalida-controller");
+const { validarCampos } = require("../../middlewares/validar-campos");
+const { existenEmpleadosPorId } = require("../../helpers/db-validators");
+const { validarJWT } = require("../../middlewares/validar-jwt");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
-// DEFINICIÓN DE RUTA PARA OBTENER LAS TOLERANCIAS
-router.get("/", entradaSalidaGet);
+const sub_modulo = "Entradas y salidas";
+
+// DEFINICIÓN DE RUTA PARA OBTENER LAS ENTRADAS-SALIDAS
+router.post(
+  "/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    check("empleados").custom(existenEmpleadosPorId),
+    validarCampos,
+  ],
+  entradaSalidaPost
+);
+
+// DEFINICIÓN DE RUTA PARA GENERAR REPORTE DE ENTRADAS-SALIDAS
+router.post(
+  "/datos",
+  [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    validarCampos,
+  ],
+  reporteEntradasSalidasPost
+);
 
 // EXPORTACIÓN DEL ENRUTADOR
 module.exports = router;

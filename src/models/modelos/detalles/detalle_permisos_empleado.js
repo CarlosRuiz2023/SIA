@@ -13,7 +13,7 @@ const DetallePermisosEmpleado = pool.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    fecha_inicio: {
+    fecha_permiso: {
       type: Sequelize.DATE,
     },
     tiempo_horas: {
@@ -36,9 +36,6 @@ const DetallePermisosEmpleado = pool.define(
         key: "id_cat_permiso",
       },
     },
-    fecha_fin: {
-      type: Sequelize.DATE,
-    },
     detalle: {
       type: Sequelize.STRING,
     },
@@ -47,6 +44,9 @@ const DetallePermisosEmpleado = pool.define(
     },
     hora_solicitada: {
       type: Sequelize.STRING,
+    },
+    fecha_reposicion: {
+      type: Sequelize.DATE,
     },
   },
   {

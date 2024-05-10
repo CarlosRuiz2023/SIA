@@ -16,18 +16,33 @@ const {
   existeEmpleadoPorId,
   existePermisoPorId,
 } = require("../../helpers/db-validators");
+const { tienePermiso } = require("../../middlewares/validar-roles");
+const { validarJWT } = require("../../middlewares/validar-jwt");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
-router.get("/", ausenciasGet);
+const sub_modulo = "Ausencias";
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA OBTENER TODAS LAS AUSENCIAS
+router.get(
+  "/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO AL SERVICIO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    validarCampos,
+  ],
+  ausenciasGet
+);
+
+// DEFINICIÓN DE RUTA PARA AGREGAR UNA AUSENCIA
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UNA AUSENCIA
+    validarJWT,
+    tienePermiso("Escribir", sub_modulo),
     check("fecha", "Formato de fecha incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),
@@ -39,25 +54,39 @@ router.post(
   ausenciasPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UNA AUSENCIA POR ID
 router.get(
   "/:id",
-  [check("id").custom(existeAusenciaPorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    check("id").custom(existeAusenciaPorId),
+    validarCampos,
+  ],
   ausenciaIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER AUSENCIAS POR EMPLEADO
 router.get(
   "/empleado/:id",
-  [check("id").custom(existeEmpleadoPorId), validarCampos],
+  [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    check("id").custom(existeEmpleadoPorId),
+    validarCampos,
+  ],
   ausenciasIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UNA AUSENCIA POR ID
 router.put(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTUALIZAR UNA AUSENCIA
+    validarJWT,
+    tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeAusenciaPorId),
     check("fecha", "Formato de fecha incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);

@@ -19,40 +19,66 @@ const {
   existePermisoEmpleadoPorId,
   existeEmpleadoPorId,
 } = require("../../helpers/db-validators");
+const { validarJWT } = require("../../middlewares/validar-jwt");
+const { tienePermiso } = require("../../middlewares/validar-roles");
 
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
+const sub_modulo = "Permisos";
+
 // DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS PERMISOS
-router.get("/", permisoGet);
+router.get(
+  "/",
+  [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    validarCampos,
+  ],
+  permisoGet
+);
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
-router.get("/solicitados", permisosGet);
+// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS PERMISOS SOLICITADOS
+router.get(
+  "/solicitados",
+  [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
+    validarCampos,
+  ],
+  permisosGet
+);
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO PERMISO
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
-    check("fecha_inicio", "Formato de fecha incorrecto").custom((value) => {
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Escribir", sub_modulo),
+    check("fecha_permiso", "Formato de fecha incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),
-    check("tiempo_horas", "El tiempo_horas debe ser un numero.").isNumeric(),
+    check("tiempo_horas", "El tiempo_horas debe ser un numero entre 1 y 4")
+      .isNumeric()
+      .isInt({ min: 1, max: 4 }),
     check("id_cat_empleado").custom(existeEmpleadoPorId),
     check("id_cat_permiso").custom(existePermisoPorId),
-    check("fecha_fin", "Formato de fecha incorrecto").custom((value) => {
-      return /\d{4}-\d{2}-\d{2}/.test(value);
-    }),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],
   permisoPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UN PERMISO POR ID
 router.get(
   "/:id",
   [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existePermisoEmpleadoPorId),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
@@ -60,10 +86,13 @@ router.get(
   permisoIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UN PERMISO POR ID
 router.get(
   "/solicitados/:id",
   [
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Leer", sub_modulo),
     check("id").custom(existeEmpleadoPorId),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
@@ -71,22 +100,17 @@ router.get(
   permisosIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN PERMISO POR ID
 router.put(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
-    check("fecha_inicio", "Formato de fecha incorrecto").custom((value) => {
-      return /\d{4}-\d{2}-\d{2}/.test(value);
-    }),
-    check("tiempo_horas", "El tiempo_horas debe ser un numero.").isNumeric(),
-    check("estatus", "El estatus debe ser un numero entre 0 y 2")
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    validarJWT,
+    tienePermiso("Modificar", sub_modulo),
+    check("estatus", "El estatus debe ser un numero entre 0 y 4")
       .isNumeric()
-      .isInt({ min: 0, max: 2 }),
+      .isInt({ min: 0, max: 4 }),
     check("id_cat_permiso").custom(existePermisoPorId),
-    check("fecha_fin", "Formato de fecha incorrecto").custom((value) => {
-      return /\d{4}-\d{2}-\d{2}/.test(value);
-    }),
     // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],

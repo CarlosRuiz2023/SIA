@@ -1,5 +1,10 @@
 // FUNCION PARA GENERAR EL NÚMERO DE EMPLEADO.
-const generarNumeroEmpleado = () => {
+const generarNumeroEmpleado = (
+  nombre,
+  apellido_Paterno,
+  apellido_Materno,
+  fecha_contratacion
+) => {
   const primerLetra = nombre.charAt(0);
   const segundaLetra = apellido_Paterno.charAt(0);
   let terceraLetra = apellido_Materno;

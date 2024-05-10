@@ -10,9 +10,21 @@ function restarHoras(hora1, hora2) {
   var m2 = parseInt(partsHora2[1]);
   var s2 = parseInt(partsHora2[2]);
 
-  var h = h1 - h2;
-  var m = m1 - m2;
-  var s = s1 - s2;
+  if (h2 > 0) {
+    var h = h1 - h2;
+  } else {
+    var h = h1;
+  }
+  if (m2 > 0) {
+    var m = m1 - m2;
+  } else {
+    var m = m1;
+  }
+  if (s2 > 0) {
+    var s = s1 - s2;
+  } else {
+    var s = s1;
+  }
 
   if (s < 0) {
     s += 60;
@@ -44,9 +56,21 @@ function sumarHoras(hora1, hora2) {
   var m2 = parseInt(partsHora2[1]);
   var s2 = parseInt(partsHora2[2]);
 
-  var h = h1 + h2;
-  var m = m1 + m2;
-  var s = s1 + s2;
+  if (h2 > 0) {
+    var h = h1 + h2;
+  } else {
+    var h = h1;
+  }
+  if (m2 > 0) {
+    var m = m1 + m2;
+  } else {
+    var m = m1;
+  }
+  if (s2 > 0) {
+    var s = s1 + s2;
+  } else {
+    var s = s1;
+  }
 
   if (s >= 60) {
     s -= 60;

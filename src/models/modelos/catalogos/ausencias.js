@@ -3,6 +3,7 @@ const pool = require("../../../database/config");
 
 const Empleado = require("../catalogos/empleado");
 const Permisos = require("./permisos");
+const Dias = require("./dias");
 
 const Ausencia = pool.define(
   "cat_ausencias",
@@ -36,6 +37,13 @@ const Ausencia = pool.define(
       type: Sequelize.INTEGER,
       allowNull: false,
     },
+    fk_cat_dia: {
+      type: Sequelize.INTEGER,
+      references: {
+        model: Dias,
+        key: "id_cat_dias",
+      },
+    },
   },
   {
     timestamps: false,
@@ -44,5 +52,6 @@ const Ausencia = pool.define(
 
 Ausencia.belongsTo(Empleado, { foreignKey: "fk_cat_empleado", as: "empleado" });
 Ausencia.belongsTo(Permisos, { foreignKey: "fk_cat_permiso", as: "permiso" });
+Ausencia.belongsTo(Dias, { foreignKey: "fk_cat_dia", as: "dia" });
 
 module.exports = Ausencia;
