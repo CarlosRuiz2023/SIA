@@ -24,11 +24,11 @@ const { validarJWT } = require("../../middlewares/validar-jwt");
 const router = Router();
 const sub_modulo = "Reportes de actividades";
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
+// DEFINICIÓN DE RUTA PARA OBTENER TODAS LAS ACTIVIDADES
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA OBTENER ACTIVIDADES
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,
@@ -36,11 +36,11 @@ router.get(
   actividadesGet
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA AGREGAR UNA NUEVA ACTIVIDAD
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UNA ACTIVIDAD
     validarJWT,
     tienePermiso("Escribir", sub_modulo),
     check("actividad_nombre", "La actividad_nombre es obligatoria")
@@ -53,11 +53,11 @@ router.post(
   actividadesPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UNA ACTIVIDAD POR ID
 router.get(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA OBTENER LA ACTIVIDAD
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id").custom(existeActividadPorId),
@@ -66,11 +66,11 @@ router.get(
   actividadIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UNA ACTIVIDAD POR ID
 router.put(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTUALIZAR UNA ACTIVIDAD
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeActividadPorId),
@@ -84,11 +84,11 @@ router.put(
   actividadPut
 );
 
-// DEFINICIÓN DE RUTA PARA ELIMINAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ELIMINAR UNA ACTIVIDAD POR ID
 router.delete(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ELIMINAR UNA ACTIVIDAD
     validarJWT,
     tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeActividadPorId),
@@ -97,11 +97,11 @@ router.delete(
   actividadDelete
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA GENERAR REPORTE DE ACTIVIDADES HTML
 router.post(
   "/reporte/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
@@ -121,11 +121,11 @@ router.post(
   reporteActividadesPost
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA GENERAR UN REPORTE DE ACTIVIDADES PDF
 router.post(
   "/reportePdf/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(

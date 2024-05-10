@@ -17,11 +17,11 @@ const router = Router();
 
 const sub_modulo = "Entradas y salidas";
 
-// DEFINICIÓN DE RUTA PARA OBTENER LAS TOLERANCIAS
+// DEFINICIÓN DE RUTA PARA OBTENER LAS ENTRADAS-SALIDAS
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("empleados").custom(existenEmpleadosPorId),
@@ -30,11 +30,11 @@ router.post(
   entradaSalidaPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
+// DEFINICIÓN DE RUTA PARA GENERAR REPORTE DE ENTRADAS-SALIDAS
 router.post(
   "/datos",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,

@@ -25,11 +25,11 @@ const router = Router();
 
 const sub_modulo = "Reportes de actividades";
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
+// DEFINICIÓN DE RUTA PARA OBTENER TODAS LAS ETAPAS
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,
@@ -37,11 +37,11 @@ router.get(
   etapasGet
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA AGREGAR UNA NUEVA ETAPA
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UNA ETAPA
     validarJWT,
     tienePermiso("Escribir", sub_modulo),
     check("etapa_nombre", "La actividad_nombre es obligatoria").not().isEmpty(),
@@ -51,11 +51,11 @@ router.post(
   etapasPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UNA ETAPA POR ID
 router.get(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id").custom(existeEtapaPorId),
@@ -64,11 +64,11 @@ router.get(
   etapaIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UNA ETAPA POR ID
 router.put(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UNA ETAPA
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeEtapaPorId),
@@ -79,11 +79,11 @@ router.put(
   etapaPut
 );
 
-// DEFINICIÓN DE RUTA PARA ELIMINAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ELIMINAR UNA ETAPA POR ID
 router.delete(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ELIMINAR UNA ETAPA
     validarJWT,
     tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeEtapaPorId),
@@ -92,11 +92,11 @@ router.delete(
   etapaDelete
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA ASIGNAR ACTIVIDADES A CIERTA ETAPA
 router.post(
   "/actividades",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id_etapa").custom(existeEtapaPorId),

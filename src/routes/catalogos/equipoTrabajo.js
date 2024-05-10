@@ -24,11 +24,11 @@ const router = Router();
 
 const sub_modulo = "Equipos de trabajo";
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
+// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS EQUIPOS DE TRABAJO
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE OBTENER EQUIPOS DE TRABAJO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,
@@ -36,11 +36,11 @@ router.get(
   equipoTrabajoGet
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO EQUIPO DE TRABAJO
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN EQUIPO DE TRABAJO
     validarJWT,
     tienePermiso("Escribir", sub_modulo),
     check("equipo_trabajo", "El Equipo Trabajo es obligatorio").not().isEmpty(),
@@ -50,11 +50,11 @@ router.post(
   equipoTrabajoPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UN EQUIPO DE TRABAJO POR ID
 router.get(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id").custom(existeEquipoTrabajoPorId),
@@ -63,11 +63,11 @@ router.get(
   equipoTrabajoIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN EQUIPO DE TRABAJO POR ID
 router.put(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTUALIZAR UN EQUIPO DE TRABAJO
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("equipo_trabajo", "El Equipo Trabajo es obligatorio").not().isEmpty(),
@@ -78,11 +78,11 @@ router.put(
   equipoTrabajoPut
 );
 
-// DEFINICIÓN DE RUTA PARA ELIMINAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ELIMINAR UN EQUIPO DE TRABAJO POR ID
 router.delete(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ELIMINAR UN EQUIPO DE TRABAJO
     validarJWT,
     tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeEquipoTrabajoPorId),
@@ -91,11 +91,11 @@ router.delete(
   equipoTrabajoDelete
 );
 
-// DEFINICIÓN DE RUTA PARA ACTIVAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ACTIVAR UN EQUIPO DE TRABAJO POR ID
 router.put(
   "/activar/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTIVAR UN EQUIPO DE TRABAJO
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeEquipoTrabajoPorId),

@@ -14,7 +14,7 @@ const router = Router();
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
   ],
   toleranciaGet

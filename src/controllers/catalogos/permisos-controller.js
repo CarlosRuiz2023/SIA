@@ -45,14 +45,14 @@ const permisoGet = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
+ * OBTIENE TODOS LOS PERMISOS ACTIVOS DE LA BASE DE DATOS POR EMPLEADO.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con permisos por empleado tipo JSON.
  */
 const permisosGet = async (req = request, res = response) => {
   try {
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO PERMISOS CON SU RESPECTIVO EMPLEADO.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findAll({
       include: [
         {
@@ -93,22 +93,22 @@ const permisosGet = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE UN CLIENTE ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * OBTIENE UN PERMISO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con permiso tipo JSON.
  */
 const permisoIdGet = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DEL DETALLE_PERMISO_EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN PERMISO ESPECÍFICO Y ACTIVO.
     const query = {
       id_detalle_permisos_empleado: id,
     };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN PERMISO Y SUS RELACIONES.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findAll({
       where: query,
       include: [
@@ -117,7 +117,7 @@ const permisoIdGet = async (req = request, res = response) => {
       ],
     });
 
-    // SI NO SE ENCUENTRA EL CLIENTE, SE RETORNA UNA RESPUESTA DE ERROR.
+    // SI NO SE ENCUENTRA PERMISO ALGUNO, SE RETORNA UNA RESPUESTA DE ERROR.
     if (!detallePermisosEmpleado) {
       return res.status(404).json({
         ok: false,
@@ -141,22 +141,22 @@ const permisoIdGet = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE UN CLIENTE ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * OBTIENE UN PERMISO ESPECÍFICO POR SU ID DEL EMPLEADO.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
 const permisosIdGet = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DEL EMPLEADO DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN EMPLEADO ESPECÍFICO.
     const query = {
       fk_cat_empleado: id,
     };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO DETALLE_PERMISO_EMPLEADO.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findAll({
       include: [
         { model: Empleado, as: "empleado" },
@@ -164,7 +164,7 @@ const permisosIdGet = async (req = request, res = response) => {
       ],
     });
 
-    // SI NO SE ENCUENTRA EL CLIENTE, SE RETORNA UNA RESPUESTA DE ERROR.
+    // SI NO SE ENCUENTRA DETALLE_PERMISO_EMPLEADO ALGUNO, SE RETORNA UNA RESPUESTA DE ERROR.
     if (!detallePermisosEmpleado) {
       return res.status(404).json({
         ok: false,
@@ -188,10 +188,10 @@ const permisosIdGet = async (req = request, res = response) => {
 };
 
 /**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
+ * REGISTRA UN NUEVO PERMISO EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con permiso tipo JSON.
  */
 const permisoPost = async (req = request, res = response) => {
   try {
@@ -241,7 +241,7 @@ const permisoPost = async (req = request, res = response) => {
     });
 
     if (existenPermisosAnteriores1) {
-      // Hay permisos existentes en los últimos 3 días hábiles
+      // Hay permisos existentes en los últimos 3 días hábiles que no han sido recuperados.
       return res.status(400).json({
         ok: false,
         results: {
@@ -250,7 +250,7 @@ const permisoPost = async (req = request, res = response) => {
       });
     }
 
-    // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+    // CREAMOS UNA NUEVO DETALLE_PERMISO_EMPLEADO EN LA BASE DE DATOS.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.create({
       fecha_permiso,
       tiempo_horas,
@@ -283,23 +283,23 @@ const permisoPost = async (req = request, res = response) => {
 };
 
 /**
- * ACTUALIZA LA INFORMACIÓN DE UN CLIENTE EXISTENTE EN LA BASE DE DATOS.
+ * ACTUALIZA LA INFORMACIÓN DE UN PERMISO EXISTENTE EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta y cuerpo.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con permiso tipo JSON.
  */
 const permisoPut = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DEL PERMISO DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // EXTRAEMOS LOS DATOS DEL CUERPO DE LA SOLICITUD.
     const { estatus, id_cat_permiso, detalle = "" } = req.body;
 
-    // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
+    // OBTENEMOS EL DETALLE_PERMISO_EMPLEADO EXISTENTE Y SUS RELACIONES.
     const detallePermisosEmpleado = await DetallePermisosEmpleado.findByPk(id);
 
-    // SI NO SE ENCUENTRA EL CLIENTE, SE RETORNA UNA RESPUESTA DE ERROR.
+    // SI NO SE ENCUENTRA EL DETALLE_PERMISO_EMPLEADO, SE RETORNA UNA RESPUESTA DE ERROR.
     if (!detallePermisosEmpleado) {
       return res.status(404).json({
         ok: false,
@@ -319,7 +319,7 @@ const permisoPut = async (req = request, res = response) => {
       detallePermisosEmpleado.fecha_reposicion = null;
     }
 
-    // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
+    // ACTUALIZAMOS LA INFORMACIÓN DEL DETALLE_PERMISO_EMPLEADO.
     detallePermisosEmpleado.estatus = estatus;
     detallePermisosEmpleado.fk_cat_permiso = id_cat_permiso;
     detallePermisosEmpleado.detalle = detalle;
@@ -334,7 +334,7 @@ const permisoPut = async (req = request, res = response) => {
       results: detallePermisosEmpleado,
     });
   } catch (error) {
-    // MANEJO DE ERRORES, IMPRIMIMOS EL ERROR EN LA CONSOLA Y ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
+    // MANEJO s ENVIAMOS UNA RESPUESTA DE ERROR AL CLIENTE.
     console.log(error);
     res.status(500).json({
       ok: false,

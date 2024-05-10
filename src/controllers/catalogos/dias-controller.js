@@ -9,18 +9,18 @@ const Dias = require("../../models/modelos/catalogos/dias");
  * @function diasGet
  * @param {request} req - OBJETO DE SOLICITUD HTTP.
  * @param {response} res - OBJETO DE RESPUESTA HTTP.
- * @returns {Object} RESPUESTA JSON CON LAS TOLERANCIAS ACTIVAS OBTENIDAS.
+ * @returns {Object} RESPUESTA JSON CON LOS DIAS ACTIVOS OBTENIDOS.
  */
 const diasGet = async (req = request, res = response) => {
   try {
-    // DEFINE EL CRITERIO DE BÚSQUEDA PARA TOLERANCIAS ACTIVAS.
+    // DEFINE EL CRITERIO DE BÚSQUEDA PARA DIAS ACTIVOS.
     const query = { estatus: 1 };
-    // REALIZA LA CONSULTA A LA BASE DE DATOS PARA OBTENER LAS TOLERANCIAS ACTIVAS.
+    // REALIZA LA CONSULTA A LA BASE DE DATOS PARA OBTENER LOS DIAS ACTIVOS.
     const dias = await Dias.findAll({
       where: query,
     });
 
-    // RESPONDE CON UN OBJETO JSON QUE CONTIENE LAS TOLERANCIAS ACTIVAS OBTENIDAS.
+    // RESPONDE CON UN OBJETO JSON QUE CONTIENE LOS DIAS ACTIVOS OBTENIDOS.
     res.status(200).json({
       ok: true,
       results: dias,

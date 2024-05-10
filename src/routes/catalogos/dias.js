@@ -9,11 +9,11 @@ const { validarCampos } = require("../../middlewares/validar-campos");
 // CREACIÓN DEL ENRUTADOR
 const router = Router();
 
-// DEFINICIÓN DE RUTA PARA OBTENER LAS TOLERANCIAS
+// DEFINICIÓN DE RUTA PARA OBTENER LOS DIAS LABORALES REGISTRADOS
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     validarCampos,
   ],

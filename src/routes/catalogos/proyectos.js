@@ -26,11 +26,11 @@ const router = Router();
 
 const sub_modulo = "Reportes de actividades";
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
+// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS PROYECTOS
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     // MIDDLEWARE PARA VALIDAR CAMPOS
@@ -39,11 +39,11 @@ router.get(
   proyectosGet
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO PROYECTO
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN PROYECTO
     validarJWT,
     tienePermiso("Escribir", sub_modulo),
     check("proyecto_nombre", "El proyecto_nombre es obligatorio")
@@ -67,11 +67,11 @@ router.post(
   proyectosPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UN PROYECTO POR ID
 router.get(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id").custom(existeProyectoPorId),
@@ -81,11 +81,11 @@ router.get(
   proyectoIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN PROYECTO POR ID
 router.put(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTUALIZAR UN PROYECTO
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeProyectoPorId),
@@ -111,11 +111,11 @@ router.put(
   proyectoPut
 );
 
-// DEFINICIÓN DE RUTA PARA ELIMINAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ELIMINAR UN PROYECTO POR ID
 router.delete(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ELIMINAR UN PROYECTO
     validarJWT,
     tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeProyectoPorId),
@@ -124,11 +124,11 @@ router.delete(
   proyectoDelete
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ASIGNAR EQUIPOS DE TRABAJO A UN PROYECTO
 router.post(
   "/equipoTrabajo",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id_proyecto").custom(existeProyectoPorId),
@@ -138,11 +138,11 @@ router.post(
   proyectoEquipoTrabajoPost
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ASIGNAR ETAPAS A UN PROYECTO
 router.post(
   "/etapas",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id_proyecto").custom(existeProyectoPorId),

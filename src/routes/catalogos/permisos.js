@@ -31,7 +31,7 @@ const sub_modulo = "Permisos";
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,
@@ -39,11 +39,11 @@ router.get(
   permisoGet
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
+// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS PERMISOS SOLICITADOS
 router.get(
   "/solicitados",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,
@@ -51,11 +51,11 @@ router.get(
   permisosGet
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO PERMISO
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Escribir", sub_modulo),
     check("fecha_permiso", "Formato de fecha incorrecto").custom((value) => {
@@ -72,11 +72,11 @@ router.post(
   permisoPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UN PERMISO POR ID
 router.get(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id").custom(existePermisoEmpleadoPorId),
@@ -86,11 +86,11 @@ router.get(
   permisoIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UN PERMISO POR ID
 router.get(
   "/solicitados/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id").custom(existeEmpleadoPorId),
@@ -100,11 +100,11 @@ router.get(
   permisosIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN PERMISO POR ID
 router.put(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("estatus", "El estatus debe ser un numero entre 0 y 4")

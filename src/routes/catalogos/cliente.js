@@ -28,7 +28,7 @@ const sub_modulo = "Lista de clientes";
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,
@@ -40,7 +40,7 @@ router.get(
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN CLIENTE
     validarJWT,
     tienePermiso("Escribir", sub_modulo),
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
@@ -63,7 +63,7 @@ router.post(
 router.get(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id").custom(existeClientePorId),
@@ -76,7 +76,7 @@ router.get(
 router.put(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTUALIZAR UN CLIENTE
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeClientePorId),
@@ -103,7 +103,7 @@ router.put(
 router.delete(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ELIMINAR CLIENTE
     validarJWT,
     tienePermiso("Eliminar", sub_modulo),
     check("id").custom(existeClientePorId),
@@ -116,7 +116,7 @@ router.delete(
 router.put(
   "/activar/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTIVAR UN CLIENTE
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeClientePorId),

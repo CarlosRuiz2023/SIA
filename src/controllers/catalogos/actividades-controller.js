@@ -22,17 +22,17 @@ const Cliente = require("../../models/modelos/catalogos/cliente");
 const Persona = require("../../models/modelos/catalogos/persona");
 
 /**
- * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
+ * OBTIENE TODOS LAS ACTIVIDADES ACTIVAS DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
 const actividadesGet = async (req = request, res = response) => {
   try {
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER CLIENTES ACTIVOS.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER ACTIVIDADES ACTIVAS.
     const query = { estatus: 1 };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO ACTIVIDADES Y SUS RELACIONES.
     const actividades = await Actividades.findAll({
       where: query,
     });
@@ -53,23 +53,23 @@ const actividadesGet = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE UN CLIENTE ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * OBTIENE UNA ACTIVIDAD ESPECÍFICA POR SU ID, SI ESTÁ ACTIVA.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
 const actividadIdGet = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DE LA ACTIVIDAD DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UNA ACTIVIDAD ESPECÍFICA Y ACTIVA.
     const query = {
       id_cat_actividad: id,
       estatus: 1,
     };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UNA ACTIVIDAD Y SUS RELACIONES.
     const actividades = await Actividades.findOne({
       where: query,
     });
@@ -90,7 +90,7 @@ const actividadIdGet = async (req = request, res = response) => {
 };
 
 /**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
+ * REGISTRA UNA NUEVA ACTIVIDAD EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
@@ -100,7 +100,7 @@ const actividadesPost = async (req = request, res = response) => {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
     const { actividad_nombre, descripcion, equipo_trabajo } = req.body;
 
-    // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+    // CREAMOS UNA NUEVA ACTIVIDAD EN LA BASE DE DATOS.
     const actividad = await Actividades.create({
       actividad: actividad_nombre,
       descripcion,
@@ -125,28 +125,28 @@ const actividadesPost = async (req = request, res = response) => {
 };
 
 /**
- * ACTUALIZA LA INFORMACIÓN DE UN CLIENTE EXISTENTE EN LA BASE DE DATOS.
+ * ACTUALIZA LA INFORMACIÓN DE UNA ACTIVIDAD EXISTENTE EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta y cuerpo.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
  */
 const actividadPut = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DE LA ACTIVIDAD DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // EXTRAEMOS LOS DATOS DEL CUERPO DE LA SOLICITUD.
     const { actividad_nombre, descripcion, equipo_trabajo } = req.body;
 
-    // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
+    // OBTENEMOS LA ACTIVIDAD EXISTENTE Y SUS RELACIONES.
     const actividad = await Actividades.findByPk(id);
 
-    // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
+    // ACTUALIZAMOS LA INFORMACIÓN DE LA ACTIVIDAD.
     actividad.actividad = actividad_nombre;
     actividad.descripcion = descripcion;
-    (actividad.fk_cat_equipo_trabajo = equipo_trabajo),
-      // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
-      await actividad.save();
+    actividad.fk_cat_equipo_trabajo = equipo_trabajo;
+    // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
+    await actividad.save();
 
     // RETORNAMOS UNA RESPUESTA INDICANDO EL ÉXITO DE LA ACTUALIZACIÓN.
     res.status(200).json({
@@ -165,20 +165,20 @@ const actividadPut = async (req = request, res = response) => {
 };
 
 /**
- * ELIMINA LÓGICAMENTE UN CLIENTE DE LA BASE DE DATOS.
+ * ELIMINA LÓGICAMENTE UNA ACTIVIDAD DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y mensaje JSON.
  */
 const actividadDelete = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DE LA ACTIVIDAD DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // OBTENEMOS EL CLIENTE EXISTENTE.
+    // OBTENEMOS LA ACTIVIDAD EXISTENTE.
     const actividad = await Actividades.findByPk(id);
 
-    // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
+    // CAMBIAMOS EL ESTATUS DE LA ACTIVIDAD A 0 PARA ELIMINARLO LÓGICAMENTE.
     actividad.estatus = 0;
     await actividad.save();
 
@@ -199,7 +199,7 @@ const actividadDelete = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * GENERAMOS UN REPORTE DE ACTIVIDADES SEGUN SUS ESPECIFICACIONES
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
@@ -223,11 +223,11 @@ const reporteActividadesPost = async (req, res) => {
     let proyectos = [];
     let actividades = [];
     let etapas = [];
-    let clientes = [];
+    let ACTIVIDADES = [];
     let actividadesIds = [];
     let proyectosIds = [];
     let etapasIds = [];
-    let proyectosClientes = [];
+    let proyectosACTIVIDADES = [];
     let etapasProyectos = [];
     let actividadesEtapas = [];
     let informes = [];
@@ -321,7 +321,7 @@ const reporteActividadesPost = async (req, res) => {
           ],
         });
         for (let cliente of resultado) {
-          clientes.push({
+          ACTIVIDADES.push({
             nombre_cliente: cliente.cat_cliente.persona.nombre,
             id_proyecto: cliente.fk_cat_proyecto,
           });
@@ -417,20 +417,20 @@ const reporteActividadesPost = async (req, res) => {
           },
         });
         // Mapeamos los resultados para reorganizar la estructura
-        proyectosClientes = proyectos.map((proyecto) => {
-          const resultadoClientes = clientes.find((cliente) => {
+        proyectosACTIVIDADES = proyectos.map((proyecto) => {
+          const resultadoACTIVIDADES = ACTIVIDADES.find((cliente) => {
             return cliente.id_proyecto === proyecto.id_proyecto;
           });
 
           return {
             id_proyecto: proyecto.id_proyecto,
             nombre_proyecto: proyecto.nombre,
-            nombre_cliente: resultadoClientes.nombre_cliente,
+            nombre_cliente: resultadoACTIVIDADES.nombre_cliente,
           };
         });
         // Mapeamos los resultados para reorganizar la estructura
         etapasProyectos = etapas.map((etapa) => {
-          const resultadoProyectos = proyectosClientes.find((proyecto) => {
+          const resultadoProyectos = proyectosACTIVIDADES.find((proyecto) => {
             return proyecto.id_proyecto === etapa.id_proyecto;
           });
 
@@ -493,7 +493,7 @@ const reporteActividadesPost = async (req, res) => {
         );
         break;
       case 2:
-        // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+        // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN EQUIPO DE TRABAJO Y SUS RELACIONES.
         const equipo_trabajo = await EquipoTrabajo.findOne({
           include: [
             {
@@ -576,7 +576,7 @@ const reporteActividadesPost = async (req, res) => {
           ],
         });
         for (let cliente of resultado) {
-          clientes.push({
+          ACTIVIDADES.push({
             nombre_cliente: cliente.cat_cliente.persona.nombre,
             id_proyecto: cliente.fk_cat_proyecto,
           });
@@ -677,20 +677,20 @@ const reporteActividadesPost = async (req, res) => {
           },
         });
         // Mapeamos los resultados para reorganizar la estructura
-        proyectosClientes = proyectos.map((proyecto) => {
-          const resultadoClientes = clientes.find((cliente) => {
+        proyectosACTIVIDADES = proyectos.map((proyecto) => {
+          const resultadoACTIVIDADES = ACTIVIDADES.find((cliente) => {
             return cliente.id_proyecto === proyecto.id_proyecto;
           });
 
           return {
             id_proyecto: proyecto.id_proyecto,
             nombre_proyecto: proyecto.nombre,
-            nombre_cliente: resultadoClientes.nombre_cliente,
+            nombre_cliente: resultadoACTIVIDADES.nombre_cliente,
           };
         });
         // Mapeamos los resultados para reorganizar la estructura
         etapasProyectos = etapas.map((etapa) => {
-          const resultadoProyectos = proyectosClientes.find((proyecto) => {
+          const resultadoProyectos = proyectosACTIVIDADES.find((proyecto) => {
             return proyecto.id_proyecto === etapa.id_proyecto;
           });
 
@@ -737,7 +737,7 @@ const reporteActividadesPost = async (req, res) => {
             nombre_cliente: resultadoActividades.nombre_cliente,
           };
         });
-        // RETORNAMOS LOS DATOS OBTENIDOS EN LA RESPUESTA.
+        // RETORNAMOS LOS DATOS OBTENIDOS RENDERIZANDO LA RESPUESTA.
         res.render(
           "../../../public/reporteEquipoTrabajo.ejs",
           {
@@ -787,7 +787,7 @@ const reporteActividadesPost = async (req, res) => {
             },
           ],
         });
-        clientes.push({
+        ACTIVIDADES.push({
           nombre_cliente: resultado.cat_cliente.persona.nombre,
           id_proyecto: resultado.fk_cat_proyecto,
         });
@@ -884,18 +884,18 @@ const reporteActividadesPost = async (req, res) => {
           },
         });
         // Mapeamos los resultados para reorganizar la estructura
-        proyectosClientes = {
+        proyectosACTIVIDADES = {
           id_proyecto: proyecto.id_cat_proyecto,
           nombre_proyecto: proyecto.proyecto,
-          nombre_cliente: clientes[0].nombre_cliente,
+          nombre_cliente: ACTIVIDADES[0].nombre_cliente,
         };
         // Mapeamos los resultados para reorganizar la estructura
         etapasProyectos = etapas.map((etapa) => {
           return {
             id_proyecto: etapa.id_proyecto,
             id_etapa: etapa.id_etapa,
-            nombre_proyecto: proyectosClientes.nombre_proyecto,
-            nombre_cliente: proyectosClientes.nombre_cliente,
+            nombre_proyecto: proyectosACTIVIDADES.nombre_proyecto,
+            nombre_cliente: proyectosACTIVIDADES.nombre_cliente,
           };
         });
         // Mapeamos los resultados para reorganizar la estructura
@@ -964,7 +964,7 @@ const reporteActividadesPost = async (req, res) => {
 };
 
 /**
- * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * GENERAMOS UN REPORTE DE LAS ACTIVIDADES SEGUN SEA EL TIPO Y SUS ESPECIFICACIONES.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
@@ -988,11 +988,11 @@ const reporteActividadesPdfPost = async (req, res) => {
     let proyectos = [];
     let actividades = [];
     let etapas = [];
-    let clientes = [];
+    let ACTIVIDADES = [];
     let actividadesIds = [];
     let proyectosIds = [];
     let etapasIds = [];
-    let proyectosClientes = [];
+    let proyectosACTIVIDADES = [];
     let etapasProyectos = [];
     let actividadesEtapas = [];
     let informes = [];
@@ -1086,7 +1086,7 @@ const reporteActividadesPdfPost = async (req, res) => {
           ],
         });
         for (let cliente of resultado) {
-          clientes.push({
+          ACTIVIDADES.push({
             nombre_cliente: cliente.cat_cliente.persona.nombre,
             id_proyecto: cliente.fk_cat_proyecto,
           });
@@ -1182,20 +1182,20 @@ const reporteActividadesPdfPost = async (req, res) => {
           },
         });
         // Mapeamos los resultados para reorganizar la estructura
-        proyectosClientes = proyectos.map((proyecto) => {
-          const resultadoClientes = clientes.find((cliente) => {
+        proyectosACTIVIDADES = proyectos.map((proyecto) => {
+          const resultadoACTIVIDADES = ACTIVIDADES.find((cliente) => {
             return cliente.id_proyecto === proyecto.id_proyecto;
           });
 
           return {
             id_proyecto: proyecto.id_proyecto,
             nombre_proyecto: proyecto.nombre,
-            nombre_cliente: resultadoClientes.nombre_cliente,
+            nombre_cliente: resultadoACTIVIDADES.nombre_cliente,
           };
         });
         // Mapeamos los resultados para reorganizar la estructura
         etapasProyectos = etapas.map((etapa) => {
-          const resultadoProyectos = proyectosClientes.find((proyecto) => {
+          const resultadoProyectos = proyectosACTIVIDADES.find((proyecto) => {
             return proyecto.id_proyecto === etapa.id_proyecto;
           });
 
@@ -1360,7 +1360,7 @@ const reporteActividadesPdfPost = async (req, res) => {
           ],
         });
         for (let cliente of resultado) {
-          clientes.push({
+          ACTIVIDADES.push({
             nombre_cliente: cliente.cat_cliente.persona.nombre,
             id_proyecto: cliente.fk_cat_proyecto,
           });
@@ -1461,20 +1461,20 @@ const reporteActividadesPdfPost = async (req, res) => {
           },
         });
         // Mapeamos los resultados para reorganizar la estructura
-        proyectosClientes = proyectos.map((proyecto) => {
-          const resultadoClientes = clientes.find((cliente) => {
+        proyectosACTIVIDADES = proyectos.map((proyecto) => {
+          const resultadoACTIVIDADES = ACTIVIDADES.find((cliente) => {
             return cliente.id_proyecto === proyecto.id_proyecto;
           });
 
           return {
             id_proyecto: proyecto.id_proyecto,
             nombre_proyecto: proyecto.nombre,
-            nombre_cliente: resultadoClientes.nombre_cliente,
+            nombre_cliente: resultadoACTIVIDADES.nombre_cliente,
           };
         });
         // Mapeamos los resultados para reorganizar la estructura
         etapasProyectos = etapas.map((etapa) => {
-          const resultadoProyectos = proyectosClientes.find((proyecto) => {
+          const resultadoProyectos = proyectosACTIVIDADES.find((proyecto) => {
             return proyecto.id_proyecto === etapa.id_proyecto;
           });
 
@@ -1591,7 +1591,7 @@ const reporteActividadesPdfPost = async (req, res) => {
             },
           ],
         });
-        clientes.push({
+        ACTIVIDADES.push({
           nombre_cliente: resultado.cat_cliente.persona.nombre,
           id_proyecto: resultado.fk_cat_proyecto,
         });
@@ -1688,18 +1688,18 @@ const reporteActividadesPdfPost = async (req, res) => {
           },
         });
         // Mapeamos los resultados para reorganizar la estructura
-        proyectosClientes = {
+        proyectosACTIVIDADES = {
           id_proyecto: proyecto.id_cat_proyecto,
           nombre_proyecto: proyecto.proyecto,
-          nombre_cliente: clientes[0].nombre_cliente,
+          nombre_cliente: ACTIVIDADES[0].nombre_cliente,
         };
         // Mapeamos los resultados para reorganizar la estructura
         etapasProyectos = etapas.map((etapa) => {
           return {
             id_proyecto: etapa.id_proyecto,
             id_etapa: etapa.id_etapa,
-            nombre_proyecto: proyectosClientes.nombre_proyecto,
-            nombre_cliente: proyectosClientes.nombre_cliente,
+            nombre_proyecto: proyectosACTIVIDADES.nombre_proyecto,
+            nombre_cliente: proyectosACTIVIDADES.nombre_cliente,
           };
         });
         // Mapeamos los resultados para reorganizar la estructura

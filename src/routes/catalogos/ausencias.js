@@ -24,11 +24,11 @@ const router = Router();
 
 const sub_modulo = "Ausencias";
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
+// DEFINICIÓN DE RUTA PARA OBTENER TODAS LAS AUSENCIAS
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO AL SERVICIO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,
@@ -36,14 +36,13 @@ router.get(
   ausenciasGet
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA AGREGAR UNA AUSENCIA
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UNA AUSENCIA
     validarJWT,
     tienePermiso("Escribir", sub_modulo),
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
     check("fecha", "Formato de fecha incorrecto").custom((value) => {
       return /\d{4}-\d{2}-\d{2}/.test(value);
     }),
@@ -55,11 +54,11 @@ router.post(
   ausenciasPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER UNA AUSENCIA POR ID
 router.get(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id").custom(existeAusenciaPorId),
@@ -68,11 +67,11 @@ router.get(
   ausenciaIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA OBTENER AUSENCIAS POR EMPLEADO
 router.get(
   "/empleado/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id").custom(existeEmpleadoPorId),
@@ -81,11 +80,11 @@ router.get(
   ausenciasIdGet
 );
 
-// DEFINICIÓN DE RUTA PARA ACTUALIZAR UN CLIENTE POR ID
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR UNA AUSENCIA POR ID
 router.put(
   "/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTUALIZAR UNA AUSENCIA
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id").custom(existeAusenciaPorId),

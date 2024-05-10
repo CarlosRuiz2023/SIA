@@ -79,7 +79,7 @@ const subModulosGet = async (req = request, res = response) => {
  */
 const modulosSubModulosGet = async (req = request, res = response) => {
   try {
-    // OBTENER ROLES CON DETALLES DE MÓDULOS Y SUBMÓDULOS.
+    // CONSULTA QUE OBTIENE MÓDULOS Y SUBMÓDULOS DEL SISTEMA.
     const modulos = await Modulo.findAll({
       include: [
         {

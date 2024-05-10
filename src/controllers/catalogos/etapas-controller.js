@@ -7,17 +7,17 @@ const DetalleEtapaActividad = require("../../models/modelos/detalles/detalle_eta
 const Actividades = require("../../models/modelos/catalogos/actividades");
 
 /**
- * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
+ * OBTIENE TODAS LAS ETAPAS ACTIVAS DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con etapas tipo JSON.
  */
 const etapasGet = async (req = request, res = response) => {
   try {
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER CLIENTES ACTIVOS.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER ETAPAS ACTIVAS.
     const query = { estatus: 1 };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO ETAPAS Y SUS RELACIONES.
     const etapas = await Etapa.findAll({
       where: query,
       include: [
@@ -45,23 +45,23 @@ const etapasGet = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE UN CLIENTE ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * OBTIENE UNA ETAPA ESPECÍFICA POR SU ID, SI ESTÁ ACTIVA.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con etapa tipo JSON.
  */
 const etapaIdGet = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DE LA ETAPA DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UNA ETAPA EN ESPECÍFICO Y ACTIVA.
     const query = {
       id_cat_etapa: id,
       estatus: 1,
     };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UNA ETAPA Y SUS RELACIONES.
     const etapas = await Etapa.findOne({
       where: query,
       include: [
@@ -89,17 +89,17 @@ const etapaIdGet = async (req = request, res = response) => {
 };
 
 /**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
+ * REGISTRA UNA NUEVA ETAPA EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con etapa tipo JSON.
  */
 const etapasPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
     const { etapa_nombre, descripcion } = req.body;
 
-    // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+    // CREAMOS UNA NUEVA ETAPA EN LA BASE DE DATOS.
     const etapa = await Etapa.create({
       etapa: etapa_nombre,
       descripcion,
@@ -123,20 +123,20 @@ const etapasPost = async (req = request, res = response) => {
 };
 
 /**
- * ACTUALIZA LA INFORMACIÓN DE UN CLIENTE EXISTENTE EN LA BASE DE DATOS.
+ * ACTUALIZA LA INFORMACIÓN DE UNA ETAPA EXISTENTE EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta y cuerpo.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con etapa tipo JSON.
  */
 const etapaPut = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DE LA ETAPA DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // EXTRAEMOS LOS DATOS DEL CUERPO DE LA SOLICITUD.
     const { etapa_nombre, descripcion } = req.body;
 
-    // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
+    // OBTENEMOS LA ETAPA EXISTENTE Y SUS RELACIONES.
     const etapa = await Etapa.findByPk(id);
 
     // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
@@ -163,20 +163,20 @@ const etapaPut = async (req = request, res = response) => {
 };
 
 /**
- * ELIMINA LÓGICAMENTE UN CLIENTE DE LA BASE DE DATOS.
+ * ELIMINA LÓGICAMENTE UNA ETAPA DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con etapa tipo JSON.
  */
 const etapaDelete = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DE LA ETAPA DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // OBTENEMOS EL CLIENTE EXISTENTE.
+    // OBTENEMOS LA ETAPA EXISTENTE.
     const etapa = await Etapa.findByPk(id);
 
-    // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
+    // CAMBIAMOS EL ESTATUS DE LA ETAPA A 0 PARA ELIMINARLO LÓGICAMENTE.
     etapa.estatus = 0;
     await etapa.save();
 
@@ -197,10 +197,10 @@ const etapaDelete = async (req = request, res = response) => {
 };
 
 /**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
+ * ASIGNAMOS ACTIVIDADES A UNA ETAPA EN ESPECIFICO.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con detalles de la etapa actualizada tipo JSON.
  */
 const etapaActividadesPost = async (req = request, res = response) => {
   try {
@@ -208,19 +208,19 @@ const etapaActividadesPost = async (req = request, res = response) => {
     const { id_etapa, actividades } = req.body;
 
     const fechaActual = new Date().toISOString().slice(0, 10);
-    // OBTIENE LOS REGISTROS ACTUALES ASOCIADOS AL ROL.
+    // OBTIENE LOS REGISTROS ACTUALES ASOCIADOS A LA ETAPA.
     const informacionEtapa = await DetalleEtapaActividad.findAll({
       where: {
         fk_cat_etapa: id_etapa,
       },
     });
 
-    // MAPEA LOS REGISTROS ACTUALES A SUS RESPECTIVOS IDS DE PERMISOS.
+    // MAPEA LOS REGISTROS ACTUALES A SUS RESPECTIVOS IDS DE ACTIVIDADES.
     const actividadesActuales = informacionEtapa.map(
       (etapa) => etapa.fk_cat_actividad
     );
 
-    // ENCUENTRA LOS PERMISOS A AGREGAR Y ELIMINAR.
+    // ENCUENTRA LAS ACTIVIDADES A AGREGAR Y ELIMINAR.
     const actividadesAgregar = actividades.filter(
       (actividad) => !actividadesActuales.includes(actividad)
     );
@@ -229,7 +229,7 @@ const etapaActividadesPost = async (req = request, res = response) => {
     );
     console.log(actividadesEliminar);
 
-    // ELIMINA PERMISOS NO NECESARIOS.
+    // ELIMINA ACTIVIADES EXCLUIDAS.
     await DetalleEtapaActividad.destroy({
       where: {
         fk_cat_etapa: id_etapa,
@@ -237,7 +237,7 @@ const etapaActividadesPost = async (req = request, res = response) => {
       },
     });
 
-    // CREA NUEVOS REGISTROS PARA LOS PERMISOS A AGREGAR.
+    // CREA NUEVOS REGISTROS PARA LAS ACTIVIDADES ASIGNADAS A DICHA ETAPA.
     await DetalleEtapaActividad.bulkCreate(
       actividadesAgregar.map((actividad) => ({
         fk_cat_etapa: id_etapa,
@@ -247,7 +247,7 @@ const etapaActividadesPost = async (req = request, res = response) => {
       }))
     );
 
-    // OBTIENE ROLES ACTUALIZADOS.
+    // OBTIENE ACTIVIDADES ACTUALIZADAS.
     const detalle_etapa_actividad = await DetalleEtapaActividad.findAll({
       include: [
         {

@@ -10,17 +10,17 @@ const Etapa = require("../../models/modelos/catalogos/etapa");
 const DetalleClienteProyectos = require("../../models/modelos/detalles/detalle_cliente_proyectos");
 
 /**
- * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
+ * OBTIENE TODOS LOS PROYECTOS ACTIVOS DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
  * @returns {Object} - Respuesta con estado y datos JSON.
  */
 const proyectosGet = async (req = request, res = response) => {
   try {
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER CLIENTES ACTIVOS.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER PROYECTOS ACTIVOS.
     const query = { estatus: 1 };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO PROYECTOS Y SUS RELACIONES.
     const proyectos = await Proyectos.findAll({
       where: query,
       include: [
@@ -58,23 +58,23 @@ const proyectosGet = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE UN CLIENTE ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
+ * OBTIENE UN PROYECTO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con proyecto tipo JSON.
  */
 const proyectoIdGet = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DEL PROYECTO DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN CLIENTE ESPECÍFICO Y ACTIVO.
+    // DEFINIMOS LA CONDICIÓN DE CONSULTA PARA OBTENER UN PROYECTO ESPECÍFICO Y ACTIVO.
     const query = {
       id_cat_proyecto: id,
       estatus: 1,
     };
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN CLIENTE Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO UN PROYECTO Y SUS RELACIONES.
     const proyectos = await Proyectos.findOne({
       where: query,
       include: [
@@ -112,10 +112,10 @@ const proyectoIdGet = async (req = request, res = response) => {
 };
 
 /**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
+ * REGISTRA UN NUEVO PROYECTO EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con proyecto tipo JSON.
  */
 const proyectosPost = async (req = request, res = response) => {
   try {
@@ -129,7 +129,7 @@ const proyectosPost = async (req = request, res = response) => {
       id_cliente,
     } = req.body;
 
-    // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+    // CREAMOS UN NUEVO PROYECTO EN LA BASE DE DATOS.
     const proyecto = await Proyectos.create({
       proyecto: proyecto_nombre,
       descripcion,
@@ -164,14 +164,14 @@ const proyectosPost = async (req = request, res = response) => {
 };
 
 /**
- * ACTUALIZA LA INFORMACIÓN DE UN CLIENTE EXISTENTE EN LA BASE DE DATOS.
+ * ACTUALIZA LA INFORMACIÓN DE UN PROYECTO EXISTENTE EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta y cuerpo.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con proyecto actualizado tipo JSON.
  */
 const proyectoPut = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DEL PROYECTO DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
     // EXTRAEMOS LOS DATOS DEL CUERPO DE LA SOLICITUD.
@@ -184,10 +184,10 @@ const proyectoPut = async (req = request, res = response) => {
       id_cliente,
     } = req.body;
 
-    // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
+    // OBTENEMOS EL PROYECTO EXISTENTE Y SUS RELACIONES.
     const proyecto = await Proyectos.findByPk(id);
 
-    // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
+    // ACTUALIZAMOS LA INFORMACIÓN DEL PROYECTO.
     proyecto.proyecto = proyecto_nombre;
     proyecto.descripcion = descripcion;
     proyecto.fecha_inicio = fecha_inicio;
@@ -197,12 +197,12 @@ const proyectoPut = async (req = request, res = response) => {
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
     await proyecto.save();
 
-    // OBTENEMOS EL CLIENTE EXISTENTE Y SUS RELACIONES.
+    // OBTENEMOS EL DETALLE_CLIENTE_PROYECTOS EXISTENTE Y SUS RELACIONES.
     const detalleClienteProyectos = await DetalleClienteProyectos.findOne({
       fk_cat_proyecto: id,
     });
 
-    // ACTUALIZAMOS LA INFORMACIÓN DE CLIENTE, PERSONA Y USUARIO.
+    // ACTUALIZAMOS LA INFORMACIÓN DEL DETALLE_CLIENTE_PROYECTOS.
     detalleClienteProyectos.fk_cat_cliente = id_cliente;
 
     // GUARDAMOS LOS CAMBIOS EN LA BASE DE DATOS.
@@ -228,20 +228,20 @@ const proyectoPut = async (req = request, res = response) => {
 };
 
 /**
- * ELIMINA LÓGICAMENTE UN CLIENTE DE LA BASE DE DATOS.
+ * ELIMINA LÓGICAMENTE UN PROYECTO DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con proyecto tipo JSON.
  */
 const proyectoDelete = async (req = request, res = response) => {
   try {
-    // OBTENEMOS EL ID DEL CLIENTE DESDE LOS PARÁMETROS DE RUTA.
+    // OBTENEMOS EL ID DEL PROYECTO DESDE LOS PARÁMETROS DE RUTA.
     const { id } = req.params;
 
-    // OBTENEMOS EL CLIENTE EXISTENTE.
+    // OBTENEMOS EL PROYECTO EXISTENTE.
     const proyecto = await Proyectos.findByPk(id);
 
-    // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
+    // CAMBIAMOS EL ESTATUS DEL PROYECTO A 0 PARA ELIMINARLO LÓGICAMENTE.
     proyecto.estatus = 0;
     await proyecto.save();
 
@@ -262,24 +262,24 @@ const proyectoDelete = async (req = request, res = response) => {
 };
 
 /**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
+ * ASIGNAR UN PROYECTO A UN EQUIPO DE TRABAJO.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con detalle_proyecto_equipo_trabajo tipo JSON.
  */
 const proyectoEquipoTrabajoPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
     const { id_proyecto, equipos_trabajo } = req.body;
 
-    // ELIMINA PERMISOS NO NECESARIOS.
+    // ELIMINA PROYECTOS NO NECESARIOS.
     await DetalleProyectoEquipoTrabajo.destroy({
       where: {
         fk_cat_proyecto: id_proyecto,
       },
     });
 
-    // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
+    // ASOCIA LOS PROYECTOS AL EQUIPO DE TRABAJO MEDIANTE LA TABLA INTERMEDIA.
     await Promise.all(
       equipos_trabajo.map(async (equipo_trabajo) => {
         await DetalleProyectoEquipoTrabajo.create({
@@ -318,24 +318,24 @@ const proyectoEquipoTrabajoPost = async (req = request, res = response) => {
 };
 
 /**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
+ * ASIGNA UNA ETAPA A UN PROYECTO EN ESPECIFICO.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con detalle_proyecto_etapa tipo JSON.
  */
 const proyectoEtapaPost = async (req = request, res = response) => {
   try {
     // EXTRAEMOS LOS DATOS NECESARIOS DEL CUERPO DE LA SOLICITUD.
     const { id_proyecto, etapas } = req.body;
 
-    // ELIMINA PERMISOS NO NECESARIOS.
+    // ELIMINA ETAPAS NO NECESARIOS.
     await DetalleProyectoEtapa.destroy({
       where: {
         fk_cat_proyecto: id_proyecto,
       },
     });
 
-    // ASOCIA LOS ROLES AL USUARIO MEDIANTE LA TABLA INTERMEDIA.
+    // ASOCIA LAS ETAPAS AL PROYECTO MEDIANTE LA TABLA INTERMEDIA.
     await Promise.all(
       etapas.map(async (etapa) => {
         await DetalleProyectoEtapa.create({

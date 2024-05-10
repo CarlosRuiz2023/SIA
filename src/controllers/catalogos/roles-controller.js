@@ -56,7 +56,7 @@ const rolesGet = async (req = request, res = response) => {
  */
 const rolesPermisosPut = async (req, res) => {
   try {
-    // OBTIENE LA INFORMACIÓN DE PERMISOS Y ROLES DEL CUERPO DE LA SOLICITUD.
+    // OBTIENE EL ID_DETALLE_ROL_SUB_MODULO Y EL ESTATUS DEL CUERPO DE LA SOLICITUD.
     const { id_detalle_rol_sub_modulo, estatus } = req.body;
 
     // Actualizar en la BD
@@ -75,7 +75,7 @@ const rolesPermisosPut = async (req, res) => {
       id_detalle_rol_sub_modulo
     );
 
-    // RESPONDE CON UN OBJETO JSON QUE CONTIENE UN MENSAJE Y LOS ROLES ACTUALIZADOS.
+    // RESPONDE CON UN OBJETO JSON QUE CONTIENE UN MENSAJE Y EL DETALLE_ROL_SUB_MODULO ACTUALIZADOS.
     res.json({
       msg: "Permiso actualizado correctamente",
       results: detalleRolSubModulo,

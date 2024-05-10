@@ -28,14 +28,14 @@ const Ausencia = require("../../models/modelos/catalogos/ausencias");
 const DetallePermisosEmpleado = require("../../models/modelos/detalles/detalle_permisos_empleado");
 
 /**
- * OBTIENE TODOS LOS CLIENTES ACTIVOS DE LA BASE DE DATOS.
+ * OBTIENE TODOS LOS CHEQUEOS REGISTRADOS DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con chequeos registrados tipo JSON.
  */
 const registroChequeoGet = async (req = request, res = response) => {
   try {
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CHEQUEOS Y SUS RELACIONES.
     const registroChequeo = await RegistroChequeo.findAll({
       include: [
         { model: Eventos, as: "evento" },
@@ -77,10 +77,10 @@ const registroChequeoGet = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * GENERAMOS UN REPORTE DE CHEQUEOS SEGUN SUS ESPECIFICACIONES
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con reporte de chequeos tipo JSON.
  */
 const reportePost = async (req, res) => {
   try {
@@ -150,10 +150,10 @@ const reportePost = async (req, res) => {
 };
 
 /**
- * REGISTRA UN NUEVO CLIENTE EN LA BASE DE DATOS.
+ * REGISTRA UN NUEVO CHEQUEO EN LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con chequeo tipo JSON.
  */
 const registroChequeoPost = async (req = request, res = response) => {
   try {
@@ -169,7 +169,7 @@ const registroChequeoPost = async (req = request, res = response) => {
     const date = new Date(fecha);
     let dia = date.getDay() + 1;
 
-    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO CLIENTES Y SUS RELACIONES.
+    // REALIZAMOS LA CONSULTA EN LA BASE DE DATOS OBTENIENDO DETALLES DE SI HUBO ALGUN REGISTRO PREVIO ESE DIA.
     const registroPrevio = await RegistroChequeo.findOne({
       include: [
         {
@@ -199,7 +199,7 @@ const registroChequeoPost = async (req = request, res = response) => {
     const puestoTrabajo = await PuestoTrabajo.findByPk(
       empleado.fk_cat_puesto_trabajo
     );
-    // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+    // CREAMOS UNA NUEVO CHEQUEO EN LA BASE DE DATOS.
     const detalleDiasEntradaSalida = await DetalleDiasEntradaSalida.create({
       fk_cat_dias: dia,
       fk_cat_entrada_salida: entrada_salida,
@@ -220,7 +220,7 @@ const registroChequeoPost = async (req = request, res = response) => {
 
         tiempoRetardo = restarHoras(hora, hora_llegada);
 
-        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        // VALIDAMOS QUE CUMPLA CON LA EXPRESION REGULAR DE FORMATO "00:00:00".
         if (!timeRegex.test(tiempoRetardo)) {
           const tiempoExtra = restarHoras(entradaSalida.hora, hora);
           if (!timeRegex.test(tiempoExtra)) {
@@ -263,7 +263,7 @@ const registroChequeoPost = async (req = request, res = response) => {
         hora_llegada = entradaSalida.hora;
         tiempoExtra = restarHoras(hora, hora_llegada);
 
-        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        // VALIDAMOS QUE CUMPLA CON LA EXPRESION REGULAR DE FORMATO "00:00:00".
         if (!timeRegex.test(tiempoExtra)) {
           const tiempoRetardo = restarHoras(hora_llegada, hora);
           if (!timeRegex.test(tiempoRetardo)) {
@@ -306,7 +306,7 @@ const registroChequeoPost = async (req = request, res = response) => {
         hora_llegada = sumarHoras(entradaSalida.hora, "00:15:00");
         tiempoRetardo = restarHoras(hora, hora_llegada);
 
-        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        // VALIDAMOS QUE CUMPLA CON LA EXPRESION REGULAR DE FORMATO "00:00:00".
         if (!timeRegex.test(tiempoRetardo)) {
           const tiempoExtra = restarHoras(entradaSalida.hora, hora);
           if (!timeRegex.test(tiempoExtra)) {
@@ -349,7 +349,7 @@ const registroChequeoPost = async (req = request, res = response) => {
         hora_llegada = entradaSalida.hora;
         tiempoExtra = restarHoras(hora, hora_llegada);
 
-        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        // VALIDAMOS QUE CUMPLA CON LA EXPRESION REGULAR DE FORMATO "00:00:00".
         if (!timeRegex.test(tiempoExtra)) {
           const tiempoRetardo = restarHoras(hora_llegada, hora);
           if (!timeRegex.test(tiempoRetardo)) {
@@ -392,7 +392,7 @@ const registroChequeoPost = async (req = request, res = response) => {
         hora_llegada = entradaSalida.hora;
         tiempoExtra = restarHoras(hora, hora_llegada);
 
-        // CREAMOS UNA NUEVA PERSONA EN LA BASE DE DATOS.
+        // VALIDAMOS QUE CUMPLA CON LA EXPRESION REGULAR DE FORMATO "00:00:00".
         if (!timeRegex.test(tiempoExtra)) {
           const tiempoRetardo = restarHoras(hora_llegada, hora);
           if (!timeRegex.test(tiempoRetardo)) {
@@ -451,10 +451,10 @@ const registroChequeoPost = async (req = request, res = response) => {
 };
 
 /**
- * MANEJA EL PROCESO DE INICIO DE SESIÓN PARA UN USUARIO.
+ * NOTIFICA QUE NO SE HA CHECADO EN EL TIEMPO ESPERADO.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y mensaje JSON.
+ * @returns {Object} - Respuesta con mensaje de envio tipo JSON.
  */
 const notificarNoChequeoPost = async (req, res = response) => {
   try {
@@ -464,23 +464,23 @@ const notificarNoChequeoPost = async (req, res = response) => {
     const usuario = await Usuario.findOne({ where: { correo } });
 
     let name = "Usuario";
-    // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+    // BUSCAMOS AL EMPLEADO DENTRO DE LA BASE DE DATOS.
     const empleado = await Empleado.findOne({
       where: { fk_cat_usuario: usuario.id_cat_usuario },
     });
 
     if (!empleado) {
-      // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+      // BUSCAMOS AL CLIENTE DENTRO DE LA BASE DE DATOS.
       const cliente = await Cliente.findOne({
         where: { fk_cat_usuario: usuario.id_cat_usuario },
       });
-      // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+      // BUSCAMOS A LA PERSONA DENTRO DE LA BASE DE DATOS.
       const persona = await Persona.findOne({
         where: { id_cat_persona: cliente.fk_cat_persona },
       });
       name = `${persona.nombre} ${persona.apellido_Paterno} ${persona.apellido_Materno}`;
     } else {
-      // BUSCAMOS AL USUARIO DENTRO DE LA BASE DE DATOS.
+      // BUSCAMOS A LA PERSONA DENTRO DE LA BASE DE DATOS.
       const persona = await Persona.findOne({
         where: { id_cat_persona: empleado.fk_cat_persona },
       });
@@ -552,10 +552,10 @@ const notificarNoChequeoPost = async (req, res = response) => {
 };
 
 /**
- * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * GENERA UN REPORTE DE EVENTOS POR EMPLEADO.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con eventos por empleado tipo JSON.
  */
 const reporteEventosEmpleadoPost = async (req, res) => {
   try {
@@ -603,10 +603,10 @@ const reporteEventosEmpleadoPost = async (req, res) => {
 };
 
 /**
- * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * GENERA UN REPORTE DE EVENTOS Y TIEMPOS FINALES POR EMPLEADOS ESPECIFICOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con eventos y tiempos tipo JSON.
  */
 const reporteEventosYTiempoPost = async (req, res) => {
   try {

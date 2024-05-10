@@ -116,7 +116,7 @@ const empleadoIdGet = async (req = request, res = response) => {
  * OBTIENE UN EMPLEADO ESPECÍFICO POR SU ID, SI ESTÁ ACTIVO.
  * @param {Object} req - Objeto de solicitud de Express con parámetros de ruta.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con empleados tipo JSON.
  */
 // REGISTRA UN NUEVO EMPLEADO EN LA BASE DE DATOS.
 const empleadoPost = async (req = request, res = response) => {
@@ -215,10 +215,10 @@ const empleadoPost = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * ACTUALIZA A UN EMPLEADO EN ESPECIFICO Y ACTIVO.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con empleado actualizado JSON.
  */
 // ACTUALIZA LA INFORMACIÓN DE UN EMPLEADO EXISTENTE EN LA BASE DE DATOS.
 const empleadoPut = async (req = request, res = response) => {
@@ -297,13 +297,13 @@ const empleadoPut = async (req = request, res = response) => {
       })
     );
 
-    // GUARDA LOS CAMBIOS EN LA BASE DE DATOS.
     // GUARDA LOS CAMBIOS EN EL MODELO PERSONA.
     await empleadoExistente.persona.save();
 
     // GUARDA LOS CAMBIOS EN EL MODELO USUARIO.
     await empleadoExistente.usuario.save();
 
+    // GUARDA LOS CAMBIOS EN LA BASE DE DATOS.
     await empleadoExistente.save();
 
     // RETORNA LA RESPUESTA CON LOS DATOS DEL EMPLEADO ACTUALIZADO.
@@ -323,10 +323,10 @@ const empleadoPut = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * ELIMINACION LOGICA DE UN EMPLEADO DENTRO DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta empleado actualizado JSON.
  */
 // ELIMINA LÓGICAMENTE UN EMPLEADO ESTABLECIENDO SU ESTATUS A 0.
 const empleadoDelete = async (req = request, res = response) => {
@@ -350,7 +350,7 @@ const empleadoDelete = async (req = request, res = response) => {
       },
     });
 
-    // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
+    // CAMBIAMOS EL ESTATUS DEL USUARIO A 0 PARA ELIMINARLO LÓGICAMENTE.
     usuario.estatus = 0;
     await usuario.save();
 
@@ -374,10 +374,10 @@ const empleadoDelete = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE TODOS LOS EMPLEADOS ACTIVOS DE LA BASE DE DATOS.
+ * ACTIVACION DE UN EMPLEADO DENTRO DE LA BASE DE DATOS.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta empleado actualizado tipo JSON.
  */
 // ACTUALIZA EL ESTATUS DE UN EMPLEADO A 1 PARA "ACTIVARLO".
 const empleadoActivarPut = async (req = request, res = response) => {
@@ -401,7 +401,7 @@ const empleadoActivarPut = async (req = request, res = response) => {
       },
     });
 
-    // CAMBIAMOS EL ESTATUS DEL CLIENTE A 0 PARA ELIMINARLO LÓGICAMENTE.
+    // CAMBIAMOS EL ESTATUS DEL EMPLADO A 0 PARA ELIMINARLO LÓGICAMENTE.
     usuario.estatus = 1;
     await usuario.save();
 

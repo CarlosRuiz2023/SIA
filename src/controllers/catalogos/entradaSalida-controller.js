@@ -20,12 +20,12 @@ const Eventos = require("../../models/modelos/catalogos/eventos");
 const Dias = require("../../models/modelos/catalogos/dias");
 
 /**
- * OBTIENE LOS DIAS CON ESTATUS ACTIVO.
+ * OBTIENE REGISTROS DE ESE DIA SEGUN LOS EMPLEADOS ESPECIFICADOS EN EL SERVICIO.
  * @async
  * @function entradaSalidaGet
  * @param {request} req - OBJETO DE SOLICITUD HTTP.
  * @param {response} res - OBJETO DE RESPUESTA HTTP.
- * @returns {Object} RESPUESTA JSON CON LAS TOLERANCIAS ACTIVAS OBTENIDAS.
+ * @returns {Object} RESPUESTA JSON CON REGISTROS OBTENIDOS.
  */
 const entradaSalidaPost = async (req = request, res = response) => {
   try {
@@ -93,10 +93,10 @@ const entradaSalidaPost = async (req = request, res = response) => {
 };
 
 /**
- * OBTIENE LOS REGISTROS DE LA BITÁCORA DE ACCESOS SEGÚN LOS PARÁMETROS ESPECIFICADOS.
+ * GENERA UN REPORTE DE ENTRADAS Y SALIDAS SEGUN SUS ESPECIFICACIONES.
  * @param {Object} req - Objeto de solicitud de Express.
  * @param {Object} res - Objeto de respuesta de Express.
- * @returns {Object} - Respuesta con estado y datos JSON.
+ * @returns {Object} - Respuesta con su reporte tipo JSON.
  */
 const reporteEntradasSalidasPost = async (req, res) => {
   try {

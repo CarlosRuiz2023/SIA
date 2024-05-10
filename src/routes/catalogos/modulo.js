@@ -18,7 +18,7 @@ const router = Router();
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     validarCampos,
   ],
@@ -29,7 +29,7 @@ router.get(
 router.get(
   "/subModulos/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     validarCampos,
   ],
@@ -40,7 +40,7 @@ router.get(
 router.get(
   "/modulosSubModulos/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     validarCampos,
   ],

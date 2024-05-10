@@ -15,10 +15,11 @@ const router = Router();
 
 const sub_modulo = "Usuario";
 
+// DEFINICIÓN DE RUTA PARA CARGAR UN ARCGHIVO DE FORMA FISICA EN EL SISTEMA
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     esAdminRole,
     validarArchivoSubir,
@@ -27,10 +28,11 @@ router.post(
   cargarArchivo
 );
 
+// DEFINICIÓN DE RUTA PARA ACTUALIZAR FOTOGRAFIAS DE LAS DIFERENTES COLECCIONES QUE SE GUARDAN
 router.put(
   "/:coleccion/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTUALIZAR FOTOGRAFIAS
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     validarArchivoSubir,
@@ -42,10 +44,12 @@ router.put(
   actualizarImagen
 );
 
+// DEFINICIÓN DE RUTA PARA OBTENER LAS FOTOGRAFIAS DE LAS DIFERENTES COLECCIONES
 router.get(
   "/:coleccion/:id",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
+    // SE COMENTO EL USO DEL TOKEN EN ESTE ENDPOINT DEBIDO A QUE ASI SE ME FUE SOLICITADO POR MIS COMPAÑEROS DE FRONT.
     //validarJWT,
     //tienePermiso("Leer", sub_modulo),
     check("coleccion").custom((c) =>

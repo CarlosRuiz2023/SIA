@@ -26,7 +26,7 @@ const sub_modulo = "Roles y permisos";
 router.get(
   "/rolPermiso/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,
@@ -38,7 +38,7 @@ router.get(
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
   ],
@@ -49,7 +49,7 @@ router.get(
 router.put(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTUALIZAR PERMISOS DE ROLES
     validarJWT,
     tienePermiso("Modificar", sub_modulo),
     check("id_detalle_rol_sub_modulo").custom(existeDetalleRolSubModuloPorId),

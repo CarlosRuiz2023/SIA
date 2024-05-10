@@ -41,7 +41,7 @@ router.post(
 router.post(
   "/recuperarContrasenia",
   [
-    // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
+    // VALIDACIONES PARA LOS DATOS DE RECUPERAR CONTRASEÑA
     check("correo", "El correo es obligatorio").isEmail(),
     check("correo").custom(emailExistente),
     // MIDDLEWARE PARA VALIDAR CAMPOS
@@ -54,7 +54,7 @@ router.post(
 router.post(
   "/bloquearUsuario",
   [
-    // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN
+    // VALIDACIONES PARA LOS DATOS DE BLOQUEAR AL USUARIO
     check("correo", "El correo es obligatorio").isEmail(),
     check("correo").custom(emailExistente),
     // MIDDLEWARE PARA VALIDAR CAMPOS
@@ -67,7 +67,7 @@ router.post(
 router.post(
   "/activarUsuario",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACTIVAR USUARIO
     validarJWT,
     esAdminRole,
     check("correo", "El correo es obligatorio").isEmail(),
@@ -78,9 +78,11 @@ router.post(
   usuarioActivar
 );
 
+// DEFINICIÓN DE RUTA PARA CAMBIO DE CONTRASEÑA
 router.get(
   "/cambiarContrasenia/:correo",
   [
+    // VALIDACIONES PARA LOS DATOS DE CAMBIO DE CONTRASEÑA
     check("correo", "El id es obligatorio").not().isEmpty(),
     check("correo").custom(emailExistente),
     check("password", "El password debe de ser más de 6 letras").isLength({
@@ -90,6 +92,7 @@ router.get(
       "passwordConfirm",
       "El password debe de ser más de 6 letras"
     ).isLength({ min: 6 }),
+    // MIDDLEWARE PARA VALIDAR CAMPOS
     validarCampos,
   ],
   cambiarContrasenia
@@ -99,7 +102,7 @@ router.get(
 router.post(
   "/cerrarSesion",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE CERRAR SESION
     validarJWT,
     check("correo", "El correo es obligatorio").isEmail(),
     check("correo").custom(emailExistente),

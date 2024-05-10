@@ -9,18 +9,18 @@ const Eventos = require("../../models/modelos/catalogos/eventos");
  * @function eventosGet
  * @param {request} req - OBJETO DE SOLICITUD HTTP.
  * @param {response} res - OBJETO DE RESPUESTA HTTP.
- * @returns {Object} RESPUESTA JSON CON LAS TOLERANCIAS ACTIVAS OBTENIDAS.
+ * @returns {Object} RESPUESTA JSON CON LOS EVENTOS ACTIVOS OBTENIDOS.
  */
 const eventosGet = async (req = request, res = response) => {
   try {
-    // DEFINE EL CRITERIO DE BÚSQUEDA PARA TOLERANCIAS ACTIVAS.
+    // DEFINE EL CRITERIO DE BÚSQUEDA PARA EVENTOS ACTIVOS.
     const query = { estatus: 1 };
-    // REALIZA LA CONSULTA A LA BASE DE DATOS PARA OBTENER LAS TOLERANCIAS ACTIVAS.
+    // REALIZA LA CONSULTA A LA BASE DE DATOS PARA OBTENER LOS EVENTOS ACTIVOS.
     const eventos = await Eventos.findAll({
       where: query,
     });
 
-    // RESPONDE CON UN OBJETO JSON QUE CONTIENE LAS TOLERANCIAS ACTIVAS OBTENIDAS.
+    // RESPONDE CON UN OBJETO JSON QUE CONTIENE LOS EVENTOS ACTIVOS OBTENIDOS.
     res.status(200).json({
       ok: true,
       results: eventos,

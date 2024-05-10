@@ -27,11 +27,11 @@ const router = Router();
 
 const sub_modulo = "Entradas y salidas";
 
-// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CLIENTES
+// DEFINICIÓN DE RUTA PARA OBTENER TODOS LOS CHEQUEOS
 router.get(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     validarCampos,
@@ -39,11 +39,11 @@ router.get(
   registroChequeoGet
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
+// DEFINICIÓN DE RUTA PARA GENERAR UN REPORTE DE CHEQUEOS POR EMPLEADO
 router.post(
   "/datos",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
@@ -60,11 +60,11 @@ router.post(
   reportePost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
+// DEFINICIÓN DE RUTA PARA GENERAR UN REPORTE DE CHEQUEOS SEGUN EL TIPO ESPECIFICADO
 router.post(
   "/reporte",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("fecha_inicio", "Formato de fecha_inicio incorrecto").custom(
@@ -83,11 +83,11 @@ router.post(
   reporteEventosYTiempoPost
 );
 
-// DEFINICIÓN DE RUTA PARA OBTENER DATOS DE LA BITÁCORA DE ACCESO
+// DEFINICIÓN DE RUTA PARA GENERAR EL REPORTE DE EVENTOS POR EMPLEADO
 router.post(
   "/reporteEmpleado",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Leer", sub_modulo),
     check("id_empleado").custom(existeEmpleadoPorId),
@@ -96,11 +96,11 @@ router.post(
   reporteEventosEmpleadoPost
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CHEQUEO
 router.post(
   "/",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN CHEQUEO
     validarJWT,
     tienePermiso("Escribir", sub_modulo),
     check("evento").custom(existeEventoPorId),
@@ -111,11 +111,11 @@ router.post(
   registroChequeoPost
 );
 
-// DEFINICIÓN DE RUTA PARA AGREGAR UN NUEVO CLIENTE
+// DEFINICIÓN DE RUTA PARA NOTIFICAR AL USUARIO LA FALTA DE CHEQUEO PREVIO
 router.post(
   "/notificar",
   [
-    // VALIDACIONES PARA LOS DATOS DE AGREGAR UN ACCESO
+    // VALIDACIONES PARA LOS DATOS DE ACCESO
     validarJWT,
     tienePermiso("Escribir", sub_modulo),
     // VALIDACIONES PARA LOS DATOS DE INICIO DE SESIÓN

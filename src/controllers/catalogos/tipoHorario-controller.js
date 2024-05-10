@@ -4,19 +4,19 @@ const { response, request } = require("express");
 const TipoHorario = require("../../models/modelos/catalogos/tipoHorario");
 
 /**
- * OBTIENE LOS DIAS CON ESTATUS ACTIVO.
+ * OBTIENE LOS HORARIOS REGISTRADOS DENTRO DE LA BD.
  * @async
  * @function tipoHorarioGet
  * @param {request} req - OBJETO DE SOLICITUD HTTP.
  * @param {response} res - OBJETO DE RESPUESTA HTTP.
- * @returns {Object} RESPUESTA JSON CON LAS TOLERANCIAS ACTIVAS OBTENIDAS.
+ * @returns {Object} RESPUESTA JSON CON LOS HORARIOS OBTENIDOS.
  */
 const tipoHorarioGet = async (req = request, res = response) => {
   try {
-    // REALIZA LA CONSULTA A LA BASE DE DATOS PARA OBTENER LAS TOLERANCIAS ACTIVAS.
+    // REALIZA LA CONSULTA A LA BASE DE DATOS PARA OBTENER LOS HORARIOS.
     const tipo_horario = await TipoHorario.findAll({});
 
-    // RESPONDE CON UN OBJETO JSON QUE CONTIENE LAS TOLERANCIAS ACTIVAS OBTENIDAS.
+    // RESPONDE CON UN OBJETO JSON QUE CONTIENE LOS HORARIOS OBTENIDOS.
     res.status(200).json({
       ok: true,
       results: tipo_horario,
